@@ -1,0 +1,112 @@
+9/9/04: Expanding ghost region so that it is adjustable by user.
+        Expect that having a region of width 3 should cure the
+        non-smoothness issues in the RK3 update.
+
+        Plan:
+          --- add new parameter ghostwidth to file "setup" in had/src/hyperSemiL
+          --- add new parameter to the had/include/glob.inc include file
+          --- it's not completely clear yet whether grid_init_chr() needs to
+              changed so that the field chr() which characterizes each grid
+              point on a given grid knows how big the ghost region. I suspect
+              no changes are necessary.
+          --- child grid interpolated boundaries from parents:
+              more points may now be required to be interpolated from parents.
+                Created new routines:
+                   int_field_bounds_timeGW()
+                   int_field_bounds_spaceGW()
+                which are aware of the ghostwidth and so I don't break other
+                code yet. I need to update these so that they interpolate
+                from parents a (possibly) wider ghost region.
+          --- the grid stepping routine needs to be sure not to touch
+              any of the points in the now expanded ghost region.
+              For "internal" sub steps, it can ignore the boundary.
+
+              Thinking about this some more, the easiest way to handle this
+              would seem to be to not even bother setting boundary conditions
+              for subgrids until after the evolution step. The ghostwidth should
+              be chosen so that, with MOL, points in the interior (that is more
+              than ghostwidth points from the boundary) should be causally 
+              disconnected from the subgrid boundary. Not only should this work,
+              but it would be difficult retaining the boundary information with
+              the way that we update in place...that is u2() stores both the
+              intermediate RK3 solutions as well as the final solution.
+
+              To accomplish this, we then have to modify main.f.
+
+          --- When it comes time to restrict the data from the subgrid
+              to the parent (when grids are time aligned), don't restrict
+              in the ghost region.
+                  restrict_fieldGW()
+                  replace_part_field_avgGW()
+          --- once all this is done for the serial, go back and make
+              sure it all works for the distributed case.
+
+9/13/04: Most everything is in place, but of course there are problems.
+         The most immediate of which is that on the subgrid, the second
+         point in isn't having it's boundary value appropriately set.
+         This problem is easily tracked down to the fact that
+         int_field_bounds_spaceGW() simply extends the existing infracture
+         but in a naive and incomplete way. It need a new loop to fill in
+         by interpolation in space the points that it misses.
+
+         It occurs to me that for even ghostwidth, there's a bit of a
+         problem. Say ghostwidth==2 and refine_factor==2. Then right now
+         the subgrid only gets one boundary point worth of data for it
+         to interpolate in space. Hence, ghostwidth is, be default now 1. 
+         To really get ghostwidth==2, one would have to pass two 
+         (coarse) boundary points, and then only set 2 (when you could set
+         three). I won't worry about full generality for every possible
+         value of ghostwidth and refinement factor...it is very likely 
+         that we'll just use ghostwidth==3 and refin_factor==2.
+
+9/27/04: It seems that things are debugged. I haven't tested for 
+         different ghostwidth's and refinement factor, but with 2:1
+         refinement and with a ghostwidth of 6, things seem to follow
+         the scheme correctly.
+         
+         As for how it does, it seems to do better than ghostwidth of 3
+         with boundary updates on fine grids at every step. However,
+         I run into problems with many levels of refinement in the
+         the central region. For one thing, one has to avoid too small
+         grids, and I need to go back and look more closely at the
+         clusterer in light of this. For another, we probably need
+         a larger bugger region...that is when flagging points
+         needing refinement, we'll need to include a bigger region around
+         these flagged points than otherwise simply because a significant
+         chunk of the refinement we produce isn't effectively refined
+         because within the ghost region, the effective resolution is
+         still at the level of the parent.
+         
+         Another issue is that I've been observing that sometimes the
+         fine grid has more dynamics and the parent doesn't keep up
+         with it. That is the fine grid gets stepped (twice) and then
+         the parent's values dictate the ghostregion. However, 
+         this ghostregion doesn't "agree" with the dynamics dictated
+         within the interior of the fine grid. This causes non-smoothness.
+         The question is, would a bigger buffer region prevent this?
+         Is some kind of smoothing called for, and if so should it be applied
+         over the whole domain (add dissipation) or over a certain subregion
+         such as the point just next to the ghost region or to the
+         outermost point of the ghostregion?
+         
+9/28/04: I think I've got all the bugs out of the system. I've looked
+         at the clusterer and it won't create grids with a dimension
+         smaller than the user-adjustable parameter "mindim."
+
+         However, as before, while things stay smooth at the AMR boundaries,
+         the solution still gets corrupted, essentially by stuff with
+         characteristic frequencies it should be able to resolve. It
+         seems to only happen in a small, central region where the
+         dynamics on the fine grid are much faster than on the coarse
+         grid. If one picture the interface of a parent and child with
+         a 6 fine point ghost region, one can think of it as big
+         motion on the fine which then confronts the small motion
+         of the coarse within the ghostregion. But within the ghost
+         region the coarse dictates. So then on the next iteration
+         step this "disconnect" gets propagated into the fine grid.
+
+         It's possible that by not doing any boundary treatment at
+         the non-time-aligned step, we're encouraging this disconnect,
+         even though causally we should be fine. In other words, in
+         schemes which use time interpolation, perhaps this helps
+         syncing the parent and child.

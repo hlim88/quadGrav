@@ -1,0 +1,3355 @@
+#!/usr/bin/perl
+
+#####################################################################
+#
+#
+#  Fri Jul 15 17:20:50 MDT 2011
+#
+#  This perl script generates code to calculate derivatives in place
+#  for the BSSN rhs, constraints, and psi4 inside the loops.  I wrote
+#  it to see if it would be more efficient than storing the derivatives
+#  in 3D arrays.
+#
+#  While not tested extensively, I did not find a case where this 
+#  method worked better than the usual method of storing the derivatives
+#  in place.
+#
+#  The main files that this routine generates have a .x suffix, and must
+#  be processed by another perl script to break up the lines into
+#  72 column lines.
+#
+#  The Makefile commands to do this are:
+#
+#      FORMAT_FILE = ../../../sbin/f_file_processor.pl
+#      
+#      bssn_includes: gen_bssn_includes
+#              gen_derivs
+#              cat CR_cal_derivs.x | $(FORMAT_FILE) > CR_cal_derivs.h
+#              cat BC_cal_derivs.x | $(FORMAT_FILE) > BC_cal_derivs.h
+#              cat BR_cal_derivs.x | $(FORMAT_FILE) > BR_cal_derivs.h
+#
+#  The bssnrhs.F90 had to be modified to use this script.  The modifications
+#  include combining the usual RHS calculation with the advective derivative
+#  terms and the boundary conditions.  Many other small changes are required.
+#  Since these tests didn't work out very well, I don't list them all here.
+#
+#  As a final note, I also tried combining this with loop tiling, but 
+#  didn't find a tiling that was very good.  All of my attempts with loop
+#  tiling were less efficient than the usual code.
+#
+#####################################################################
+
+#####################################################################
+#
+#
+#   @d   - list of geometric vars that need 1st derivs for RHS
+#   @dd  - list of geometric vars that need 2nd derivs for RHS
+#   @ad  - list of geometric vars that need advective derivs for RHS
+#   @con_d - 
+#   @con_dd - 
+#   @bound_d - 
+#   @mad_d
+#   @funcs - combined list of all derivatives for functions in @d and @dd
+#
+#
+#####################################################################
+
+# first derivs required for RHS
+
+# Note: gbx, gby, gbz are not needed for the RHS, but the derivatives
+# are needed for the boundary conditions.  The allocation of derivatives
+# and calls to derivative routines for the boundaries uses the functions
+# required for the rhs, so I include them here.
+@d = (alpha3D, shiftx, shifty, shiftz, 
+      gbx, gby, gbz,
+      chi3D, Gamtx, Gamty, Gamtz, trK3D,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, 
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# second derivs required for RHS
+@dd = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, chi3D,
+       alpha3D, shiftx, shifty, shiftz );
+
+# advective derivatives
+@ad = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz,
+       Atxx, Atxy, Atxz, Atyy, Atyz, Atzz ,
+       alpha3D, shiftx, shifty, shiftz, chi3D, Gamtx, Gamty, Gamtz, trK3D,
+       gbx, gby, gbz );
+
+# first derivs required for constraints---no gauge
+@con_d = (chi3D, Gamtx, Gamty, Gamtz, trK3D,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, 
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# second derivs required for constraints---no gauge
+@con_dd = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, chi3D);
+
+@bound_d = (alpha3D, shiftx, shifty, shiftz,
+      gbx, gby, gbz,
+      chi3D, Gamtx, Gamty, Gamtz, trK3D,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz,
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# matter derivatives
+@mat_d = (Ex, Ey, Ez, Bx, By, Bz, Phi_em, Psi_em);
+
+@pd = ("dx_", "dy_", "dz_");
+@pad = ("adx_", "ady_", "adz_");
+@pdd = ("dxx_", "dxy_", "dxz_", "dyy_", "dyz_", "dzz_");
+
+# RHS derivatives...................................................
+@funcs = ();
+
+foreach $f (@d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@funcs, $n);
+  }  
+}
+
+foreach $f (@dd) {
+  foreach $p (@pdd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@funcs, $n);
+  }  
+}
+
+# constraint derivatives...................................................
+@cfuncs = ();
+
+foreach $f (@con_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@cfuncs, $n);
+  }  
+}
+
+foreach $f (@con_dd) {
+  foreach $p (@pdd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@cfuncs, $n);
+  }  
+}
+
+# advective derivatives...................................................
+@afuncs=();
+foreach $f (@ad) {
+  foreach $p (@pad) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@afuncs, $n);
+  } 
+}
+
+# advective derivatives 2....here we handle advective derivs with centered
+# ...........................operators....................................
+@afuncs2=();
+foreach $f (@ad) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@afuncs2, $n);
+  } 
+}
+
+
+
+# boundary derivatives...................................................
+@bfuncs=();
+foreach $f (@bound_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@bfuncs, $n);
+  } 
+}
+
+# matter derivatives.......................................................
+@mfuncs=();
+foreach $f (@mat_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    push(@mfuncs, $n);
+  } 
+}
+
+# matter advective derivatives..............................................
+@mafuncs=();
+foreach $f (@mat_d) {
+  foreach $p (@pad) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@mafuncs, $n);
+  } 
+}
+
+# matter advective derivatives2......Here we use centered derivatives for....
+# ...................................the Lie derivative terms................
+@mafuncs2=();
+foreach $f (@mat_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    $n =~ s/3D//;
+    # printf "name: $n\n";
+    push(@mafuncs2, $n);
+  } 
+}
+
+
+
+
+###########################################################################
+#
+#  Write declarations for the main RHS file
+#
+###########################################################################
+
+###  FIRST DECLARE POINTERS FOR GEOMETRY ##################################
+
+$ofile = "MR_declare_ptrs.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Allocate memory (1)
+#
+###########################################################################
+$ofile = "MR_alloc.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "MR_derivs.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Call to bssnrhs
+#
+###########################################################################
+$ofile = "MR_call_bssn.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Deallocate memory
+#
+###########################################################################
+$ofile = "MR_dealloc.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+# Now do the same for advective derivatives
+#
+###########################################################################
+
+###########################################################################
+#
+#  Allocate memory for advective derivs
+#
+###########################################################################
+$ofile = "MR_alloc_adv.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "MR_derivs_adv.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Call to advective deriv. routine
+#
+###########################################################################
+$ofile = "MR_call_bssn_adv.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+###########################################################################
+#
+#  Call to advective deriv. routines WITH centered derivatives
+#
+###########################################################################
+$ofile = "MR_call_bssn_adv_centered.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+
+
+###########################################################################
+#
+# Deallocate memory for advective derivs
+#
+###########################################################################
+$ofile = "MR_dealloc_adv.h";
+open(OFILE, ">$ofile");
+print OFILE " \n";
+close(OFILE);
+
+
+
+###########################################################################
+#
+# BSSN RHS deriv arguments for cal_bssn_rhs
+#
+###########################################################################
+$ofile = "BR_bssnrhs_sub_args.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments
+#
+###########################################################################
+$ofile = "BR_bssnrhs_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometric functions
+foreach $e (@funcs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# matter functions
+foreach $e (@mfuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# geometry
+foreach $e (@afuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# matter
+foreach $e (@mafuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+
+
+close(OFILE);
+
+###########################################################################
+#
+# Declare deriv arguments
+#
+###########################################################################
+$ofile = "BR_cal_derivs.x";
+open(OFILE, ">$ofile");
+
+print OFILE "          if (i .gt. 2 .and. i .lt. nx-1) then\n";
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               $e(i-2,j,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               $e(i-2,j,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+foreach $e (@dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &              -         $e(i-2,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &              - 30.d0 * $e(i,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &              -         $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_sqrd_by_12\n";
+}
+
+#  i = 1
+print OFILE "          else if (i .eq. 1) then\n";
+
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i+2,j,k)     \n";
+  print OFILE "     &              -        $e(i+3,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+
+print OFILE "          else if (i .eq. 2) then\n";
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                        $e(i-1,j,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               +        $e(i+1,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+ 
+print OFILE "          else if (i .eq. nx-1) then\n";
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                        $e(i-1,j,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               +        $e(i+1,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+print OFILE "          else if (i .eq. nx) then\n";
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i-2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i-2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i-2,j,k)     \n";
+  print OFILE "     &              -        $e(i-3,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with x-derivative'\n";
+print OFILE "          end if\n";
+
+
+########## Advective derivatives in x
+print OFILE "          if (i .gt. 3 .and. i .lt. nx-2) then\n";
+print OFILE "            if (Betau(1) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &             - 10.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &             + 18.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &             -  6.d0 * $e(i+2,j,k)     \n";
+  print OFILE "     &             +         $e(i+3,j,k)     \n";
+  print OFILE "     &               ) * idx_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (   \n";
+  print OFILE "     &             -         $e(i-3,j,k)     \n";
+  print OFILE "     &             +  6.d0 * $e(i-2,j,k)     \n";
+  print OFILE "     &             - 18.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &             + 10.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &             +  3.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &               ) * idx_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (i .eq. 1) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (                    \n";
+  print OFILE "     &             - 3.d0 * $e(i,j,k)     \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)   \n";
+  print OFILE "     &             - $e(i+2,j,k)          \n";
+  print OFILE "     &               ) * idx_by_2\n";
+}
+print OFILE "          else if (i .eq. 2) then\n";
+print OFILE "            if (Betau(1) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &             +  4.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &             -         $e(i+2,j,k)     \n";
+  print OFILE "     &               ) * idx_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (   \n";
+  print OFILE "     &             -  $e(i-1,j,k)     \n";
+  print OFILE "     &             +  $e(i+1,j,k)     \n";
+  print OFILE "     &               ) * idx_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (i .eq. 3) then\n";
+print OFILE "            if (Betau(1) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "              $dxn   = ( -  3.d0 * $e(i-1,j,k) \n";
+  print OFILE "     &               - 10.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               + 18.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &               -  6.d0 * $e(i+2,j,k)     \n";
+  print OFILE "     &               +         $e(i+3,j,k)     \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (           $e(i-2,j,k)     \n";
+  print OFILE "     &                     -  4.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &                     +  3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                   ) * idx_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (i .eq. nx-2) then\n";
+print OFILE "            if (Betau(1) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (      - 3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                      + 4.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &                      -        $e(i+2,j,k)     \n";
+  print OFILE "     &                   ) * idx_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = ( -         $e(i-3,j,k)     \n";
+  print OFILE "     &                     +  6.d0 * $e(i-2,j,k)     \n";
+  print OFILE "     &                     - 18.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &                     + 10.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                     +  3.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &                   ) * idx_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (i .eq. nx-1) then\n";
+print OFILE "            if (Betau(1) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (  -         $e(i-1,j,k)     \n";
+  print OFILE "     &                  +         $e(i+1,j,k)     \n";
+  print OFILE "     &               ) * idx_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn   = (           $e(i-2,j,k)     \n";
+  print OFILE "     &                  - 4.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &                  + 3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               ) * idx_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (i .eq. nx) then\n";
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "          $dxn   = (           $e(i-2,j,k)     \n";
+  print OFILE "     &                - 4.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &                + 3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with advective x-derivative'\n";
+print OFILE "          end if\n";
+
+
+
+####################  y derivs #####################################
+
+print OFILE "          if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               $e(i,j-2,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               $e(i,j-2,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+foreach $e (@dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &              -         $e(i,j-2,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &              - 30.d0 * $e(i,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &              -         $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_sqrd_by_12\n";
+}
+
+
+print OFILE "          else if (j .eq. 1) then\n";
+foreach $e (@d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i,j+2,k)     \n";
+  print OFILE "     &              -        $e(i,j+3,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+print OFILE "          else if (j .eq. 2) then\n";
+foreach $e (@d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                        $e(i,j-1,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &               +        $e(i,j+1,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+print OFILE "          else if (j .eq. ny-1) then\n";
+foreach $e (@d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                        $e(i,j-1,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &               +        $e(i,j+1,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+
+print OFILE "          else if (j .eq. ny) then\n";
+foreach $e (@d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j-2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j-2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i,j-2,k)     \n";
+  print OFILE "     &              -        $e(i,j-3,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with y-derivative'\n";
+print OFILE "          end if\n";
+
+########## Advective derivatives in y
+print OFILE "          if (j .gt. 3 .and. j .lt. ny-2) then\n";
+print OFILE "            if (Betau(2) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &             - 10.d0 * $e(i,j,  k)     \n";
+  print OFILE "     &             + 18.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &             -  6.d0 * $e(i,j+2,k)     \n";
+  print OFILE "     &             +         $e(i,j+3,k)     \n";
+  print OFILE "     &               ) * idy_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (   \n";
+  print OFILE "     &             -         $e(i,j-3,k)     \n";
+  print OFILE "     &             +  6.d0 * $e(i,j-2,k)     \n";
+  print OFILE "     &             - 18.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &             + 10.d0 * $e(i,j,  k)     \n";
+  print OFILE "     &             +  3.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &               ) * idy_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (j .eq. 1) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (                    \n";
+  print OFILE "     &             - 3.d0 * $e(i,j,k)     \n";
+  print OFILE "     &             + 4.d0 * $e(i,j+1,k)   \n";
+  print OFILE "     &             -        $e(i,j+2,k)   \n";
+  print OFILE "     &               ) * idy_by_2\n";
+}
+print OFILE "          else if (j .eq. 2) then\n";
+print OFILE "            if (Betau(2) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &             +  4.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &             -         $e(i,j+2,k)     \n";
+  print OFILE "     &               ) * idy_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (   \n";
+  print OFILE "     &             -  $e(i,j-1,k)     \n";
+  print OFILE "     &             +  $e(i,j+1,k)     \n";
+  print OFILE "     &               ) * idy_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (j .eq. 3) then\n";
+print OFILE "            if (Betau(2) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "              $dyn   = ( -  3.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &                   - 10.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                   + 18.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &                   -  6.d0 * $e(i,j+2,k)     \n";
+  print OFILE "     &                   +         $e(i,j+3,k)     \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (               $e(i,j-2,k)     \n";
+  print OFILE "     &                     -  4.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &                     +  3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                   ) * idy_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (j .eq. ny-2) then\n";
+print OFILE "            if (Betau(2) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (      - 3.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &                      + 4.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &                      -        $e(i,j+2,k)     \n";
+  print OFILE "     &                   ) * idy_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = ( -             $e(i,j-3,k)     \n";
+  print OFILE "     &                     +  6.d0 * $e(i,j-2,k)     \n";
+  print OFILE "     &                     +  3.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &                   ) * idy_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (j .eq. ny-1) then\n";
+print OFILE "            if (Betau(2) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (  -         $e(i,j-1,k)     \n";
+  print OFILE "     &                  +         $e(i,j+1,k)     \n";
+  print OFILE "     &               ) * idy_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn   = (           $e(i,j-2,k)     \n";
+  print OFILE "     &                  - 4.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &                  + 3.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &               ) * idy_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (j .eq. ny) then\n";
+foreach $e (@ad) {
+  $dyn = "ady_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "          $dyn   = (           $e(i,j-2,k)     \n";
+  print OFILE "     &                - 4.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &                + 3.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with advective y-derivative'\n";
+print OFILE "          end if\n";
+
+
+####################  z derivs #####################################
+
+print OFILE "          if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               $e(i,j,k-2)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               $e(i,j,k-2)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+foreach $e (@dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &              -         $e(i,j,k-2)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &              - 30.d0 * $e(i,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &              -         $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_sqrd_by_12\n";
+}
+print OFILE "          else if (k .eq. 1) then\n";
+foreach $e (@d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j,k+1)   \n";
+  print OFILE "     &              + 4.d0 * $e(i,j,k+2)   \n";
+  print OFILE "     &              -        $e(i,j,k+3)   \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+
+print OFILE "          else if (k .eq. 2) then\n";
+foreach $e (@d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                        $e(i,j,k-1)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j,k  )     \n";
+  print OFILE "     &               +        $e(i,j,k+1)     \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+print OFILE "          else if (k .eq. nz-1) then\n";
+foreach $e (@d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                        $e(i,j,k-1)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j,k  )     \n";
+  print OFILE "     &               +        $e(i,j,k+1)     \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+print OFILE "          else if (k .eq. nz) then\n";
+foreach $e (@d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k-2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               3.d0 * $e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j,k-1)\n";
+  print OFILE "     &                    + $e(i,j,k-2)\n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j,k)   \n";
+  print OFILE "     &              - 5.d0 * $e(i,j,k-1) \n";
+  print OFILE "     &              + 4.d0 * $e(i,j,k-2) \n";
+  print OFILE "     &              -        $e(i,j,k-3) \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with z-derivative'\n";
+print OFILE "          end if\n";
+
+########## Advective derivatives in z
+print OFILE "          if (k .gt. 3 .and. k .lt. nz-2) then\n";
+print OFILE "            if (Betau(3) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i,j,k-1)     \n";
+  print OFILE "     &             - 10.d0 * $e(i,j,k)       \n";
+  print OFILE "     &             + 18.d0 * $e(i,j,k+1)     \n";
+  print OFILE "     &             -  6.d0 * $e(i,j,k+2)     \n";
+  print OFILE "     &             +         $e(i,j,k+3)     \n";
+  print OFILE "     &               ) * idz_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (   \n";
+  print OFILE "     &             -         $e(i,j,k-3)     \n";
+  print OFILE "     &             +  6.d0 * $e(i,j,k-2)     \n";
+  print OFILE "     &             - 18.d0 * $e(i,j,k-1)     \n";
+  print OFILE "     &             + 10.d0 * $e(i,j,k)       \n";
+  print OFILE "     &             +  3.d0 * $e(i,j,k+1)     \n";
+  print OFILE "     &               ) * idz_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (k .eq. 1) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (                    \n";
+  print OFILE "     &             - 3.d0 * $e(i,j,k)     \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)   \n";
+  print OFILE "     &                    - $e(i,j,k+2)   \n";
+  print OFILE "     &               ) * idz_by_2\n";
+}
+print OFILE "          else if (k .eq. 2) then\n";
+print OFILE "            if (Betau(3) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (   \n";
+  print OFILE "     &             -  3.d0 * $e(i,j,k)    \n";
+  print OFILE "     &             +  4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             -         $e(i,j,k+2)  \n";
+  print OFILE "     &               ) * idz_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (   \n";
+  print OFILE "     &             -  $e(i,j,k-1)     \n";
+  print OFILE "     &             +  $e(i,j,k+1)     \n";
+  print OFILE "     &               ) * idz_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (k .eq. 3) then\n";
+print OFILE "            if (Betau(3) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "              $dzn   = ( -  3.d0 * $e(i,j,k-1)\n";
+  print OFILE "     &               - 10.d0 * $e(i,j,k)      \n";
+  print OFILE "     &               + 18.d0 * $e(i,j,k+1)    \n";
+  print OFILE "     &               -  6.d0 * $e(i,j,k+2)    \n";
+  print OFILE "     &               +         $e(i,j,k+3)    \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (               $e(i,j,k-2)\n";
+  print OFILE "     &                     -  4.d0 * $e(i,j,k-1)\n";
+  print OFILE "     &                     +  3.d0 * $e(i  ,j,k)\n";
+  print OFILE "     &                   ) * idz_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (k .eq. nz-2) then\n";
+print OFILE "            if (Betau(3) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (      - 3.d0 * $e(i,j,k)   \n";
+  print OFILE "     &                      + 4.d0 * $e(i,j,k+1) \n";
+  print OFILE "     &                      -        $e(i,j,k+2) \n";
+  print OFILE "     &                   ) * idz_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = ( -             $e(i,j,k-3) \n";
+  print OFILE "     &                     +  6.d0 * $e(i,j,k-2) \n";
+  print OFILE "     &                     - 18.d0 * $e(i,j,k-1) \n";
+  print OFILE "     &                     + 10.d0 * $e(i,j,k)   \n";
+  print OFILE "     &                     +  3.d0 * $e(i,j,k+1) \n";
+  print OFILE "     &                   ) * idz_by_12\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (k .eq. nz-1) then\n";
+print OFILE "            if (Betau(3) .ge. 0.0d0) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (  -         $e(i,j,k-1)    \n";
+  print OFILE "     &                  +         $e(i,j,k+1)    \n";
+  print OFILE "     &               ) * idz_by_2\n";
+}
+print OFILE "            else\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn   = (           $e(i,j,k-2)   \n";
+  print OFILE "     &                  - 4.d0 * $e(i,j,k-1)   \n";
+  print OFILE "     &                  + 3.d0 * $e(i,j,k)     \n";
+  print OFILE "     &               ) * idz_by_2\n";
+}
+print OFILE "            end if\n";
+print OFILE "          else if (k .eq. nz) then\n";
+foreach $e (@ad) {
+  $dzn = "adz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "          $dzn   = (           $e(i,j,k-2)   \n";
+  print OFILE "     &                - 4.d0 * $e(i,j,k-1)   \n";
+  print OFILE "     &                + 3.d0 * $e(i,j,k)     \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with advective x-derivative'\n";
+print OFILE "          end if\n";
+
+
+
+########################################################################
+#
+#  x-y mixed derivatives
+#
+########################################################################
+
+print OFILE "        if (i .eq. 1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn = ((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd+4.d0*((-3)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd-((-3.d0)*$e(i,j+2,k)+4.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(((-3.d0)*$e(i,j-2,k)+4.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd-8.d0*((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+8.d0*((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd-((-3.d0)*$e(i,j+2,k)+4.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd-4.d0*((-3)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j-2,k)+4.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. 2) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd-8.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+8.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .gt. 2 .and. i .lt. nx-1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12+4.d0*($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12-($e(i-2,j+2,k)-8.d0*$e(i-1,j+2,k)+8.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(($e(i-2,j-2,k)-8.d0*$e(i-1,j-2,k)+8.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd_by_12-8.d0*($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+8.d0*($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12-($e(i-2,j+2,k)-8.d0*$e(i-1,j+2,k)+8.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12-4.d0*($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j-2,k)-8.d0*$e(i-1,j-2,k)+8.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx-1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd-8.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+8.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@dd) {  
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd+4.d0*(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd-(3.d0*$e(i,j+2,k)-4.d0*$e(i-1,j+2,k)+$e(i-2,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((3.d0*$e(i,j-2,k)-4.d0*$e(i-1,j-2,k)+$e(i-2,j-2,k))*idx_sqrd-8.d0*(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+8.d0*(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd-(3.d0*$e(i,j+2,k)-4.d0*$e(i-1,j+2,k)+$e(i-2,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd-4.d0*(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+(3.d0*$e(i,j-2,k)-4.d0*$e(i-1,j-2,k)+$e(i-2,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+########################################################################
+#
+#  x-z mixed derivatives
+#
+########################################################################
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "        if (i .eq. 1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd+4.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1) -$e(i+2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(((-3.d0)*$e(i,j,k-2)+4.d0*$e(i+1,j,k-2)- $e(i+2,j,k-2))*idx_sqrd-8.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j, k-1)-$e(i+2,j,k-1))*idx_sqrd+8.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1 ,j,k+1)-$e(i+2,j,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e( i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1) -$e(i+2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k) -$e(i+2,j,k))*idx_sqrd-4.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k-2)+4.d0*$e(i+1,j,k-2) -$e(i+2,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*) 'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. 2) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0 *(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+ $e(i+1,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd-8.d0* (-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+8.d0*(-$e(i-1,j,k+1) +$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+$e(i+1,j,k+2))* idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else \n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .gt. 2 .and. i .lt. nx-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0* $e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12+4.d0*($e(i-2,j,k+1)-8.d0*$e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12-($e (i-2,j,k+2)-8.d0*$e(i-1,j,k+2)+8.d0*$e(i+1,j,k+2)-$e(i+2, j,k+2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0* $e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j,k+1)-8.d0* $e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(($e(i-2,j,k-2)-8.d0*$e(i-1,j,k-2)+8.d0*$e(i+1,j,k-2)-$e(i+2,j,k-2))*idx_sqrd_by_12-8.d0*($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0*$e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+8.d0*($e(i-2,j,k+1)-8.d0*$e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e( i+2,j,k+1))*idx_sqrd_by_12-($e(i-2,j,k+2)-8.d0*$e(i-1,j,k+2)+8.d0*$e(i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0* $e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j,k+1)-8.d0* $e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e (i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12-4.d0*($e(i-2,j,k-1)-8.d0*$e(i-1 ,j,k-1)+8.d0*$e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j ,k-2)-8.d0*$e(i-1,j,k-2)+8.d0*$e(i+1,j,k-2)-$e(i+2,j,k-2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index'\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0 *(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+ $e(i+1,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt.  nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd-8.d0* (-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+8.d0*(-$e(i-1,j,k+1) +$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+$e(i+1,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index'\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd+4.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i-1,j,k+2)+$e( i-2,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e(i-2,j,k-1))*idx_sqrd+(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((3.d0*$e(i,j,k-2)-4.d0*$e(i-1,j,k-2)+$e (i-2,j,k-2))*idx_sqrd-8.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e (i-2,j,k-1))*idx_sqrd+8.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i-1,j,k+2)+$e(i-2,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e( i-2,j,k))*idx_sqrd-4.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e( i-2,j,k-1))*idx_sqrd+(3.d0*$e(i,j,k-2)-4.d0*$e(i-1,j,k-2)+$e(i-2,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+########################################################################
+#
+#  y-z mixed derivatives
+#
+########################################################################
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "        if (j .eq. 1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i,j+1,k)- $e(i,j+2,k))*idx_sqrd+4.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1) -$e(i,j+2,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i,j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(((-3.d0)*$e(i,j,k-2)+4.d0*$e(i,j+1,k-2)- $e(i,j+2,k-2))*idx_sqrd-8.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1, k-1)-$e(i,j+2,k-1))*idx_sqrd+8.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i, j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i,j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i,j+1,k)-$e(i,j+2,k))*idx_sqrd-4.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k-2)+4.d0*$e(i,j+1,k-2) -$e(i,j+2,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. 2) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd+4.d0 *(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+ $e(i,j+1,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+( -$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd-8.d0* (-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+8.d0*(-$e(i,j-1,k+1) +$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))* idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+( -$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*($e(i,j-2,k)-8.d0*$e(i,j-1,k)+8.d0* $e(i,j+1,k)-$e(i,j+2,k))*idx_sqrd_by_12+4.d0*($e(i,j-2,k+1)-8.d0*$e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12-($e (i,j-2,k+2)-8.d0*$e(i,j-1,k+2)+8.d0*$e(i,j+1,k+2)-$e(i, j+2,k+2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0* $e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i,j-2,k+1)-8.d0* $e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(($e(i,j-2,k-2)-8.d0*$e(i,j-1,k-2)+8.d0*$e(i,j+1,k-2)-$e(i,j+2,k-2))*idx_sqrd_by_12-8.d0*($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0*$e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+8.d0*($e(i,j-2,k+1)-8.d0*$e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i, j+2,k+1))*idx_sqrd_by_12-($e(i,j-2,k+2)-8.d0*$e(i,j-1,k+2)+8.d0*$e(i, j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0* $e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i,j-2,k+1)-8.d0* $e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*($e(i,j-2,k)-8.d0*$e(i,j-1,k)+8.d0*$e (i,j+1,k)-$e(i,j+2,k))*idx_sqrd_by_12-4.d0*($e(i,j-2,k-1)-8.d0*$e(i, j-1,k-1)+8.d0*$e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i, j-2,k-2)-8.d0*$e(i,j-1,k-2)+8.d0*$e(i,j+1,k-2)-$e(i,j+2, k-2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. ny-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd+4.d0 *(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd-8.d0* (-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+8.d0*(-$e(i,j-1,k+1) +$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. ny) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i,j-1,k)+$e(i,j-2,k))*idx_sqrd+4.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e (i,j-2,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i,j-1,k+2)+$e(i,j-2,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e (i,j-2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((3.d0*$e(i,j,k-2)-4.d0*$e(i,j-1,k-2)+$e(i,j-2,k-2))*idx_sqrd-8.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+8.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e(i,j-2,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i,j-1,k+2)+$e(i,j-2,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i,j-1,k)+$e(i,j-2,k))*idx_sqrd-4.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+(3.d0*$e(i,j,k-2)-4.d0*$e(i,j-1,k-2)+$e(i,j-2,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Load Derivatives
+#
+###########################################################################
+$ofile = "BR_load_derivs.h";
+open(OFILE, ">$ofile");
+print OFILE<<EOF;
+
+          d_Alpha(1)    = dx_alpha
+          d_Alpha(2)    = dy_alpha
+          d_Alpha(3)    = dz_alpha
+
+          dd_Alpha(1,1) = dxx_alpha
+          dd_Alpha(1,2) = dxy_alpha
+          dd_Alpha(1,3) = dxz_alpha
+          dd_Alpha(2,2) = dyy_alpha
+          dd_Alpha(2,3) = dyz_alpha
+          dd_Alpha(3,3) = dzz_alpha
+
+          d_chi(1)      = dx_chi
+          d_chi(2)      = dy_chi
+          d_chi(3)      = dz_chi
+
+          dd_chi(1,1)   = dxx_chi
+          dd_chi(1,2)   = dxy_chi
+          dd_chi(1,3)   = dxz_chi
+          dd_chi(2,2)   = dyy_chi
+          dd_chi(2,3)   = dyz_chi
+          dd_chi(3,3)   = dzz_chi
+
+          d_trK(1)        = dx_trK
+          d_trK(2)        = dy_trK
+          d_trK(3)        = dz_trK
+
+          d_Gamt(1,1)   = dx_Gamtx
+          d_Gamt(2,1)   = dy_Gamtx
+          d_Gamt(3,1)   = dz_Gamtx
+          d_Gamt(1,2)   = dx_Gamty
+          d_Gamt(2,2)   = dy_Gamty
+          d_Gamt(3,2)   = dz_Gamty
+          d_Gamt(1,3)   = dx_Gamtz
+          d_Gamt(2,3)   = dy_Gamtz
+          d_Gamt(3,3)   = dz_Gamtz
+
+          d_Betau(1,1)   = dx_shiftx
+          d_Betau(2,1)   = dy_shiftx
+          d_Betau(3,1)   = dz_shiftx
+          d_Betau(1,2)   = dx_shifty
+          d_Betau(2,2)   = dy_shifty
+          d_Betau(3,2)   = dz_shifty
+          d_Betau(1,3)   = dx_shiftz
+          d_Betau(2,3)   = dy_shiftz
+          d_Betau(3,3)   = dz_shiftz
+
+          dd_Betau(1,1,1)   = dxx_shiftx
+          dd_Betau(1,2,1)   = dxy_shiftx
+          dd_Betau(1,3,1)   = dxz_shiftx
+          dd_Betau(2,1,1)   = dd_Betau(1,2,1)
+          dd_Betau(2,2,1)   = dyy_shiftx
+          dd_Betau(2,3,1)   = dyz_shiftx
+          dd_Betau(3,1,1)   = dd_Betau(1,3,1)
+          dd_Betau(3,2,1)   = dd_Betau(2,3,1)
+          dd_Betau(3,3,1)   = dzz_shiftx
+
+          dd_Betau(1,1,2)   = dxx_shifty
+          dd_Betau(1,2,2)   = dxy_shifty
+          dd_Betau(1,3,2)   = dxz_shifty
+          dd_Betau(2,1,2)   = dd_Betau(1,2,2)
+          dd_Betau(2,2,2)   = dyy_shifty
+          dd_Betau(2,3,2)   = dyz_shifty
+          dd_Betau(3,1,2)   = dd_Betau(1,3,2)
+          dd_Betau(3,2,2)   = dd_Betau(2,3,2)
+          dd_Betau(3,3,2)   = dzz_shifty
+
+          dd_Betau(1,1,3)   = dxx_shiftz
+          dd_Betau(1,2,3)   = dxy_shiftz
+          dd_Betau(1,3,3)   = dxz_shiftz
+          dd_Betau(2,1,3)   = dd_Betau(1,2,3)
+          dd_Betau(2,2,3)   = dyy_shiftz
+          dd_Betau(2,3,3)   = dyz_shiftz
+          dd_Betau(3,1,3)   = dd_Betau(1,3,3)
+          dd_Betau(3,2,3)   = dd_Betau(2,3,3)
+          dd_Betau(3,3,3)   = dzz_shiftz
+
+          d_gtd(1,1,1)      = dx_gtxx
+          d_gtd(2,1,1)      = dy_gtxx
+          d_gtd(3,1,1)      = dz_gtxx
+
+          d_gtd(1,1,2)      = dx_gtxy
+          d_gtd(2,1,2)      = dy_gtxy
+          d_gtd(3,1,2)      = dz_gtxy
+
+          d_gtd(1,1,3)      = dx_gtxz
+          d_gtd(2,1,3)      = dy_gtxz
+          d_gtd(3,1,3)      = dz_gtxz
+
+          d_gtd(1,2,1)      = d_gtd(1,1,2)
+          d_gtd(2,2,1)      = d_gtd(2,1,2)
+          d_gtd(3,2,1)      = d_gtd(3,1,2)
+
+          d_gtd(1,2,2)      = dx_gtyy
+          d_gtd(2,2,2)      = dy_gtyy
+          d_gtd(3,2,2)      = dz_gtyy
+
+          d_gtd(1,2,3)      = dx_gtyz
+          d_gtd(2,2,3)      = dy_gtyz
+          d_gtd(3,2,3)      = dz_gtyz
+
+          d_gtd(1,3,1)      = d_gtd(1,1,3)
+          d_gtd(2,3,1)      = d_gtd(2,1,3)
+          d_gtd(3,3,1)      = d_gtd(3,1,3)
+
+          d_gtd(1,3,2)      = d_gtd(1,2,3)
+          d_gtd(2,3,2)      = d_gtd(2,2,3)
+          d_gtd(3,3,2)      = d_gtd(3,2,3)
+
+          d_gtd(1,3,3)      = dx_gtzz
+          d_gtd(2,3,3)      = dy_gtzz
+          d_gtd(3,3,3)      = dz_gtzz
+
+
+          d_Atd(1,1,1)      = dx_Atxx
+          d_Atd(2,1,1)      = dy_Atxx
+          d_Atd(3,1,1)      = dz_Atxx
+
+          d_Atd(1,1,2)      = dx_Atxy
+          d_Atd(2,1,2)      = dy_Atxy
+          d_Atd(3,1,2)      = dz_Atxy
+
+          d_Atd(1,1,3)      = dx_Atxz
+          d_Atd(2,1,3)      = dy_Atxz
+          d_Atd(3,1,3)      = dz_Atxz
+
+          d_Atd(1,2,1)      = d_Atd(1,1,2)
+          d_Atd(2,2,1)      = d_Atd(2,1,2)
+          d_Atd(3,2,1)      = d_Atd(3,1,2)
+
+          d_Atd(1,2,2)      = dx_Atyy
+          d_Atd(2,2,2)      = dy_Atyy
+          d_Atd(3,2,2)      = dz_Atyy
+
+          d_Atd(1,2,3)      = dx_Atyz
+          d_Atd(2,2,3)      = dy_Atyz
+          d_Atd(3,2,3)      = dz_Atyz
+
+          d_Atd(1,3,1)      = d_Atd(1,1,3)
+          d_Atd(2,3,1)      = d_Atd(2,1,3)
+          d_Atd(3,3,1)      = d_Atd(3,1,3)
+
+          d_Atd(1,3,2)      = d_Atd(1,2,3)
+          d_Atd(2,3,2)      = d_Atd(2,2,3)
+          d_Atd(3,3,2)      = d_Atd(3,2,3)
+
+          d_Atd(1,3,3)      = dx_Atzz
+          d_Atd(2,3,3)      = dy_Atzz
+          d_Atd(3,3,3)      = dz_Atzz
+
+
+          dd_gtd(1,1,1,1)      = dxx_gtxx
+          dd_gtd(1,2,1,1)      = dxy_gtxx
+          dd_gtd(1,3,1,1)      = dxz_gtxx
+          dd_gtd(2,2,1,1)      = dyy_gtxx
+          dd_gtd(2,3,1,1)      = dyz_gtxx
+          dd_gtd(3,3,1,1)      = dzz_gtxx
+
+          dd_gtd(1,1,1,2)      = dxx_gtxy
+          dd_gtd(1,2,1,2)      = dxy_gtxy
+          dd_gtd(1,3,1,2)      = dxz_gtxy
+          dd_gtd(2,2,1,2)      = dyy_gtxy
+          dd_gtd(2,3,1,2)      = dyz_gtxy
+          dd_gtd(3,3,1,2)      = dzz_gtxy
+
+          dd_gtd(1,1,1,3)      = dxx_gtxz
+          dd_gtd(1,2,1,3)      = dxy_gtxz
+          dd_gtd(1,3,1,3)      = dxz_gtxz
+          dd_gtd(2,2,1,3)      = dyy_gtxz
+          dd_gtd(2,3,1,3)      = dyz_gtxz
+          dd_gtd(3,3,1,3)      = dzz_gtxz
+
+          dd_gtd(1,1,2,2)      = dxx_gtyy
+          dd_gtd(1,2,2,2)      = dxy_gtyy
+          dd_gtd(1,3,2,2)      = dxz_gtyy
+          dd_gtd(2,2,2,2)      = dyy_gtyy
+          dd_gtd(2,3,2,2)      = dyz_gtyy
+          dd_gtd(3,3,2,2)      = dzz_gtyy
+
+          dd_gtd(1,1,2,3)      = dxx_gtyz
+          dd_gtd(1,2,2,3)      = dxy_gtyz
+          dd_gtd(1,3,2,3)      = dxz_gtyz
+          dd_gtd(2,2,2,3)      = dyy_gtyz
+          dd_gtd(2,3,2,3)      = dyz_gtyz
+          dd_gtd(3,3,2,3)      = dzz_gtyz
+
+          dd_gtd(1,1,3,3)      = dxx_gtzz
+          dd_gtd(1,2,3,3)      = dxy_gtzz
+          dd_gtd(1,3,3,3)      = dxz_gtzz
+          dd_gtd(2,2,3,3)      = dyy_gtzz
+          dd_gtd(2,3,3,3)      = dyz_gtzz
+          dd_gtd(3,3,3,3)      = dzz_gtzz
+
+          d_emEu(1,1)             = dx_Ex
+          d_emEu(1,2)             = dx_Ey
+          d_emEu(1,3)             = dx_Ez
+          d_emEu(2,1)             = dy_Ex
+          d_emEu(2,2)             = dy_Ey
+          d_emEu(2,3)             = dy_Ez
+          d_emEu(3,1)             = dz_Ex
+          d_emEu(3,2)             = dz_Ey
+          d_emEu(3,3)             = dz_Ez
+
+          d_emBu(1,1)             = dx_Bx
+          d_emBu(1,2)             = dx_By
+          d_emBu(1,3)             = dx_Bz
+          d_emBu(2,1)             = dy_Bx
+          d_emBu(2,2)             = dy_By
+          d_emBu(2,3)             = dy_Bz
+          d_emBu(3,1)             = dz_Bx
+          d_emBu(3,2)             = dz_By
+          d_emBu(3,3)             = dz_Bz
+
+          d_emPsi(1)              = dx_Psi_em
+          d_emPsi(2)              = dy_Psi_em
+          d_emPsi(3)              = dz_Psi_em
+
+          d_emPhi(1)              = dx_Phi_em
+          d_emPhi(2)              = dy_Phi_em
+          d_emPhi(3)              = dz_Phi_em
+
+
+EOF
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Advective sub arguments
+#
+###########################################################################
+$ofile = "BR_bssnlie_sub_args.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Advective sub arguments
+#
+###########################################################################
+$ofile = "BR_bssnlie_sub_args.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#
+#
+###########################################################################
+$ofile = "BR_bssnlie_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@afuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# matter
+foreach $e (@mafuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Now do the same for constraint derivatives
+#
+############################################################################
+############################################################################
+#
+#  Write declarations
+#
+###########################################################################
+$ofile = "AN_declare_ptrs.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#  Allocate memory ANALYSIS
+#
+###########################################################################
+$ofile = "AN_alloc.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "AN_derivs.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#  Argument list for analysis call
+#
+###########################################################################
+$ofile = "AN_call_analysis.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Deallocate memory
+#
+###########################################################################
+$ofile = "AN_dealloc.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+############################################################################
+#
+# Analysis deriv arguments for constraints
+#
+###########################################################################
+$ofile = "CR_con_sub_args.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments for constraint routine
+#
+###########################################################################
+$ofile = "CR_con_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@cfuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# matter
+foreach $e (@mfuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+# Declare deriv arguments for constraint routine
+#
+###########################################################################
+$ofile = "CR_cal_derivs.x";
+open(OFILE, ">$ofile");
+
+print OFILE "          if (i .gt. 2 .and. i .lt. nx-1) then\n";
+foreach $e (@con_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               $e(i-2,j,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+foreach $e (@con_dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &              -         $e(i-2,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &              - 30.d0 * $e(i,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &              -         $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_sqrd_by_12\n";
+}
+
+#  i = 1
+print OFILE "          else if (i .eq. 1) then\n";
+
+foreach $e (@con_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i+1,j,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i+2,j,k)     \n";
+  print OFILE "     &              -        $e(i+3,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+
+print OFILE "          else if (i .eq. 2) then\n";
+foreach $e (@con_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                        $e(i-1,j,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               +        $e(i+1,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+ 
+print OFILE "          else if (i .eq. nx-1) then\n";
+foreach $e (@con_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                        $e(i-1,j,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &               +        $e(i+1,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+print OFILE "          else if (i .eq. nx) then\n";
+foreach $e (@con_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i-2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dxxn = "dxx_" . $e;
+  $dxxn =~ s/3D//;
+  print OFILE "            $dxxn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i-1,j,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i-2,j,k)     \n";
+  print OFILE "     &              -        $e(i-3,j,k)     \n";
+  print OFILE "     &              ) * idx_sqrd\n";
+}
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with x-derivative'\n";
+print OFILE "          end if\n";
+
+
+
+print OFILE "          if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               $e(i,j-2,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+foreach $e (@con_dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j+1,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i,j+2,k)     \n";
+  print OFILE "     &              -        $e(i,j+3,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+print OFILE "          else if (j .eq. 2) then\n";
+foreach $e (@con_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                        $e(i,j-1,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &               +        $e(i,j+1,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+print OFILE "          else if (j .eq. ny-1) then\n";
+foreach $e (@con_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                        $e(i,j-1,k)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j  ,k)     \n";
+  print OFILE "     &               +        $e(i,j+1,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+
+
+print OFILE "          else if (j .eq. ny) then\n";
+foreach $e (@con_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j-2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dyyn = "dyy_" . $e;
+  $dyyn =~ s/3D//;
+  print OFILE "            $dyyn = (  \n";
+  print OFILE "     &                2.d0 * $e(i  ,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j-1,k)     \n";
+  print OFILE "     &              + 4.d0 * $e(i,j-2,k)     \n";
+  print OFILE "     &              -        $e(i,j-3,k)     \n";
+  print OFILE "     &              ) * idy_sqrd\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with y-derivative'\n";
+print OFILE "          end if\n";
+
+
+####################  z derivs #####################################
+
+print OFILE "          if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               $e(i,j,k-2)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+foreach $e (@con_dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &              -         $e(i,j,k-2)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &              - 30.d0 * $e(i,j,k)  \n";
+  print OFILE "     &              + 16.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &              -         $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_sqrd_by_12\n";
+}
+print OFILE "          else if (k .eq. 1) then\n";
+foreach $e (@con_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j,k)     \n";
+  print OFILE "     &              - 5.d0 * $e(i,j,k+1)   \n";
+  print OFILE "     &              + 4.d0 * $e(i,j,k+2)   \n";
+  print OFILE "     &              -        $e(i,j,k+3)   \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+
+print OFILE "          else if (k .eq. 2) then\n";
+foreach $e (@con_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                        $e(i,j,k-1)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j,k  )     \n";
+  print OFILE "     &               +        $e(i,j,k+1)     \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+print OFILE "          else if (k .eq. nz-1) then\n";
+foreach $e (@con_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                        $e(i,j,k-1)     \n";
+  print OFILE "     &               - 2.d0 * $e(i,j,k  )     \n";
+  print OFILE "     &               +        $e(i,j,k+1)     \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+print OFILE "          else if (k .eq. nz) then\n";
+foreach $e (@con_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k-2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@con_dd) {
+  $dzzn = "dzz_" . $e;
+  $dzzn =~ s/3D//;
+  print OFILE "            $dzzn = (  \n";
+  print OFILE "     &                2.d0 * $e(i,j,k)   \n";
+  print OFILE "     &              - 5.d0 * $e(i,j,k-1) \n";
+  print OFILE "     &              + 4.d0 * $e(i,j,k-2) \n";
+  print OFILE "     &              -        $e(i,j,k-3) \n";
+  print OFILE "     &              ) * idz_sqrd\n";
+}
+
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with z-derivative'\n";
+print OFILE "          end if\n";
+
+########################################################################
+#
+#  x-y mixed derivatives
+#
+########################################################################
+
+print OFILE "        if (i .eq. 1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn = (i,j,k)=((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd+4.d0*((-3)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd-((-3.d0)*$e(i,j+2,k)+4.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(((-3.d0)*$e(i,j-2,k)+4.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd-8.d0*((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+8.d0*((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd-((-3.d0)*$e(i,j+2,k)+4.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-((-3.d0)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j+1,k)+4.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd-4.d0*((-3)*$e(i,j-1,k)+4.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd+((-3.d0)*$e(i,j-2,k)+4.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. 2) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd-8.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+8.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .gt. 2 .and. i .lt. nx-1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12+4.d0*($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12-($e(i-2,j+2,k)-8.d0*$e(i-1,j+2,k)+8.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(($e(i-2,j-2,k)-8.d0*$e(i-1,j-2,k)+8.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd_by_12-8.d0*($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+8.d0*($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12-($e(i-2,j+2,k)-8.d0*$e(i-1,j+2,k)+8.d0*$e(i+1,j+2,k)-$e(i+2,j+2,k))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j+1,k)-8.d0*$e(i-1,j+1,k)+8.d0*$e(i+1,j+1,k)-$e(i+2,j+1,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12-4.d0*($e(i-2,j-1,k)-8.d0*$e(i-1,j-1,k)+8.d0*$e(i+1,j-1,k)-$e(i+2,j-1,k))*idx_sqrd_by_12+($e(i-2,j-2,k)-8.d0*$e(i-1,j-2,k)+8.d0*$e(i+1,j-2,k)-$e(i+2,j-2,k))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx-1) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd-8.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+8.d0*(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd-(-$e(i-1,j+2,k)+$e(i+1,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@con_dd) {  
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j+1,k)+$e(i+1,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx) then\n";
+print OFILE "        if (j .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd+4.d0*(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd-(3.d0*$e(i,j+2,k)-4.d0*$e(i-1,j+2,k)+$e(i-2,j+2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(-(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=((3.d0*$e(i,j-2,k)-4.d0*$e(i-1,j-2,k)+$e(i-2,j-2,k))*idx_sqrd-8.d0*(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+8.d0*(3.d0*$e(i,j+1,k)-4.d0*$e(i-1,j+1,k)+$e(i-2,j+1,k))*idx_sqrd-(3.d0*$e(i,j+2,k)-4.d0*$e(i-1,j+2,k)+$e(i-2,j+2,k))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (j .eq. ny-1) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(-$e(i-1,j-1,k)+$e(i+1,j-1,k))*idx_sqrd+(-$e(i-1,j-2,k)+$e(i+1,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (j .eq. ny) then\n";
+foreach $e (@con_dd) {
+  $dxyn = "dxy_" . $e;
+  $dxyn =~ s/3D//;
+print OFILE "          $dxyn=(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd-4.d0*(3.d0*$e(i,j-1,k)-4.d0*$e(i-1,j-1,k)+$e(i-2,j-1,k))*idx_sqrd+(3.d0*$e(i,j-2,k)-4.d0*$e(i-1,j-2,k)+$e(i-2,j-2,k))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+########################################################################
+#
+#  x-z mixed derivatives
+#
+########################################################################
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "        if (i .eq. 1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd+4.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1) -$e(i+2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(((-3.d0)*$e(i,j,k-2)+4.d0*$e(i+1,j,k-2)- $e(i+2,j,k-2))*idx_sqrd-8.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j, k-1)-$e(i+2,j,k-1))*idx_sqrd+8.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1 ,j,k+1)-$e(i+2,j,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e( i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i+1,j,k+1) -$e(i+2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i+1,j,k) -$e(i+2,j,k))*idx_sqrd-4.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i+1,j,k-1)- $e(i+2,j,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k-2)+4.d0*$e(i+1,j,k-2) -$e(i+2,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*) 'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. 2) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0 *(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+ $e(i+1,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd-8.d0* (-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+8.d0*(-$e(i-1,j,k+1) +$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+$e(i+1,j,k+2))* idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else \n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .gt. 2 .and. i .lt. nx-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0* $e(i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12+4.d0*($e(i-2,j,k+1)-8.d0*$e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12-($e (i-2,j,k+2)-8.d0*$e(i-1,j,k+2)+8.d0*$e(i+1,j,k+2)-$e(i+2, j,k+2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0* $e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j,k+1)-8.d0* $e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(($e(i-2,j,k-2)-8.d0*$e(i-1,j,k-2)+8.d0*$e(i+1,j,k-2)-$e(i+2,j,k-2))*idx_sqrd_by_12-8.d0*($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0*$e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+8.d0*($e(i-2,j,k+1)-8.d0*$e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e( i+2,j,k+1))*idx_sqrd_by_12-($e(i-2,j,k+2)-8.d0*$e(i-1,j,k+2)+8.d0*$e(i+1,j,k+2)-$e(i+2,j,k+2))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-($e(i-2,j,k-1)-8.d0*$e(i-1,j,k-1)+8.d0* $e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j,k+1)-8.d0* $e(i-1,j,k+1)+8.d0*$e(i+1,j,k+1)-$e(i+2,j,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*($e(i-2,j,k)-8.d0*$e(i-1,j,k)+8.d0*$e (i+1,j,k)-$e(i+2,j,k))*idx_sqrd_by_12-4.d0*($e(i-2,j,k-1)-8.d0*$e(i-1 ,j,k-1)+8.d0*$e(i+1,j,k-1)-$e(i+2,j,k-1))*idx_sqrd_by_12+($e(i-2,j ,k-2)-8.d0*$e(i-1,j,k-2)+8.d0*$e(i+1,j,k-2)-$e(i+2,j,k-2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index'\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd+4.d0 *(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+ $e(i+1,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+( -$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt.  nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd-8.d0* (-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+8.d0*(-$e(i-1,j,k+1) +$e(i+1,j,k+1))*idx_sqrd-(-$e(i-1,j,k+2)+$e(i+1,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(-$e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k+1)+$e(i+1,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index'\n";
+print OFILE "        end if\n";
+print OFILE "        else if (i .eq. nx) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e(i-2,j,k))*idx_sqrd+4.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i-1,j,k+2)+$e( i-2,j,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(-(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e(i-2,j,k-1))*idx_sqrd+(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=((3.d0*$e(i,j,k-2)-4.d0*$e(i-1,j,k-2)+$e (i-2,j,k-2))*idx_sqrd-8.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e (i-2,j,k-1))*idx_sqrd+8.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i-1,j,k+1)+$e (i-2,j,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i-1,j,k+2)+$e(i-2,j,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(-$e(i-1,j,k)+$e(i+1,j,k))*idx_sqrd-4.d0*(- $e(i-1,j,k-1)+$e(i+1,j,k-1))*idx_sqrd+(-$e(i-1,j,k-2)+$e(i+1,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dxzn = "dxz_" . $e;
+  $dxzn =~ s/3D//;
+print OFILE "          $dxzn=(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i-1,j,k)+$e( i-2,j,k))*idx_sqrd-4.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i-1,j,k-1)+$e( i-2,j,k-1))*idx_sqrd+(3.d0*$e(i,j,k-2)-4.d0*$e(i-1,j,k-2)+$e(i-2,j,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+########################################################################
+#
+#  y-z mixed derivatives
+#
+########################################################################
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print OFILE "        if (j .eq. 1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*((-3.d0)*$e(i,j,k)+4.d0*$e(i,j+1,k)- $e(i,j+2,k))*idx_sqrd+4.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1) -$e(i,j+2,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i,j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(((-3.d0)*$e(i,j,k-2)+4.d0*$e(i,j+1,k-2)- $e(i,j+2,k-2))*idx_sqrd-8.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1, k-1)-$e(i,j+2,k-1))*idx_sqrd+8.d0*((-3.d0)*$e(i,j,k+1)+4.d0*$e(i, j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd-((-3.d0)*$e(i,j,k+2)+4.d0*$e(i,j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k+1)+4.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*((-3.d0)*$e(i,j,k)+4.d0*$e(i,j+1,k)-$e(i,j+2,k))*idx_sqrd-4.d0*((-3.d0)*$e(i,j,k-1)+4.d0*$e(i,j+1,k-1)- $e(i,j+2,k-1))*idx_sqrd+((-3.d0)*$e(i,j,k-2)+4.d0*$e(i,j+1,k-2) -$e(i,j+2,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. 2) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd+4.d0 *(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+ $e(i,j+1,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+( -$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd-8.d0* (-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+8.d0*(-$e(i,j-1,k+1) +$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))* idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+( -$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .gt. 2 .and. j .lt. ny-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*($e(i,j-2,k)-8.d0*$e(i,j-1,k)+8.d0* $e(i,j+1,k)-$e(i,j+2,k))*idx_sqrd_by_12+4.d0*($e(i,j-2,k+1)-8.d0*$e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12-($e (i,j-2,k+2)-8.d0*$e(i,j-1,k+2)+8.d0*$e(i,j+1,k+2)-$e(i, j+2,k+2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0* $e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i,j-2,k+1)-8.d0* $e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(($e(i,j-2,k-2)-8.d0*$e(i,j-1,k-2)+8.d0*$e(i,j+1,k-2)-$e(i,j+2,k-2))*idx_sqrd_by_12-8.d0*($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0*$e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+8.d0*($e(i,j-2,k+1)-8.d0*$e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i, j+2,k+1))*idx_sqrd_by_12-($e(i,j-2,k+2)-8.d0*$e(i,j-1,k+2)+8.d0*$e(i, j+1,k+2)-$e(i,j+2,k+2))*idx_sqrd_by_12)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-($e(i,j-2,k-1)-8.d0*$e(i,j-1,k-1)+8.d0* $e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i,j-2,k+1)-8.d0* $e(i,j-1,k+1)+8.d0*$e(i,j+1,k+1)-$e(i,j+2,k+1))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*($e(i,j-2,k)-8.d0*$e(i,j-1,k)+8.d0*$e (i,j+1,k)-$e(i,j+2,k))*idx_sqrd_by_12-4.d0*($e(i,j-2,k-1)-8.d0*$e(i, j-1,k-1)+8.d0*$e(i,j+1,k-1)-$e(i,j+2,k-1))*idx_sqrd_by_12+($e(i, j-2,k-2)-8.d0*$e(i,j-1,k-2)+8.d0*$e(i,j+1,k-2)-$e(i,j+2, k-2))*idx_sqrd_by_12)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. ny-1) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd+4.d0 *(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd-8.d0* (-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+8.d0*(-$e(i,j-1,k+1) +$e(i,j+1,k+1))*idx_sqrd-(-$e(i,j-1,k+2)+$e(i,j+1,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(-$e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k+1)+$e(i,j+1,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        else if (j .eq. ny) then\n";
+print OFILE "        if (k .eq. 1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((-3.d0)*(3.d0*$e(i,j,k)-4.d0*$e(i,j-1,k)+$e(i,j-2,k))*idx_sqrd+4.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e (i,j-2,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i,j-1,k+2)+$e(i,j-2,k+2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. 2) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(-(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e (i,j-2,k+1))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =((3.d0*$e(i,j,k-2)-4.d0*$e(i,j-1,k-2)+$e(i,j-2,k-2))*idx_sqrd-8.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+8.d0*(3.d0*$e(i,j,k+1)-4.d0*$e(i,j-1,k+1)+$e(i,j-2,k+1))*idx_sqrd-(3.d0*$e(i,j,k+2)-4.d0*$e(i,j-1,k+2)+$e(i,j-2,k+2))*idx_sqrd)*idx_sqrd_by_12\n";
+}
+print OFILE "        else if (k .eq. nz-1) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(-$e(i,j-1,k)+$e(i,j+1,k))*idx_sqrd-4.d0*(- $e(i,j-1,k-1)+$e(i,j+1,k-1))*idx_sqrd+(-$e(i,j-1,k-2)+$e(i,j+1,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else if (k .eq. nz) then\n";
+foreach $e (@con_dd) {
+  $dyzn = "dyz_" . $e;
+  $dyzn =~ s/3D//;
+print OFILE "          $dyzn        =(3.d0*(3.d0*$e(i,j,k)-4.d0*$e(i,j-1,k)+$e(i,j-2,k))*idx_sqrd-4.d0*(3.d0*$e(i,j,k-1)-4.d0*$e(i,j-1,k-1)+$e(i,j-2,k-1))*idx_sqrd+(3.d0*$e(i,j,k-2)-4.d0*$e(i,j-1,k-2)+$e(i,j-2,k-2))*idx_sqrd)*idx_sqrd\n";
+}
+print OFILE "        else\n";
+print OFILE "          write(0,*)'problem with k index ',k\n";
+print OFILE "        end if\n";
+print OFILE "        end if\n";
+
+
+
+
+close(OFILE);
+
+
+
+############################################################################
+#
+#   CREATE CALLS FOR BOUNDARY CONDITIONS
+#
+############################################################################
+
+###########################################################################
+#
+#  Call to BCS
+#
+###########################################################################
+$ofile = "MR_call_bcs.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+############################################################################
+#
+# BSSN deriv arguments for boundary conditions
+#
+###########################################################################
+$ofile = "BC_sub_args.h";
+open(OFILE, ">$ofile");
+print OFILE "\n";
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments for boundary routine
+#
+###########################################################################
+$ofile = "BC_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@bfuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+# matter
+foreach $e (@mfuncs) {
+  print OFILE "      CCTK_REAL :: $e\n";
+}
+
+close(OFILE);
+
+############################################################################
+#
+# Declare deriv arguments
+#
+###########################################################################
+
+$ofile = "BC_cal_derivs.x";
+open(OFILE, ">$ofile");
+
+print OFILE "          if (i .gt. 2 .and. i .lt. nx-1) then\n";
+foreach $e (@bound_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               $e(i-2,j,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               $e(i-2,j,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_12\n";
+}
+
+#  i = 1
+print OFILE "          else if (i .eq. 1) then\n";
+
+foreach $e (@bound_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i+1,j,k)  \n";
+  print OFILE "     &             - $e(i+2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+
+print OFILE "          else if (i .eq. 2) then\n";
+foreach $e (@bound_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+ 
+print OFILE "          else if (i .eq. nx-1) then\n";
+foreach $e (@bound_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &             - $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i+1,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+
+print OFILE "          else if (i .eq. nx) then\n";
+foreach $e (@bound_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i-2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dxn =~ s/3D//;
+  print OFILE "            $dxn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i-1,j,k)  \n";
+  print OFILE "     &             + $e(i-2,j,k)  \n";
+  print OFILE "     &             ) * idx_by_2\n";
+}
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with x-derivative'\n";
+print OFILE "          end if\n";
+
+
+
+####################  y derivs #####################################
+
+print OFILE "          if (j .gt. 2 .and. j .lt. ny-1) then\n";
+foreach $e (@bound_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               $e(i,j-2,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               $e(i,j-2,k)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_12\n";
+}
+
+print OFILE "          else if (j .eq. 1) then\n";
+foreach $e (@bound_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j+1,k)  \n";
+  print OFILE "     &             - $e(i,j+2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+
+print OFILE "          else if (j .eq. 2) then\n";
+foreach $e (@bound_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+
+print OFILE "          else if (j .eq. ny-1) then\n";
+foreach $e (@bound_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &             - $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j+1,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+
+print OFILE "          else if (j .eq. ny) then\n";
+foreach $e (@bound_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j-2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dyn = "dy_" . $e;
+  $dyn =~ s/3D//;
+  print OFILE "            $dyn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j-1,k)  \n";
+  print OFILE "     &             + $e(i,j-2,k)  \n";
+  print OFILE "     &             ) * idy_by_2\n";
+}
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with y-derivative'\n";
+print OFILE "          end if\n";
+
+####################  z derivs #####################################
+
+print OFILE "          if (k .gt. 2 .and. k .lt. nz-1) then\n";
+foreach $e (@bound_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               $e(i,j,k-2)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               $e(i,j,k-2)  \n";
+  print OFILE "     &             - 8.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + 8.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_12\n";
+}
+print OFILE "          else if (k .eq. 1) then\n";
+foreach $e (@bound_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - 3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             + 4.d0 * $e(i,j,k+1)  \n";
+  print OFILE "     &             - $e(i,j,k+2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+
+print OFILE "          else if (k .eq. 2) then\n";
+foreach $e (@bound_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+
+print OFILE "          else if (k .eq. nz-1) then\n";
+foreach $e (@bound_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &             - $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k+1)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+
+print OFILE "          else if (k .eq. nz) then\n";
+foreach $e (@bound_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k-2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+foreach $e (@mat_d) {
+  $dzn = "dz_" . $e;
+  $dzn =~ s/3D//;
+  print OFILE "            $dzn = (   \n";
+  print OFILE "     &               3.d0*$e(i,j,k)  \n";
+  print OFILE "     &             - 4.d0 * $e(i,j,k-1)  \n";
+  print OFILE "     &             + $e(i,j,k-2)  \n";
+  print OFILE "     &             ) * idz_by_2\n";
+}
+
+print OFILE "          else\n";
+print OFILE "            write(0,*)'problem with z-derivative'\n";
+print OFILE "          end if\n";
+
+
+#######################################################################

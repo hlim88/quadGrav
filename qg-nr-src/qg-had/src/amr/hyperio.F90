@@ -1,0 +1,7984 @@
+      subroutine params_dump( )
+      implicit none
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      integer i
+      write(*,*)'      gauge_type   = ',gauge_type
+      write(*,*)'      idtype   = ',idtype
+      write(*,*)'      evolve_geometry   = ',evolve_geometry
+      write(*,*)'      evolve_em_field   = ',evolve_em_field
+      write(*,*)'      evolve_scalar_field   = ',evolve_scalar_field
+      write(*,*)'      temperature_type   = ',temperature_type
+      write(*,*)'      read_file_alp   = ',read_file_alp
+      write(*,*)'      read_file_b   = ',read_file_b
+      write(*,*)'      read_file_g   = ',read_file_g
+      write(*,*)'      read_file_k   = ',read_file_k
+      write(*,*)'      read_file_psi   = ',read_file_psi
+      write(*,*)'      read_file_phir   = ',read_file_phir
+      write(*,*)'      read_file_phic   = ',read_file_phic
+      write(*,*)'      read_file_phim   = ',read_file_phim
+      write(*,*)'      read_data_level   = ',read_data_level
+      write(*,*)'      id_d_diff_order   = ',id_d_diff_order
+      write(*,*)'      mr_amp   = ',mr_amp
+      write(*,*)'      mr_shift   = ',mr_shift
+      write(*,*)'      bamp   = ',bamp
+      write(*,*)'      e1_amp   = ',e1_amp
+      write(*,*)'      e2_amp   = ',e2_amp
+      write(*,*)'      initial_b   = ',initial_b
+      write(*,*)'      sf_amp   = ',sf_amp
+      write(*,*)'      initial_sf   = ',initial_sf
+      write(*,*)'      sf_amp_axn   = ',sf_amp_axn
+      write(*,*)'      dil_mass   = ',dil_mass
+      write(*,*)'      dil_alpha   = ',dil_alpha
+      write(*,*)'      dil_infty   = ',dil_infty
+      write(*,*)'      emd_bh_type   = ',emd_bh_type
+      write(*,*)'      axn_mass   = ',axn_mass
+      write(*,*)'      axn_alpha   = ',axn_alpha
+      write(*,*)'      axn_infty   = ',axn_infty
+      write(*,*)'      sen_alpha   = ',sen_alpha
+      write(*,*)'      a_ang_par   = ',a_ang_par
+      write(*,*)'      q_elec   = ',q_elec
+      write(*,*)'      p_mag   = ',p_mag
+      write(*,*)'      bs_1_x0   = ',bs_1_x0
+      write(*,*)'      bs_1_y0   = ',bs_1_y0
+      write(*,*)'      bs_1_z0   = ',bs_1_z0
+      write(*,*)'      bs_1_vx   = ',bs_1_vx
+      write(*,*)'      bs_1_vy   = ',bs_1_vy
+      write(*,*)'      bs_1_vz   = ',bs_1_vz
+      write(*,*)'      bs_1_omega   = ',bs_1_omega
+      write(*,*)'      bs_2_x0   = ',bs_2_x0
+      write(*,*)'      bs_2_y0   = ',bs_2_y0
+      write(*,*)'      bs_2_z0   = ',bs_2_z0
+      write(*,*)'      bs_2_vx   = ',bs_2_vx
+      write(*,*)'      bs_2_vy   = ',bs_2_vy
+      write(*,*)'      bs_2_vz   = ',bs_2_vz
+      write(*,*)'      bs_2_omega   = ',bs_2_omega
+      write(*,*)'      bh_n   = ',bh_n
+      write(*,*)'      bh_type   = ',bh_type
+      write(*,*)'      bh_1_mass   = ',bh_1_mass
+      write(*,*)'      bh_2_mass   = ',bh_2_mass
+      write(*,*)'      bh_3_mass   = ',bh_3_mass
+      write(*,*)'      bh_4_mass   = ',bh_4_mass
+      write(*,*)'      bh_1_x   = ',bh_1_x
+      write(*,*)'      bh_1_y   = ',bh_1_y
+      write(*,*)'      bh_1_z   = ',bh_1_z
+      write(*,*)'      bh_2_x   = ',bh_2_x
+      write(*,*)'      bh_2_y   = ',bh_2_y
+      write(*,*)'      bh_2_z   = ',bh_2_z
+      write(*,*)'      bh_3_x   = ',bh_3_x
+      write(*,*)'      bh_3_y   = ',bh_3_y
+      write(*,*)'      bh_3_z   = ',bh_3_z
+      write(*,*)'      bh_4_x   = ',bh_4_x
+      write(*,*)'      bh_4_y   = ',bh_4_y
+      write(*,*)'      bh_4_z   = ',bh_4_z
+      write(*,*)'      bh_1_px   = ',bh_1_px
+      write(*,*)'      bh_1_py   = ',bh_1_py
+      write(*,*)'      bh_1_pz   = ',bh_1_pz
+      write(*,*)'      bh_2_px   = ',bh_2_px
+      write(*,*)'      bh_2_py   = ',bh_2_py
+      write(*,*)'      bh_2_pz   = ',bh_2_pz
+      write(*,*)'      bh_3_px   = ',bh_3_px
+      write(*,*)'      bh_3_py   = ',bh_3_py
+      write(*,*)'      bh_3_pz   = ',bh_3_pz
+      write(*,*)'      bh_4_px   = ',bh_4_px
+      write(*,*)'      bh_4_py   = ',bh_4_py
+      write(*,*)'      bh_4_pz   = ',bh_4_pz
+      write(*,*)'      bh_1_spin   = ',bh_1_spin
+      write(*,*)'      bh_1_sth   = ',bh_1_sth
+      write(*,*)'      bh_1_sphi   = ',bh_1_sphi
+      write(*,*)'      bh_2_spin   = ',bh_2_spin
+      write(*,*)'      bh_2_sth   = ',bh_2_sth
+      write(*,*)'      bh_2_sphi   = ',bh_2_sphi
+      write(*,*)'      bh_3_spin   = ',bh_3_spin
+      write(*,*)'      bh_3_sth   = ',bh_3_sth
+      write(*,*)'      bh_3_sphi   = ',bh_3_sphi
+      write(*,*)'      bh_4_spin   = ',bh_4_spin
+      write(*,*)'      bh_4_sth   = ',bh_4_sth
+      write(*,*)'      bh_4_sphi   = ',bh_4_sphi
+      write(*,*)'      outer_boundary   = ',outer_boundary
+      write(*,*)'      gr_bound_cond   = ',gr_bound_cond
+      write(*,*)'      fluid_bound_cond   = ',fluid_bound_cond
+      write(*,*)'      bssn_lambda_1   = ',bssn_lambda_1
+      write(*,*)'      bssn_lambda_2   = ',bssn_lambda_2
+      write(*,*)'      bssn_lambda_3   = ',bssn_lambda_3
+      write(*,*)'      bssn_lambda_4   = ',bssn_lambda_4
+      write(*,*)'      bssn_lambda_f0   = ',bssn_lambda_f0
+      write(*,*)'      bssn_lambda_f1   = ',bssn_lambda_f1
+      write(*,*)'      bssn_lambda_f2   = ',bssn_lambda_f2
+      write(*,*)'      bssn_lambda_f3   = ',bssn_lambda_f3
+      write(*,*)'      bssn_eta_damping   = ',bssn_eta_damping
+      write(*,*)'      bssn_R_0   = ',bssn_R_0
+      write(*,*)'      bssn_eta_damping_exp   = ',bssn_eta_damping_exp
+      write(*,*)'      bssn_eta   = ',bssn_eta
+      write(*,*)'      bssn_trk0   = ',bssn_trk0
+      write(*,*)'      bssn_kappa1   = ',bssn_kappa1
+      write(*,*)'      bssn_kappa2   = ',bssn_kappa2
+      write(*,*)'      bssn_chi_floor   = ',bssn_chi_floor
+      write(*,*)'      bssn_adv_derivs   = ',bssn_adv_derivs
+      write(*,*)'      geometry_type   = ',geometry_type
+      write(*,*)'      gr_idtype   = ',gr_idtype
+      write(*,*)'      mhd_idtype   = ',mhd_idtype
+      write(*,*)'      detgwarn   = ',detgwarn
+      write(*,*)'      force_free   = ',force_free
+      write(*,*)'      q1   = ',q1
+      write(*,*)'      vinj   = ',vinj
+      write(*,*)'      Kappajan   = ',Kappajan
+      write(*,*)'      djump   = ',djump
+      write(*,*)'      rpeak   = ',rpeak
+      write(*,*)'      rout   = ',rout
+      write(*,*)'      stab   = ',stab
+      write(*,*)'      rho_real   = ',rho_real
+      write(*,*)'      magcase   = ',magcase
+      write(*,*)'      kappa_max   = ',kappa_max
+      write(*,*)'      calcDivB   = ',calcDivB
+      write(*,*)'      constraints_analysis   = ',constraints_analysis
+      write(*,*)'      G_scale_factor   = ',G_scale_factor
+      write(*,*)'      B_scale_factor   = ',B_scale_factor
+      write(*,*)'      anti_aligned   = ',anti_aligned
+      write(*,*)'      bfield_vacuumfreeze   = ',bfield_vacuumfreeze
+      write(*,*)'      bfield_taperrange   = ',bfield_taperrange
+      write(*,*)'      project_div_B   = ',project_div_B
+      write(*,*)'      psi_ch   = ',psi_ch
+      write(*,*)'      psi_cr   = ',psi_cr
+      write(*,*)'      damp   = ',damp
+      write(*,*)'      id_bondi_sonic_r   = ',id_bondi_sonic_r
+      write(*,*)'      id_bondi_rhoc   = ',id_bondi_rhoc
+      write(*,*)'      id_bondi_rstart   = ',id_bondi_rstart
+      write(*,*)'      id_bondi_fixedIBC   = ',id_bondi_fixedIBC
+      write(*,*)'      id_tov_depletion   = ',id_tov_depletion
+      write(*,*)'      id_tovbh_vx   = ',id_tovbh_vx
+      write(*,*)'      id_tovbh_vy   = ',id_tovbh_vy
+      write(*,*)'      id_tovbh_vz   = ',id_tovbh_vz
+      write(*,*)'      id_tov_average   = ',id_tov_average
+      write(*,*)'      id_tov_p_pres   = ',id_tov_p_pres
+      write(*,*)'      id_tov_p_r   = ',id_tov_p_r
+      write(*,*)'      id_tov_p_sigma   = ',id_tov_p_sigma
+      write(*,*)'      id_tov_magnetic   = ',id_tov_magnetic
+      write(*,*)'      id_tov_Asize   = ',id_tov_Asize
+      write(*,*)'      id_drns_r_e   = ',id_drns_r_e
+      write(*,*)'      id_center_x1   = ',id_center_x1
+      write(*,*)'      id_center_y1   = ',id_center_y1
+      write(*,*)'      id_center_x2   = ',id_center_x2
+      write(*,*)'      id_center_y2   = ',id_center_y2
+      write(*,*)'      id_vx1   = ',id_vx1
+      write(*,*)'      id_vy1   = ',id_vy1
+      write(*,*)'      id_vx2   = ',id_vx2
+      write(*,*)'      id_vy2   = ',id_vy2
+      write(*,*)'      id_perturb_m   = ',id_perturb_m
+      write(*,*)'      id_perturb_p   = ',id_perturb_p
+      write(*,*)'      id_perturb_rho   = ',id_perturb_rho
+      write(*,*)'      id_disk_width   = ',id_disk_width
+      write(*,*)'      id_disk_rin   = ',id_disk_rin
+      write(*,*)'      id_disk_rout   = ',id_disk_rout
+      write(*,*)'      id_disk_B   = ',id_disk_B
+      write(*,*)'      id_disk_type   = ',id_disk_type
+      write(*,*)'      id_disk_angmom   = ',id_disk_angmom
+      write(*,*)'      id_disk_potential   = ',id_disk_potential
+      write(*,*)'      id_disk_atmosphere   = ',id_disk_atmosphere
+      write(*,*)'      id_disk_kappa   = ',id_disk_kappa
+      write(*,*)'      id_disk_Asize   = ',id_disk_Asize
+      write(*,*)'      id_disk_rhocut   = ',id_disk_rhocut
+      write(*,*)'      id_disk_magnetic   = ',id_disk_magnetic
+      write(*,*)'      id_disk_rho0   = ',id_disk_rho0
+      write(*,*)'      id_disk_decay   = ',id_disk_decay
+      write(*,*)'      id_disk_kickvel   = ',id_disk_kickvel
+      write(*,*)'      id_disk_kicktheta   = ',id_disk_kicktheta
+      write(*,*)'      id_disk_kickphi   = ',id_disk_kickphi
+      write(*,*)'      id_disk_GammaB   = ',id_disk_GammaB
+      write(*,*)'      id_disk_cB   = ',id_disk_cB
+      write(*,*)'      id_disk_lbound   = ',id_disk_lbound
+      write(*,*)'      id_disk_bhmass   = ',id_disk_bhmass
+      write(*,*)'      nx0   = ',nx0
+      write(*,*)'      ny0   = ',ny0
+      write(*,*)'      nz0   = ',nz0
+      write(*,*)'      nt0   = ',nt0
+      write(*,*)'      h   = ',h
+      write(*,*)'      hx   = ',hx
+      write(*,*)'      hy   = ',hy
+      write(*,*)'      hz   = ',hz
+      write(*,*)'      hxyz0   = ',hxyz0
+      write(*,*)'      run_wtime   = ',run_wtime
+      write(*,*)'      amp   = ',amp
+      write(*,*)'      idata   = ',idata
+      write(*,*)'      maxchi_thresh   = ',maxchi_thresh
+      write(*,*)'      maxchi_minctime   = ',maxchi_minctime
+      write(*,*)'      local_nx   = ',local_nx
+      write(*,*)'      local_ny   = ',local_ny
+      write(*,*)'      local_nz   = ',local_nz
+      write(*,*)'      global_nx   = ',global_nx
+      write(*,*)'      global_ny   = ',global_ny
+      write(*,*)'      global_nz   = ',global_nz
+      write(*,*)'      local_lower_bnd_x   = ',local_lower_bnd_x
+      write(*,*)'      local_lower_bnd_y   = ',local_lower_bnd_y
+      write(*,*)'      local_lower_bnd_z   = ',local_lower_bnd_z
+      write(*,*)'      bbox1   = ',bbox1
+      write(*,*)'      bbox2   = ',bbox2
+      write(*,*)'      bbox3   = ',bbox3
+      write(*,*)'      bbox4   = ',bbox4
+      write(*,*)'      bbox5   = ',bbox5
+      write(*,*)'      bbox6   = ',bbox6
+      write(*,*)'      nghostzones_x   = ',nghostzones_x
+      write(*,*)'      nghostzones_y   = ',nghostzones_y
+      write(*,*)'      nghostzones_z   = ',nghostzones_z
+      write(*,*)'      dt   = ',dt
+      write(*,*)'      dx   = ',dx
+      write(*,*)'      dy   = ',dy
+      write(*,*)'      dz   = ',dz
+      write(*,*)'      local_time   = ',local_time
+      write(*,*)'      alt_coord_type   = ',alt_coord_type
+      write(*,*)'      pc_coord_trans_rad   = ',pc_coord_trans_rad
+      write(*,*)'      pc_coord_trans_width   = ',pc_coord_trans_width
+      write(*,*)'      pc_coord_scale   = ',pc_coord_scale
+      write(*,*)'      bc_type   = ',bc_type
+      write(*,*)'      inner_bound_data   = ',inner_bound_data
+      write(*,*)'      deriv_order   = ',deriv_order
+      write(*,*)'      dissipation   = ',dissipation
+      write(*,*)'      sigma_diss   = ',sigma_diss
+      write(*,*)'      extradiss   = ',extradiss
+      write(*,*)'      extradissOUT   = ',extradissOUT
+      write(*,*)'      nbholes   = ',nbholes
+      write(*,*)'      use_mask   = ',use_mask
+      write(*,*)'      mask_type   = ',mask_type
+      write(*,*)'      initial_analysis   = ',initial_analysis
+      write(*,*)'      bh1_mass   = ',bh1_mass
+      write(*,*)'      bh1_spin   = ',bh1_spin
+      write(*,*)'      bh1_spin_phi   = ',bh1_spin_phi
+      write(*,*)'      bh1_spin_theta   = ',bh1_spin_theta
+      write(*,*)'      bh1_x0   = ',bh1_x0
+      write(*,*)'      bh1_y0   = ',bh1_y0
+      write(*,*)'      bh1_z0   = ',bh1_z0
+      write(*,*)'      bh1_vx   = ',bh1_vx
+      write(*,*)'      bh1_vy   = ',bh1_vy
+      write(*,*)'      bh1_exc_rad   = ',bh1_exc_rad
+      write(*,*)'      bh1_velx   = ',bh1_velx
+      write(*,*)'      bh2_mass   = ',bh2_mass
+      write(*,*)'      bh2_spin   = ',bh2_spin
+      write(*,*)'      bh2_spin_phi   = ',bh2_spin_phi
+      write(*,*)'      bh2_spin_theta   = ',bh2_spin_theta
+      write(*,*)'      bh2_x0   = ',bh2_x0
+      write(*,*)'      bh2_y0   = ',bh2_y0
+      write(*,*)'      bh2_z0   = ',bh2_z0
+      write(*,*)'      bh2_exc_rad   = ',bh2_exc_rad
+      write(*,*)'      bh2_velx   = ',bh2_velx
+      write(*,*)'      boundary_conditions   = ',boundary_conditions
+      write(*,*)'      penalty   = ',penalty
+      write(*,*)'      PP   = ',PP
+      write(*,*)'      QQ   = ',QQ
+      write(*,*)'      t0   = ',t0
+      write(*,*)'      sigma_t   = ',sigma_t
+      write(*,*)'      amp_boundary   = ',amp_boundary
+      write(*,*)'      amp_random_bc   = ',amp_random_bc
+      write(*,*)'      sigma_rho   = ',sigma_rho
+      write(*,*)'      interp_id   = ',interp_id
+      write(*,*)'      runge_kutta_type   = ',runge_kutta_type
+      write(*,*)'      runge_kutta_bound   = ',runge_kutta_bound
+      write(*,*)'      point_wise_analysis   = ',point_wise_analysis
+      write(*,*)'      psi4_analysis   = ',psi4_analysis
+      write(*,*)'      rk_iter   = ',rk_iter
+      write(*,*)'      asf_ntheta   = ',asf_ntheta
+      write(*,*)'      asf_nphi   = ',asf_nphi
+      write(*,*)'      asf_period   = ',asf_period
+      write(*,*)'      asf_level   = ',asf_level
+      write(*,*)'      asf_rconst   = ',asf_rconst
+      write(*,*)'      bsf_ntheta   = ',bsf_ntheta
+      write(*,*)'      bsf_nphi   = ',bsf_nphi
+      write(*,*)'      bsf_period   = ',bsf_period
+      write(*,*)'      bsf_level   = ',bsf_level
+      write(*,*)'      bsf_rconst   = ',bsf_rconst
+      write(*,*)'      csf_ntheta   = ',csf_ntheta
+      write(*,*)'      csf_nphi   = ',csf_nphi
+      write(*,*)'      csf_period   = ',csf_period
+      write(*,*)'      csf_level   = ',csf_level
+      write(*,*)'      csf_rconst   = ',csf_rconst
+      write(*,*)'      lambda   = ',lambda
+      write(*,*)'      refine_factor   = ',refine_factor
+      write(*,*)'      refine_period_ctrl   = ',refine_period_ctrl
+      write(*,*)'      refine_period   = ',refine_period
+      write(*,*)'      refine_deltat   = ',refine_deltat
+      write(*,*)'      simpleFMR   = ',simpleFMR
+      write(*,*)'      clusterDD   = ',clusterDD
+      write(*,*)'      clusterstyle   = ',clusterstyle
+      write(*,*)'      diss_afterinj   = ',diss_afterinj
+      write(*,*)'      allowedl   = ',allowedl
+      write(*,*)'      linearbounds   = ',linearbounds
+      write(*,*)'      shadow   = ',shadow
+      write(*,*)'      minx0   = ',minx0
+      write(*,*)'      miny0   = ',miny0
+      write(*,*)'      minz0   = ',minz0
+      write(*,*)'      maxx0   = ',maxx0
+      write(*,*)'      maxy0   = ',maxy0
+      write(*,*)'      maxz0   = ',maxz0
+      write(*,*)'      trace_level   = ',trace_level
+      write(*,*)'      ethreshold   = ',ethreshold
+      write(*,*)'      buffer   = ',buffer
+      write(*,*)'      mindim   = ',mindim
+      write(*,*)'      window   = ',window
+      write(*,*)'      minefficiency   = ',minefficiency
+      write(*,*)'      output_style   = ',output_style
+      write(*,*)'      output_dim   = ',output_dim
+      write(*,*)'      output_f1_type   = ',output_f1_type
+      write(*,*)'      output_f1_level   = ',output_f1_level
+      write(*,*)'      output_f1_period   = ',output_f1_period
+      write(*,*)'      output_f1_lb1   = ',output_f1_lb1
+      write(*,*)'      output_f1_lb2   = ',output_f1_lb2
+      write(*,*)'      output_f1_lb3   = ',output_f1_lb3
+      write(*,*)'      output_f1_ub1   = ',output_f1_ub1
+      write(*,*)'      output_f1_ub2   = ',output_f1_ub2
+      write(*,*)'      output_f1_ub3   = ',output_f1_ub3
+      write(*,*)'      output_f2_type   = ',output_f2_type
+      write(*,*)'      output_f2_level   = ',output_f2_level
+      write(*,*)'      output_f2_period   = ',output_f2_period
+      write(*,*)'      output_f2_lb1   = ',output_f2_lb1
+      write(*,*)'      output_f2_lb2   = ',output_f2_lb2
+      write(*,*)'      output_f2_lb3   = ',output_f2_lb3
+      write(*,*)'      output_f2_ub1   = ',output_f2_ub1
+      write(*,*)'      output_f2_ub2   = ',output_f2_ub2
+      write(*,*)'      output_f2_ub3   = ',output_f2_ub3
+      write(*,*)'      output_f3_type   = ',output_f3_type
+      write(*,*)'      output_f3_level   = ',output_f3_level
+      write(*,*)'      output_f3_period   = ',output_f3_period
+      write(*,*)'      output_f3_lb1   = ',output_f3_lb1
+      write(*,*)'      output_f3_lb2   = ',output_f3_lb2
+      write(*,*)'      output_f3_lb3   = ',output_f3_lb3
+      write(*,*)'      output_f3_ub1   = ',output_f3_ub1
+      write(*,*)'      output_f3_ub2   = ',output_f3_ub2
+      write(*,*)'      output_f3_ub3   = ',output_f3_ub3
+      write(*,*)'      output_f4_type   = ',output_f4_type
+      write(*,*)'      output_f4_level   = ',output_f4_level
+      write(*,*)'      output_f4_period   = ',output_f4_period
+      write(*,*)'      output_f4_lb1   = ',output_f4_lb1
+      write(*,*)'      output_f4_lb2   = ',output_f4_lb2
+      write(*,*)'      output_f4_lb3   = ',output_f4_lb3
+      write(*,*)'      output_f4_ub1   = ',output_f4_ub1
+      write(*,*)'      output_f4_ub2   = ',output_f4_ub2
+      write(*,*)'      output_f4_ub3   = ',output_f4_ub3
+      write(*,*)'      clusterreadwrite   = ',clusterreadwrite
+      write(*,*)'      ghostwidth   = ',ghostwidth
+      write(*,*)'      update_scheme   = ',update_scheme
+      write(*,*)'      amrbound_prepost   = ',amrbound_prepost
+      write(*,*)'      amrbound_timealign   = ',amrbound_timealign
+      write(*,*)'      elliptic_solve   = ',elliptic_solve
+      write(*,*)'      nvcycle   = ',nvcycle
+      write(*,*)'      preswp   = ',preswp
+      write(*,*)'      pstswp   = ',pstswp
+      write(*,*)'      maxsweeps   = ',maxsweeps
+      write(*,*)'      ell_epsilon   = ',ell_epsilon
+      write(*,*)'      num_evol_iters   = ',num_evol_iters
+      write(*,*)'      chkpt_period   = ',chkpt_period
+      write(*,*)'      chkpt_readstate   = ',chkpt_readstate
+      write(*,*)'      chkpt_control   = ',chkpt_control
+      write(*,*)'      bound_width   = ',bound_width
+      write(*,*)'      weno_interp   = ',weno_interp
+      write(*,*)'      findhorizon   = ',findhorizon
+      write(*,*)'      mask_period   = ',mask_period
+      write(*,*)'      mask_usemin   = ',mask_usemin
+      write(*,*)'      mask_minfield   = ',mask_minfield
+      write(*,*)'      horizon_ntheta   = ',horizon_ntheta
+      write(*,*)'      horizon_nphi   = ',horizon_nphi
+      write(*,*)'      horizon_thresh   = ',horizon_thresh
+      write(*,*)'      horizon_nholes   = ',horizon_nholes
+      write(*,*)'      horizon_recenterp   = ',horizon_recenterp
+      write(*,*)'      horizon_growth   = ',horizon_growth
+      write(*,*)'      emulate_proc   = ',emulate_proc
+      write(*,*)'      assume_symmetry   = ',assume_symmetry
+      write(*,*)'      flush_period   = ',flush_period
+      write(*,*)'      tracers_period   = ',tracers_period
+      write(*,*)'      tracers_initial   = ',tracers_initial
+      write(*,*)'      tracers_scheme   = ',tracers_scheme
+      write(*,*)'      variable_timestep   = ',variable_timestep
+      write(*,*)'      cfl_lambda   = ',cfl_lambda
+      write(*,*)'      periodicBC   = ',periodicBC
+      do i = 1, num_gfuncs
+         write(*,*) '           gfunc_out(',i,') = ',gfunc_out(i)
+      end do
+      do i = 1, num_gfuncs
+         write(*,*) '           gfunc_ana(',i,') = ',gfunc_ana(i)
+      end do
+      do i = 0, maxlev - 1
+        write(*,*) '           out_period(',i,') = ', out_period(i)
+      end do
+      do i = 0, maxlev - 1
+        write(*,*) '            ref_level(',i,') = ', ref_level(i)
+      end do
+      return
+      end
+      subroutine params_read( pfile )
+      implicit none
+      character(64) pfile
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      include 'surfaces.inc'
+      integer fileunum,
+     * rc,
+     * i,
+     * LARGEINT
+      parameter ( LARGEINT = 999999999 )
+      integer err
+      integer get_int_param, get_real_param, get_str_param
+      integer output_gt11
+      integer analysis_gt11
+      integer output_gt11_np1
+      integer analysis_gt11_np1
+      integer output_gt11_rk1
+      integer analysis_gt11_rk1
+      integer output_gt12
+      integer analysis_gt12
+      integer output_gt12_np1
+      integer analysis_gt12_np1
+      integer output_gt12_rk1
+      integer analysis_gt12_rk1
+      integer output_gt13
+      integer analysis_gt13
+      integer output_gt13_np1
+      integer analysis_gt13_np1
+      integer output_gt13_rk1
+      integer analysis_gt13_rk1
+      integer output_gt22
+      integer analysis_gt22
+      integer output_gt22_np1
+      integer analysis_gt22_np1
+      integer output_gt22_rk1
+      integer analysis_gt22_rk1
+      integer output_gt23
+      integer analysis_gt23
+      integer output_gt23_np1
+      integer analysis_gt23_np1
+      integer output_gt23_rk1
+      integer analysis_gt23_rk1
+      integer output_gt33
+      integer analysis_gt33
+      integer output_gt33_np1
+      integer analysis_gt33_np1
+      integer output_gt33_rk1
+      integer analysis_gt33_rk1
+      integer output_A11
+      integer analysis_A11
+      integer output_A11_np1
+      integer analysis_A11_np1
+      integer output_A11_rk1
+      integer analysis_A11_rk1
+      integer output_A12
+      integer analysis_A12
+      integer output_A12_np1
+      integer analysis_A12_np1
+      integer output_A12_rk1
+      integer analysis_A12_rk1
+      integer output_A13
+      integer analysis_A13
+      integer output_A13_np1
+      integer analysis_A13_np1
+      integer output_A13_rk1
+      integer analysis_A13_rk1
+      integer output_A22
+      integer analysis_A22
+      integer output_A22_np1
+      integer analysis_A22_np1
+      integer output_A22_rk1
+      integer analysis_A22_rk1
+      integer output_A23
+      integer analysis_A23
+      integer output_A23_np1
+      integer analysis_A23_np1
+      integer output_A23_rk1
+      integer analysis_A23_rk1
+      integer output_A33
+      integer analysis_A33
+      integer output_A33_np1
+      integer analysis_A33_np1
+      integer output_A33_rk1
+      integer analysis_A33_rk1
+      integer output_chi
+      integer analysis_chi
+      integer output_chi_np1
+      integer analysis_chi_np1
+      integer output_chi_rk1
+      integer analysis_chi_rk1
+      integer output_trK
+      integer analysis_trK
+      integer output_trK_np1
+      integer analysis_trK_np1
+      integer output_trK_rk1
+      integer analysis_trK_rk1
+      integer output_Gam1
+      integer analysis_Gam1
+      integer output_Gam1_np1
+      integer analysis_Gam1_np1
+      integer output_Gam1_rk1
+      integer analysis_Gam1_rk1
+      integer output_Gam2
+      integer analysis_Gam2
+      integer output_Gam2_np1
+      integer analysis_Gam2_np1
+      integer output_Gam2_rk1
+      integer analysis_Gam2_rk1
+      integer output_Gam3
+      integer analysis_Gam3
+      integer output_Gam3_np1
+      integer analysis_Gam3_np1
+      integer output_Gam3_rk1
+      integer analysis_Gam3_rk1
+      integer output_alpha
+      integer analysis_alpha
+      integer output_alpha_np1
+      integer analysis_alpha_np1
+      integer output_alpha_rk1
+      integer analysis_alpha_rk1
+      integer output_shift1
+      integer analysis_shift1
+      integer output_shift1_np1
+      integer analysis_shift1_np1
+      integer output_shift1_rk1
+      integer analysis_shift1_rk1
+      integer output_shift2
+      integer analysis_shift2
+      integer output_shift2_np1
+      integer analysis_shift2_np1
+      integer output_shift2_rk1
+      integer analysis_shift2_rk1
+      integer output_shift3
+      integer analysis_shift3
+      integer output_shift3_np1
+      integer analysis_shift3_np1
+      integer output_shift3_rk1
+      integer analysis_shift3_rk1
+      integer output_gb1
+      integer analysis_gb1
+      integer output_gb1_np1
+      integer analysis_gb1_np1
+      integer output_gb1_rk1
+      integer analysis_gb1_rk1
+      integer output_gb2
+      integer analysis_gb2
+      integer output_gb2_np1
+      integer analysis_gb2_np1
+      integer output_gb2_rk1
+      integer analysis_gb2_rk1
+      integer output_gb3
+      integer analysis_gb3
+      integer output_gb3_np1
+      integer analysis_gb3_np1
+      integer output_gb3_rk1
+      integer analysis_gb3_rk1
+      integer output_Ex
+      integer analysis_Ex
+      integer output_Ex_np1
+      integer analysis_Ex_np1
+      integer output_Ex_rk1
+      integer analysis_Ex_rk1
+      integer output_Ey
+      integer analysis_Ey
+      integer output_Ey_np1
+      integer analysis_Ey_np1
+      integer output_Ey_rk1
+      integer analysis_Ey_rk1
+      integer output_Ez
+      integer analysis_Ez
+      integer output_Ez_np1
+      integer analysis_Ez_np1
+      integer output_Ez_rk1
+      integer analysis_Ez_rk1
+      integer output_Bx
+      integer analysis_Bx
+      integer output_Bx_np1
+      integer analysis_Bx_np1
+      integer output_Bx_rk1
+      integer analysis_Bx_rk1
+      integer output_By
+      integer analysis_By
+      integer output_By_np1
+      integer analysis_By_np1
+      integer output_By_rk1
+      integer analysis_By_rk1
+      integer output_Bz
+      integer analysis_Bz
+      integer output_Bz_np1
+      integer analysis_Bz_np1
+      integer output_Bz_rk1
+      integer analysis_Bz_rk1
+      integer output_Phi_em
+      integer analysis_Phi_em
+      integer output_Phi_em_np1
+      integer analysis_Phi_em_np1
+      integer output_Phi_em_rk1
+      integer analysis_Phi_em_rk1
+      integer output_Psi_em
+      integer analysis_Psi_em
+      integer output_Psi_em_np1
+      integer analysis_Psi_em_np1
+      integer output_Psi_em_rk1
+      integer analysis_Psi_em_rk1
+      integer output_phiR
+      integer analysis_phiR
+      integer output_phiR_np1
+      integer analysis_phiR_np1
+      integer output_phiR_rk1
+      integer analysis_phiR_rk1
+      integer output_phiI
+      integer analysis_phiI
+      integer output_phiI_np1
+      integer analysis_phiI_np1
+      integer output_phiI_rk1
+      integer analysis_phiI_rk1
+      integer output_piR
+      integer analysis_piR
+      integer output_piR_np1
+      integer analysis_piR_np1
+      integer output_piR_rk1
+      integer analysis_piR_rk1
+      integer output_piI
+      integer analysis_piI
+      integer output_piI_np1
+      integer analysis_piI_np1
+      integer output_piI_rk1
+      integer analysis_piI_rk1
+      integer output_g11
+      integer analysis_g11
+      integer output_g12
+      integer analysis_g12
+      integer output_g13
+      integer analysis_g13
+      integer output_g22
+      integer analysis_g22
+      integer output_g23
+      integer analysis_g23
+      integer output_g33
+      integer analysis_g33
+      integer output_sdetg
+      integer analysis_sdetg
+      integer output_rad_exp
+      integer analysis_rad_exp
+      integer output_psi4R
+      integer analysis_psi4R
+      integer output_psi4I
+      integer analysis_psi4I
+      integer output_massADM
+      integer analysis_massADM
+      integer output_massBONDI
+      integer analysis_massBONDI
+      integer output_curvature
+      integer analysis_curvature
+      integer output_phi2R
+      integer analysis_phi2R
+      integer output_phi2I
+      integer analysis_phi2I
+      integer output_phi0R
+      integer analysis_phi0R
+      integer output_phi0I
+      integer analysis_phi0I
+      integer output_vbr_omega
+      integer analysis_vbr_omega
+      integer output_vbth_omega
+      integer analysis_vbth_omega
+      integer output_charge
+      integer analysis_charge
+      integer output_J1
+      integer analysis_J1
+      integer output_J2
+      integer analysis_J2
+      integer output_J3
+      integer analysis_J3
+      integer output_poyntingx_dens
+      integer analysis_poyntingx_dens
+      integer output_poyntingy_dens
+      integer analysis_poyntingy_dens
+      integer output_poyntingz_dens
+      integer analysis_poyntingz_dens
+      integer output_uell
+      integer analysis_uell
+      integer output_uell_st1
+      integer analysis_uell_st1
+      integer output_uell_st2
+      integer analysis_uell_st2
+      integer output_uell_rhs
+      integer analysis_uell_rhs
+      integer output_ham
+      integer analysis_ham
+      integer output_momx
+      integer analysis_momx
+      integer output_momy
+      integer analysis_momy
+      integer output_momz
+      integer analysis_momz
+      integer output_div_B
+      integer analysis_div_B
+      integer output_div_E
+      integer analysis_div_E
+      integer output_tr_A
+      integer analysis_tr_A
+      integer output_detgt_m1
+      integer analysis_detgt_m1
+      integer output_gamtx_con
+      integer analysis_gamtx_con
+      integer output_gamty_con
+      integer analysis_gamty_con
+      integer output_gamtz_con
+      integer analysis_gamtz_con
+      integer output_calgamtx_con
+      integer analysis_calgamtx_con
+      integer output_calgamty_con
+      integer analysis_calgamty_con
+      integer output_calgamtz_con
+      integer analysis_calgamtz_con
+      integer output_cctk_x
+      integer analysis_cctk_x
+      integer output_cctk_y
+      integer analysis_cctk_y
+      integer output_cctk_z
+      integer analysis_cctk_z
+      integer output_r
+      integer analysis_r
+      integer output_xphys
+      integer analysis_xphys
+      integer output_yphys
+      integer analysis_yphys
+      integer output_zphys
+      integer analysis_zphys
+      integer output_mask
+      integer analysis_mask
+      integer output_wdiss
+      integer analysis_wdiss
+      integer output_chr
+      integer analysis_chr
+      integer output_error
+      integer analysis_error
+      integer output_flag
+      integer analysis_flag
+      integer output_level_0
+      integer output_level_1
+      integer output_level_2
+      integer output_level_3
+      integer output_level_4
+      integer output_level_5
+      integer output_level_6
+      integer output_level_7
+      integer output_level_8
+      integer output_level_9
+      integer output_level_10
+      integer output_level_11
+      integer output_level_12
+      integer output_level_13
+      integer output_level_14
+      integer output_level_15
+      integer output_level_16
+      integer output_level_17
+      integer output_level_18
+      integer output_level_19
+      integer output_level_20
+      integer output_level_21
+      integer output_level_22
+      integer output_level_23
+      integer output_level_24
+      integer output_level_25
+      real(kind=8) refine_level_0
+      real(kind=8) refine_level_1
+      real(kind=8) refine_level_2
+      real(kind=8) refine_level_3
+      real(kind=8) refine_level_4
+      real(kind=8) refine_level_5
+      real(kind=8) refine_level_6
+      real(kind=8) refine_level_7
+      real(kind=8) refine_level_8
+      real(kind=8) refine_level_9
+      real(kind=8) refine_level_10
+      real(kind=8) refine_level_11
+      real(kind=8) refine_level_12
+      real(kind=8) refine_level_13
+      real(kind=8) refine_level_14
+      real(kind=8) refine_level_15
+      real(kind=8) refine_level_16
+      real(kind=8) refine_level_17
+      real(kind=8) refine_level_18
+      real(kind=8) refine_level_19
+      real(kind=8) refine_level_20
+      real(kind=8) refine_level_21
+      real(kind=8) refine_level_22
+      real(kind=8) refine_level_23
+      real(kind=8) refine_level_24
+      real(kind=8) refine_level_25
+      integer asf_out_rap4
+      integer asf_out_iap4
+      integer asf_out_rap2
+      integer asf_out_iap2
+      integer asf_out_rap0
+      integer asf_out_iap0
+      integer asf_out_chr_tmp
+      integer bsf_out_rbp4
+      integer bsf_out_ibp4
+      integer bsf_out_rbp2
+      integer bsf_out_ibp2
+      integer bsf_out_rbp0
+      integer bsf_out_ibp0
+      integer bsf_out_chr_tmp
+      integer csf_out_rcp4
+      integer csf_out_icp4
+      integer csf_out_rcp2
+      integer csf_out_icp2
+      integer csf_out_rcp0
+      integer csf_out_icp0
+      integer csf_out_chr_tmp
+      err = 0
+      fileunum = 8
+      open(unit=fileunum,file=pfile,status='old',iostat=rc)
+      if(rc .ne. 0) then
+        write(*,*) 'params_read: Unable to open parameter file: ',pfile
+        call my_exit('Unable to open file.')
+      end if
+      rc = get_int_param(pfile,'gauge_type',gauge_type,1)
+      if (rc.ne.1) then
+        gauge_type = 1
+      end if
+      if (gauge_type .lt. 0) then
+        write(0,*)'Error: gauge_type too small. Min value = 0',gauge_typ
+     &e
+        err = err + 1
+      end if
+      if (gauge_type .gt. 5) then
+        write(0,*)'Error: gauge_type too big. Max value = 5',gauge_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'idtype',idtype,1)
+      if (rc.ne.1) then
+        idtype = 0
+      end if
+      if (idtype .lt. -100) then
+        write(0,*)'Error: idtype too small. Min value = -100',idtype
+        err = err + 1
+      end if
+      if (idtype .gt. 200) then
+        write(0,*)'Error: idtype too big. Max value = 200',idtype
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'evolve_geometry',evolve_geometry,1)
+      if (rc.ne.1) then
+        evolve_geometry = 1
+      end if
+      if (evolve_geometry .lt. 0) then
+        write(0,*)'Error: evolve_geometry too small. Min value = 0',evol
+     &ve_geometry
+        err = err + 1
+      end if
+      if (evolve_geometry .gt. 1) then
+        write(0,*)'Error: evolve_geometry too big. Max value = 1',evolve
+     &_geometry
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'evolve_em_field',evolve_em_field,1)
+      if (rc.ne.1) then
+        evolve_em_field = 1
+      end if
+      if (evolve_em_field .lt. 0) then
+        write(0,*)'Error: evolve_em_field too small. Min value = 0',evol
+     &ve_em_field
+        err = err + 1
+      end if
+      if (evolve_em_field .gt. 1) then
+        write(0,*)'Error: evolve_em_field too big. Max value = 1',evolve
+     &_em_field
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'evolve_scalar_field',evolve_scalar_field
+     &,1)
+      if (rc.ne.1) then
+        evolve_scalar_field = 1
+      end if
+      if (evolve_scalar_field .lt. 0) then
+        write(0,*)'Error: evolve_scalar_field too small. Min value = 0',
+     &evolve_scalar_field
+        err = err + 1
+      end if
+      if (evolve_scalar_field .gt. 1) then
+        write(0,*)'Error: evolve_scalar_field too big. Max value = 1',ev
+     &olve_scalar_field
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'temperature_type',temperature_type,1)
+      if (rc.ne.1) then
+        temperature_type = 0
+      end if
+      if (temperature_type .lt. 0) then
+        write(0,*)'Error: temperature_type too small. Min value = 0',tem
+     &perature_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_alp',read_file_alp,1)
+      if (rc.ne.1) then
+        read_file_alp = 0
+      end if
+      if (read_file_alp .lt. 0) then
+        write(0,*)'Error: read_file_alp too small. Min value = 0',read_f
+     &ile_alp
+        err = err + 1
+      end if
+      if (read_file_alp .gt. 1) then
+        write(0,*)'Error: read_file_alp too big. Max value = 1',read_fil
+     &e_alp
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_b',read_file_b,1)
+      if (rc.ne.1) then
+        read_file_b = 0
+      end if
+      if (read_file_b .lt. 0) then
+        write(0,*)'Error: read_file_b too small. Min value = 0',read_fil
+     &e_b
+        err = err + 1
+      end if
+      if (read_file_b .gt. 1) then
+        write(0,*)'Error: read_file_b too big. Max value = 1',read_file_
+     &b
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_g',read_file_g,1)
+      if (rc.ne.1) then
+        read_file_g = 0
+      end if
+      if (read_file_g .lt. 0) then
+        write(0,*)'Error: read_file_g too small. Min value = 0',read_fil
+     &e_g
+        err = err + 1
+      end if
+      if (read_file_g .gt. 1) then
+        write(0,*)'Error: read_file_g too big. Max value = 1',read_file_
+     &g
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_k',read_file_k,1)
+      if (rc.ne.1) then
+        read_file_k = 0
+      end if
+      if (read_file_k .lt. 0) then
+        write(0,*)'Error: read_file_k too small. Min value = 0',read_fil
+     &e_k
+        err = err + 1
+      end if
+      if (read_file_k .gt. 1) then
+        write(0,*)'Error: read_file_k too big. Max value = 1',read_file_
+     &k
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_psi',read_file_psi,1)
+      if (rc.ne.1) then
+        read_file_psi = 0
+      end if
+      if (read_file_psi .lt. 0) then
+        write(0,*)'Error: read_file_psi too small. Min value = 0',read_f
+     &ile_psi
+        err = err + 1
+      end if
+      if (read_file_psi .gt. 1) then
+        write(0,*)'Error: read_file_psi too big. Max value = 1',read_fil
+     &e_psi
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_phir',read_file_phir,1)
+      if (rc.ne.1) then
+        read_file_phir = 0
+      end if
+      if (read_file_phir .lt. 0) then
+        write(0,*)'Error: read_file_phir too small. Min value = 0',read_
+     &file_phir
+        err = err + 1
+      end if
+      if (read_file_phir .gt. 1) then
+        write(0,*)'Error: read_file_phir too big. Max value = 1',read_fi
+     &le_phir
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_phic',read_file_phic,1)
+      if (rc.ne.1) then
+        read_file_phic = 0
+      end if
+      if (read_file_phic .lt. 0) then
+        write(0,*)'Error: read_file_phic too small. Min value = 0',read_
+     &file_phic
+        err = err + 1
+      end if
+      if (read_file_phic .gt. 1) then
+        write(0,*)'Error: read_file_phic too big. Max value = 1',read_fi
+     &le_phic
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_file_phim',read_file_phim,1)
+      if (rc.ne.1) then
+        read_file_phim = 0
+      end if
+      if (read_file_phim .lt. 0) then
+        write(0,*)'Error: read_file_phim too small. Min value = 0',read_
+     &file_phim
+        err = err + 1
+      end if
+      if (read_file_phim .gt. 1) then
+        write(0,*)'Error: read_file_phim too big. Max value = 1',read_fi
+     &le_phim
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'read_data_level',read_data_level,1)
+      if (rc.ne.1) then
+        read_data_level = 1
+      end if
+      if (read_data_level .lt. 1) then
+        write(0,*)'Error: read_data_level too small. Min value = 1',read
+     &_data_level
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'id_d_diff_order',id_d_diff_order,1)
+      if (rc.ne.1) then
+        id_d_diff_order = 2
+      end if
+      if (id_d_diff_order .lt. 2) then
+        write(0,*)'Error: id_d_diff_order too small. Min value = 2',id_d
+     &_diff_order
+        err = err + 1
+      end if
+      if (id_d_diff_order .gt. 4) then
+        write(0,*)'Error: id_d_diff_order too big. Max value = 4',id_d_d
+     &iff_order
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'mr_amp',mr_amp,1)
+      if (rc.ne.1) then
+        mr_amp = 0.0
+      end if
+      rc = get_real_param(pfile,'mr_shift',mr_shift,1)
+      if (rc.ne.1) then
+        mr_shift = 0.0
+      end if
+      rc = get_real_param(pfile,'bamp',bamp,1)
+      if (rc.ne.1) then
+        bamp = 0.0
+      end if
+      rc = get_real_param(pfile,'e1_amp',e1_amp,1)
+      if (rc.ne.1) then
+        e1_amp = 0.0
+      end if
+      rc = get_real_param(pfile,'e2_amp',e2_amp,1)
+      if (rc.ne.1) then
+        e2_amp = 0.0
+      end if
+      rc = get_int_param(pfile,'initial_b',initial_b,1)
+      if (rc.ne.1) then
+        initial_b = 1
+      end if
+      if (initial_b .lt. 0) then
+        write(0,*)'Error: initial_b too small. Min value = 0',initial_b
+        err = err + 1
+      end if
+      if (initial_b .gt. 100) then
+        write(0,*)'Error: initial_b too big. Max value = 100',initial_b
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'sf_amp',sf_amp,1)
+      if (rc.ne.1) then
+        sf_amp = 0.0
+      end if
+      rc = get_int_param(pfile,'initial_sf',initial_sf,1)
+      if (rc.ne.1) then
+        initial_sf = 1
+      end if
+      if (initial_sf .lt. 0) then
+        write(0,*)'Error: initial_sf too small. Min value = 0',initial_s
+     &f
+        err = err + 1
+      end if
+      if (initial_sf .gt. 100) then
+        write(0,*)'Error: initial_sf too big. Max value = 100',initial_s
+     &f
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'sf_amp_axn',sf_amp_axn,1)
+      if (rc.ne.1) then
+        sf_amp_axn = 0.0
+      end if
+      rc = get_real_param(pfile,'dil_mass',dil_mass,1)
+      if (rc.ne.1) then
+        dil_mass = 0.0
+      end if
+      rc = get_real_param(pfile,'dil_alpha',dil_alpha,1)
+      if (rc.ne.1) then
+        dil_alpha = 1.0
+      end if
+      rc = get_real_param(pfile,'dil_infty',dil_infty,1)
+      if (rc.ne.1) then
+        dil_infty = 0.0
+      end if
+      rc = get_int_param(pfile,'emd_bh_type',emd_bh_type,1)
+      if (rc.ne.1) then
+        emd_bh_type = 1
+      end if
+      if (emd_bh_type .lt. 0) then
+        write(0,*)'Error: emd_bh_type too small. Min value = 0',emd_bh_t
+     &ype
+        err = err + 1
+      end if
+      if (emd_bh_type .gt. 1) then
+        write(0,*)'Error: emd_bh_type too big. Max value = 1',emd_bh_typ
+     &e
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'axn_mass',axn_mass,1)
+      if (rc.ne.1) then
+        axn_mass = 0.0
+      end if
+      rc = get_real_param(pfile,'axn_alpha',axn_alpha,1)
+      if (rc.ne.1) then
+        axn_alpha = 0.0
+      end if
+      rc = get_real_param(pfile,'axn_infty',axn_infty,1)
+      if (rc.ne.1) then
+        axn_infty = 0.0
+      end if
+      rc = get_real_param(pfile,'sen_alpha',sen_alpha,1)
+      if (rc.ne.1) then
+        sen_alpha = 0.0
+      end if
+      rc = get_real_param(pfile,'a_ang_par',a_ang_par,1)
+      if (rc.ne.1) then
+        a_ang_par = 0.0
+      end if
+      rc = get_real_param(pfile,'q_elec',q_elec,1)
+      if (rc.ne.1) then
+        q_elec = 0.0
+      end if
+      rc = get_real_param(pfile,'p_mag',p_mag,1)
+      if (rc.ne.1) then
+        p_mag = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_x0',bs_1_x0,1)
+      if (rc.ne.1) then
+        bs_1_x0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_y0',bs_1_y0,1)
+      if (rc.ne.1) then
+        bs_1_y0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_z0',bs_1_z0,1)
+      if (rc.ne.1) then
+        bs_1_z0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_vx',bs_1_vx,1)
+      if (rc.ne.1) then
+        bs_1_vx = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_vy',bs_1_vy,1)
+      if (rc.ne.1) then
+        bs_1_vy = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_vz',bs_1_vz,1)
+      if (rc.ne.1) then
+        bs_1_vz = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_1_omega',bs_1_omega,1)
+      if (rc.ne.1) then
+        bs_1_omega = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_x0',bs_2_x0,1)
+      if (rc.ne.1) then
+        bs_2_x0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_y0',bs_2_y0,1)
+      if (rc.ne.1) then
+        bs_2_y0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_z0',bs_2_z0,1)
+      if (rc.ne.1) then
+        bs_2_z0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_vx',bs_2_vx,1)
+      if (rc.ne.1) then
+        bs_2_vx = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_vy',bs_2_vy,1)
+      if (rc.ne.1) then
+        bs_2_vy = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_vz',bs_2_vz,1)
+      if (rc.ne.1) then
+        bs_2_vz = 0.0
+      end if
+      rc = get_real_param(pfile,'bs_2_omega',bs_2_omega,1)
+      if (rc.ne.1) then
+        bs_2_omega = 0.0
+      end if
+      rc = get_int_param(pfile,'bh_n',bh_n,1)
+      if (rc.ne.1) then
+        bh_n = 1
+      end if
+      if (bh_n .lt. 0) then
+        write(0,*)'Error: bh_n too small. Min value = 0',bh_n
+        err = err + 1
+      end if
+      if (bh_n .gt. 100) then
+        write(0,*)'Error: bh_n too big. Max value = 100',bh_n
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bh_type',bh_type,1)
+      if (rc.ne.1) then
+        bh_type = 1
+      end if
+      if (bh_type .lt. 0) then
+        write(0,*)'Error: bh_type too small. Min value = 0',bh_type
+        err = err + 1
+      end if
+      if (bh_type .gt. 100) then
+        write(0,*)'Error: bh_type too big. Max value = 100',bh_type
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh_1_mass',bh_1_mass,1)
+      if (rc.ne.1) then
+        bh_1_mass = 1.0
+      end if
+      if (bh_1_mass .lt. 0.) then
+        write(0,*)'Error: bh_1_mass too small. Min value = 0.',bh_1_mass
+     &
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh_2_mass',bh_2_mass,1)
+      if (rc.ne.1) then
+        bh_2_mass = 0.0
+      end if
+      if (bh_2_mass .lt. 0.) then
+        write(0,*)'Error: bh_2_mass too small. Min value = 0.',bh_2_mass
+     &
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh_3_mass',bh_3_mass,1)
+      if (rc.ne.1) then
+        bh_3_mass = 0.0
+      end if
+      if (bh_3_mass .lt. 0.) then
+        write(0,*)'Error: bh_3_mass too small. Min value = 0.',bh_3_mass
+     &
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh_4_mass',bh_4_mass,1)
+      if (rc.ne.1) then
+        bh_4_mass = 0.0
+      end if
+      if (bh_4_mass .lt. 0.) then
+        write(0,*)'Error: bh_4_mass too small. Min value = 0.',bh_4_mass
+     &
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh_1_x',bh_1_x,1)
+      if (rc.ne.1) then
+        bh_1_x = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_y',bh_1_y,1)
+      if (rc.ne.1) then
+        bh_1_y = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_z',bh_1_z,1)
+      if (rc.ne.1) then
+        bh_1_z = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_x',bh_2_x,1)
+      if (rc.ne.1) then
+        bh_2_x = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_y',bh_2_y,1)
+      if (rc.ne.1) then
+        bh_2_y = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_z',bh_2_z,1)
+      if (rc.ne.1) then
+        bh_2_z = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_x',bh_3_x,1)
+      if (rc.ne.1) then
+        bh_3_x = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_y',bh_3_y,1)
+      if (rc.ne.1) then
+        bh_3_y = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_z',bh_3_z,1)
+      if (rc.ne.1) then
+        bh_3_z = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_x',bh_4_x,1)
+      if (rc.ne.1) then
+        bh_4_x = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_y',bh_4_y,1)
+      if (rc.ne.1) then
+        bh_4_y = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_z',bh_4_z,1)
+      if (rc.ne.1) then
+        bh_4_z = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_px',bh_1_px,1)
+      if (rc.ne.1) then
+        bh_1_px = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_py',bh_1_py,1)
+      if (rc.ne.1) then
+        bh_1_py = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_pz',bh_1_pz,1)
+      if (rc.ne.1) then
+        bh_1_pz = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_px',bh_2_px,1)
+      if (rc.ne.1) then
+        bh_2_px = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_py',bh_2_py,1)
+      if (rc.ne.1) then
+        bh_2_py = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_pz',bh_2_pz,1)
+      if (rc.ne.1) then
+        bh_2_pz = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_px',bh_3_px,1)
+      if (rc.ne.1) then
+        bh_3_px = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_py',bh_3_py,1)
+      if (rc.ne.1) then
+        bh_3_py = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_pz',bh_3_pz,1)
+      if (rc.ne.1) then
+        bh_3_pz = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_px',bh_4_px,1)
+      if (rc.ne.1) then
+        bh_4_px = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_py',bh_4_py,1)
+      if (rc.ne.1) then
+        bh_4_py = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_pz',bh_4_pz,1)
+      if (rc.ne.1) then
+        bh_4_pz = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_spin',bh_1_spin,1)
+      if (rc.ne.1) then
+        bh_1_spin = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_sth',bh_1_sth,1)
+      if (rc.ne.1) then
+        bh_1_sth = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_1_sphi',bh_1_sphi,1)
+      if (rc.ne.1) then
+        bh_1_sphi = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_spin',bh_2_spin,1)
+      if (rc.ne.1) then
+        bh_2_spin = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_sth',bh_2_sth,1)
+      if (rc.ne.1) then
+        bh_2_sth = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_2_sphi',bh_2_sphi,1)
+      if (rc.ne.1) then
+        bh_2_sphi = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_spin',bh_3_spin,1)
+      if (rc.ne.1) then
+        bh_3_spin = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_sth',bh_3_sth,1)
+      if (rc.ne.1) then
+        bh_3_sth = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_3_sphi',bh_3_sphi,1)
+      if (rc.ne.1) then
+        bh_3_sphi = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_spin',bh_4_spin,1)
+      if (rc.ne.1) then
+        bh_4_spin = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_sth',bh_4_sth,1)
+      if (rc.ne.1) then
+        bh_4_sth = 0.0
+      end if
+      rc = get_real_param(pfile,'bh_4_sphi',bh_4_sphi,1)
+      if (rc.ne.1) then
+        bh_4_sphi = 0.0
+      end if
+      rc = get_real_param(pfile,'outer_boundary',outer_boundary,1)
+      if (rc.ne.1) then
+        outer_boundary = 100.0
+      end if
+      if (outer_boundary .lt. 0.1) then
+        write(0,*)'Error: outer_boundary too small. Min value = 0.1',out
+     &er_boundary
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'gr_bound_cond',gr_bound_cond,1)
+      if (rc.ne.1) then
+        gr_bound_cond = 100.0
+      end if
+      if (gr_bound_cond .lt. 0.1) then
+        write(0,*)'Error: gr_bound_cond too small. Min value = 0.1',gr_b
+     &ound_cond
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'fluid_bound_cond',fluid_bound_cond,1)
+      if (rc.ne.1) then
+        fluid_bound_cond = 100.0
+      end if
+      if (fluid_bound_cond .lt. 0.1) then
+        write(0,*)'Error: fluid_bound_cond too small. Min value = 0.1',f
+     &luid_bound_cond
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bssn_lambda_1',bssn_lambda_1,1)
+      if (rc.ne.1) then
+        bssn_lambda_1 = 1
+      end if
+      rc = get_int_param(pfile,'bssn_lambda_2',bssn_lambda_2,1)
+      if (rc.ne.1) then
+        bssn_lambda_2 = 0
+      end if
+      rc = get_int_param(pfile,'bssn_lambda_3',bssn_lambda_3,1)
+      if (rc.ne.1) then
+        bssn_lambda_3 = 0
+      end if
+      rc = get_int_param(pfile,'bssn_lambda_4',bssn_lambda_4,1)
+      if (rc.ne.1) then
+        bssn_lambda_4 = 0
+      end if
+      rc = get_real_param(pfile,'bssn_lambda_f0',bssn_lambda_f0,1)
+      if (rc.ne.1) then
+        bssn_lambda_f0 = 1.0
+      end if
+      rc = get_real_param(pfile,'bssn_lambda_f1',bssn_lambda_f1,1)
+      if (rc.ne.1) then
+        bssn_lambda_f1 = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_lambda_f2',bssn_lambda_f2,1)
+      if (rc.ne.1) then
+        bssn_lambda_f2 = 1.0
+      end if
+      rc = get_real_param(pfile,'bssn_lambda_f3',bssn_lambda_f3,1)
+      if (rc.ne.1) then
+        bssn_lambda_f3 = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_eta_damping',bssn_eta_damping,1)
+      if (rc.ne.1) then
+        bssn_eta_damping = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_R_0',bssn_R_0,1)
+      if (rc.ne.1) then
+        bssn_R_0 = 10.0
+      end if
+      if (bssn_R_0 .lt. 1.e-4) then
+        write(0,*)'Error: bssn_R_0 too small. Min value = 1.e-4',bssn_R_
+     &0
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bssn_eta_damping_exp',bssn_eta_damping_
+     &exp,1)
+      if (rc.ne.1) then
+        bssn_eta_damping_exp = 2.0
+      end if
+      rc = get_real_param(pfile,'bssn_eta',bssn_eta,1)
+      if (rc.ne.1) then
+        bssn_eta = 1.0
+      end if
+      rc = get_real_param(pfile,'bssn_trk0',bssn_trk0,1)
+      if (rc.ne.1) then
+        bssn_trk0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_kappa1',bssn_kappa1,1)
+      if (rc.ne.1) then
+        bssn_kappa1 = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_kappa2',bssn_kappa2,1)
+      if (rc.ne.1) then
+        bssn_kappa2 = 0.0
+      end if
+      rc = get_real_param(pfile,'bssn_chi_floor',bssn_chi_floor,1)
+      if (rc.ne.1) then
+        bssn_chi_floor = 0.0001
+      end if
+      rc = get_int_param(pfile,'bssn_adv_derivs',bssn_adv_derivs,1)
+      if (rc.ne.1) then
+        bssn_adv_derivs = 1
+      end if
+      if (bssn_adv_derivs .lt. 0) then
+        write(0,*)'Error: bssn_adv_derivs too small. Min value = 0',bssn
+     &_adv_derivs
+        err = err + 1
+      end if
+      if (bssn_adv_derivs .gt. 1) then
+        write(0,*)'Error: bssn_adv_derivs too big. Max value = 1',bssn_a
+     &dv_derivs
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'geometry_type',geometry_type,1)
+      if (rc.ne.1) then
+        geometry_type = 0
+      end if
+      if (geometry_type .lt. 0) then
+        write(0,*)'Error: geometry_type too small. Min value = 0',geomet
+     &ry_type
+        err = err + 1
+      end if
+      if (geometry_type .gt. 50) then
+        write(0,*)'Error: geometry_type too big. Max value = 50',geometr
+     &y_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'gr_idtype',gr_idtype,1)
+      if (rc.ne.1) then
+        gr_idtype = 1
+      end if
+      if (gr_idtype .lt. -17) then
+        write(0,*)'Error: gr_idtype too small. Min value = -17',gr_idtyp
+     &e
+        err = err + 1
+      end if
+      if (gr_idtype .gt. 102) then
+        write(0,*)'Error: gr_idtype too big. Max value = 102',gr_idtype
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'mhd_idtype',mhd_idtype,1)
+      if (rc.ne.1) then
+        mhd_idtype = 1
+      end if
+      if (mhd_idtype .lt. 1) then
+        write(0,*)'Error: mhd_idtype too small. Min value = 1',mhd_idtyp
+     &e
+        err = err + 1
+      end if
+      if (mhd_idtype .gt. 30) then
+        write(0,*)'Error: mhd_idtype too big. Max value = 30',mhd_idtype
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'detgwarn',detgwarn,1)
+      if (rc.ne.1) then
+        detgwarn = 1
+      end if
+      if (detgwarn .lt. 0) then
+        write(0,*)'Error: detgwarn too small. Min value = 0',detgwarn
+        err = err + 1
+      end if
+      if (detgwarn .gt. 1) then
+        write(0,*)'Error: detgwarn too big. Max value = 1',detgwarn
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'force_free',force_free,1)
+      if (rc.ne.1) then
+        force_free = 1
+      end if
+      if (force_free .lt. 0) then
+        write(0,*)'Error: force_free too small. Min value = 0',force_fre
+     &e
+        err = err + 1
+      end if
+      if (force_free .gt. 1) then
+        write(0,*)'Error: force_free too big. Max value = 1',force_free
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'q1',q1,1)
+      if (rc.ne.1) then
+        q1 = 0.141
+      end if
+      if (q1 .lt. 0) then
+        write(0,*)'Error: q1 too small. Min value = 0',q1
+        err = err + 1
+      end if
+      if (q1 .gt. 1) then
+        write(0,*)'Error: q1 too big. Max value = 1',q1
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'vinj',vinj,1)
+      if (rc.ne.1) then
+        vinj = 0.000001
+      end if
+      if (vinj .lt. 0) then
+        write(0,*)'Error: vinj too small. Min value = 0',vinj
+        err = err + 1
+      end if
+      if (vinj .gt. 1) then
+        write(0,*)'Error: vinj too big. Max value = 1',vinj
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'Kappajan',Kappajan,1)
+      if (rc.ne.1) then
+        Kappajan = 1000.0
+      end if
+      if (Kappajan .lt. 0) then
+        write(0,*)'Error: Kappajan too small. Min value = 0',Kappajan
+        err = err + 1
+      end if
+      if (Kappajan .gt. 100000) then
+        write(0,*)'Error: Kappajan too big. Max value = 100000',Kappajan
+     &
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'djump',djump,1)
+      if (rc.ne.1) then
+        djump = 100.0
+      end if
+      if (djump .lt. 0) then
+        write(0,*)'Error: djump too small. Min value = 0',djump
+        err = err + 1
+      end if
+      if (djump .gt. 100000) then
+        write(0,*)'Error: djump too big. Max value = 100000',djump
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'rpeak',rpeak,1)
+      if (rc.ne.1) then
+        rpeak = 13.0
+      end if
+      if (rpeak .lt. 0) then
+        write(0,*)'Error: rpeak too small. Min value = 0',rpeak
+        err = err + 1
+      end if
+      if (rpeak .gt. 1000) then
+        write(0,*)'Error: rpeak too big. Max value = 1000',rpeak
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'rout',rout,1)
+      if (rc.ne.1) then
+        rout = 50.0
+      end if
+      if (rout .lt. 0) then
+        write(0,*)'Error: rout too small. Min value = 0',rout
+        err = err + 1
+      end if
+      if (rout .gt. 1000) then
+        write(0,*)'Error: rout too big. Max value = 1000',rout
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'stab',stab,1)
+      if (rc.ne.1) then
+        stab = 1.0
+      end if
+      if (stab .lt. 0) then
+        write(0,*)'Error: stab too small. Min value = 0',stab
+        err = err + 1
+      end if
+      if (stab .gt. 1) then
+        write(0,*)'Error: stab too big. Max value = 1',stab
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'rho_real',rho_real,1)
+      if (rc.ne.1) then
+        rho_real = 1000.0
+      end if
+      if (rho_real .lt. 0) then
+        write(0,*)'Error: rho_real too small. Min value = 0',rho_real
+        err = err + 1
+      end if
+      if (rho_real .gt. 1.e8) then
+        write(0,*)'Error: rho_real too big. Max value = 1.e8',rho_real
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'magcase',magcase,1)
+      if (rc.ne.1) then
+        magcase = 0.01
+      end if
+      if (magcase .lt. 0) then
+        write(0,*)'Error: magcase too small. Min value = 0',magcase
+        err = err + 1
+      end if
+      if (magcase .gt. 10) then
+        write(0,*)'Error: magcase too big. Max value = 10',magcase
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'kappa_max',kappa_max,1)
+      if (rc.ne.1) then
+        kappa_max = 0.0
+      end if
+      if (kappa_max .lt. 0) then
+        write(0,*)'Error: kappa_max too small. Min value = 0',kappa_max
+        err = err + 1
+      end if
+      if (kappa_max .gt. 1.e9) then
+        write(0,*)'Error: kappa_max too big. Max value = 1.e9',kappa_max
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'calcDivB',calcDivB,1)
+      if (rc.ne.1) then
+        calcDivB = 0
+      end if
+      if (calcDivB .lt. 0) then
+        write(0,*)'Error: calcDivB too small. Min value = 0',calcDivB
+        err = err + 1
+      end if
+      if (calcDivB .gt. 1) then
+        write(0,*)'Error: calcDivB too big. Max value = 1',calcDivB
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'constraints_analysis',constraints_analys
+     &is,1)
+      if (rc.ne.1) then
+        constraints_analysis = 0
+      end if
+      if (constraints_analysis .lt. 0) then
+        write(0,*)'Error: constraints_analysis too small. Min value = 0'
+     &,constraints_analysis
+        err = err + 1
+      end if
+      if (constraints_analysis .gt. 1) then
+        write(0,*)'Error: constraints_analysis too big. Max value = 1',c
+     &onstraints_analysis
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'G_scale_factor',G_scale_factor,1)
+      if (rc.ne.1) then
+        G_scale_factor = 1.0
+      end if
+      rc = get_real_param(pfile,'B_scale_factor',B_scale_factor,1)
+      if (rc.ne.1) then
+        B_scale_factor = 1.0
+      end if
+      rc = get_int_param(pfile,'anti_aligned',anti_aligned,1)
+      if (rc.ne.1) then
+        anti_aligned = 0
+      end if
+      if (anti_aligned .lt. 0) then
+        write(0,*)'Error: anti_aligned too small. Min value = 0',anti_al
+     &igned
+        err = err + 1
+      end if
+      if (anti_aligned .gt. 1) then
+        write(0,*)'Error: anti_aligned too big. Max value = 1',anti_alig
+     &ned
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bfield_vacuumfreeze',bfield_vacuumfreeze
+     &,1)
+      if (rc.ne.1) then
+        bfield_vacuumfreeze = 0
+      end if
+      if (bfield_vacuumfreeze .lt. 0) then
+        write(0,*)'Error: bfield_vacuumfreeze too small. Min value = 0',
+     &bfield_vacuumfreeze
+        err = err + 1
+      end if
+      if (bfield_vacuumfreeze .gt. 1) then
+        write(0,*)'Error: bfield_vacuumfreeze too big. Max value = 1',bf
+     &ield_vacuumfreeze
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bfield_taperrange',bfield_taperrange,1)
+     &
+      if (rc.ne.1) then
+        bfield_taperrange = 100.0
+      end if
+      if (bfield_taperrange .lt. 1.0) then
+        write(0,*)'Error: bfield_taperrange too small. Min value = 1.0',
+     &bfield_taperrange
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'project_div_B',project_div_B,1)
+      if (rc.ne.1) then
+        project_div_B = 1
+      end if
+      if (project_div_B .lt. 0) then
+        write(0,*)'Error: project_div_B too small. Min value = 0',projec
+     &t_div_B
+        err = err + 1
+      end if
+      if (project_div_B .gt. 3) then
+        write(0,*)'Error: project_div_B too big. Max value = 3',project_
+     &div_B
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'psi_ch',psi_ch,1)
+      if (rc.ne.1) then
+        psi_ch = 1.0
+      end if
+      rc = get_real_param(pfile,'psi_cr',psi_cr,1)
+      if (rc.ne.1) then
+        psi_cr = 1.0
+      end if
+      rc = get_int_param(pfile,'damp',damp,1)
+      if (rc.ne.1) then
+        damp = 0
+      end if
+      if (damp .lt. 0) then
+        write(0,*)'Error: damp too small. Min value = 0',damp
+        err = err + 1
+      end if
+      if (damp .gt. 1) then
+        write(0,*)'Error: damp too big. Max value = 1',damp
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_bondi_sonic_r',id_bondi_sonic_r,1)
+      if (rc.ne.1) then
+        id_bondi_sonic_r = 400.0
+      end if
+      rc = get_real_param(pfile,'id_bondi_rhoc',id_bondi_rhoc,1)
+      if (rc.ne.1) then
+        id_bondi_rhoc = 0.01
+      end if
+      rc = get_real_param(pfile,'id_bondi_rstart',id_bondi_rstart,1)
+      if (rc.ne.1) then
+        id_bondi_rstart = 5.0
+      end if
+      rc = get_int_param(pfile,'id_bondi_fixedIBC',id_bondi_fixedIBC,1)
+      if (rc.ne.1) then
+        id_bondi_fixedIBC = 0
+      end if
+      if (id_bondi_fixedIBC .lt. 0) then
+        write(0,*)'Error: id_bondi_fixedIBC too small. Min value = 0',id
+     &_bondi_fixedIBC
+        err = err + 1
+      end if
+      if (id_bondi_fixedIBC .gt. 2) then
+        write(0,*)'Error: id_bondi_fixedIBC too big. Max value = 2',id_b
+     &ondi_fixedIBC
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_tov_depletion',id_tov_depletion,1)
+      if (rc.ne.1) then
+        id_tov_depletion = 1.0
+      end if
+      if (id_tov_depletion .lt. 0.0) then
+        write(0,*)'Error: id_tov_depletion too small. Min value = 0.0',i
+     &d_tov_depletion
+        err = err + 1
+      end if
+      if (id_tov_depletion .gt. 2.0) then
+        write(0,*)'Error: id_tov_depletion too big. Max value = 2.0',id_
+     &tov_depletion
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_tovbh_vx',id_tovbh_vx,1)
+      if (rc.ne.1) then
+        id_tovbh_vx = 0.0
+      end if
+      rc = get_real_param(pfile,'id_tovbh_vy',id_tovbh_vy,1)
+      if (rc.ne.1) then
+        id_tovbh_vy = 0.0
+      end if
+      rc = get_real_param(pfile,'id_tovbh_vz',id_tovbh_vz,1)
+      if (rc.ne.1) then
+        id_tovbh_vz = 0.0
+      end if
+      rc = get_int_param(pfile,'id_tov_average',id_tov_average,1)
+      if (rc.ne.1) then
+        id_tov_average = 0
+      end if
+      rc = get_real_param(pfile,'id_tov_p_pres',id_tov_p_pres,1)
+      if (rc.ne.1) then
+        id_tov_p_pres = 0.0
+      end if
+      rc = get_real_param(pfile,'id_tov_p_r',id_tov_p_r,1)
+      if (rc.ne.1) then
+        id_tov_p_r = 4.0
+      end if
+      rc = get_real_param(pfile,'id_tov_p_sigma',id_tov_p_sigma,1)
+      if (rc.ne.1) then
+        id_tov_p_sigma = 1.0
+      end if
+      rc = get_int_param(pfile,'id_tov_magnetic',id_tov_magnetic,1)
+      if (rc.ne.1) then
+        id_tov_magnetic = 1
+      end if
+      if (id_tov_magnetic .lt. 0) then
+        write(0,*)'Error: id_tov_magnetic too small. Min value = 0',id_t
+     &ov_magnetic
+        err = err + 1
+      end if
+      if (id_tov_magnetic .gt. 1) then
+        write(0,*)'Error: id_tov_magnetic too big. Max value = 1',id_tov
+     &_magnetic
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_tov_Asize',id_tov_Asize,1)
+      if (rc.ne.1) then
+        id_tov_Asize = 0.0
+      end if
+      rc = get_real_param(pfile,'id_drns_r_e',id_drns_r_e,1)
+      if (rc.ne.1) then
+        id_drns_r_e = -9999.0
+      end if
+      rc = get_real_param(pfile,'id_center_x1',id_center_x1,1)
+      if (rc.ne.1) then
+        id_center_x1 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_center_y1',id_center_y1,1)
+      if (rc.ne.1) then
+        id_center_y1 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_center_x2',id_center_x2,1)
+      if (rc.ne.1) then
+        id_center_x2 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_center_y2',id_center_y2,1)
+      if (rc.ne.1) then
+        id_center_y2 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_vx1',id_vx1,1)
+      if (rc.ne.1) then
+        id_vx1 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_vy1',id_vy1,1)
+      if (rc.ne.1) then
+        id_vy1 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_vx2',id_vx2,1)
+      if (rc.ne.1) then
+        id_vx2 = 0.0
+      end if
+      rc = get_real_param(pfile,'id_vy2',id_vy2,1)
+      if (rc.ne.1) then
+        id_vy2 = 0.0
+      end if
+      rc = get_int_param(pfile,'id_perturb_m',id_perturb_m,1)
+      if (rc.ne.1) then
+        id_perturb_m = 1
+      end if
+      rc = get_real_param(pfile,'id_perturb_p',id_perturb_p,1)
+      if (rc.ne.1) then
+        id_perturb_p = 0.0
+      end if
+      rc = get_real_param(pfile,'id_perturb_rho',id_perturb_rho,1)
+      if (rc.ne.1) then
+        id_perturb_rho = 0.0
+      end if
+      rc = get_real_param(pfile,'id_disk_width',id_disk_width,1)
+      if (rc.ne.1) then
+        id_disk_width = 0.25
+      end if
+      if (id_disk_width .lt. 0.0) then
+        write(0,*)'Error: id_disk_width too small. Min value = 0.0',id_d
+     &isk_width
+        err = err + 1
+      end if
+      if (id_disk_width .gt. 1.0) then
+        write(0,*)'Error: id_disk_width too big. Max value = 1.0',id_dis
+     &k_width
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_rin',id_disk_rin,1)
+      if (rc.ne.1) then
+        id_disk_rin = 6.0
+      end if
+      rc = get_real_param(pfile,'id_disk_rout',id_disk_rout,1)
+      if (rc.ne.1) then
+        id_disk_rout = 10.0
+      end if
+      rc = get_real_param(pfile,'id_disk_B',id_disk_B,1)
+      if (rc.ne.1) then
+        id_disk_B = 0.0
+      end if
+      rc = get_int_param(pfile,'id_disk_type',id_disk_type,1)
+      if (rc.ne.1) then
+        id_disk_type = 1
+      end if
+      if (id_disk_type .lt. 1) then
+        write(0,*)'Error: id_disk_type too small. Min value = 1',id_disk
+     &_type
+        err = err + 1
+      end if
+      if (id_disk_type .gt. 5) then
+        write(0,*)'Error: id_disk_type too big. Max value = 5',id_disk_t
+     &ype
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_angmom',id_disk_angmom,1)
+      if (rc.ne.1) then
+        id_disk_angmom = 0.0
+      end if
+      rc = get_real_param(pfile,'id_disk_potential',id_disk_potential,1)
+     &
+      if (rc.ne.1) then
+        id_disk_potential = -0.05
+      end if
+      rc = get_real_param(pfile,'id_disk_atmosphere',id_disk_atmosphere,
+     &1)
+      if (rc.ne.1) then
+        id_disk_atmosphere = 1.0e-10
+      end if
+      if (id_disk_atmosphere .lt. 0.0) then
+        write(0,*)'Error: id_disk_atmosphere too small. Min value = 0.0'
+     &,id_disk_atmosphere
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_kappa',id_disk_kappa,1)
+      if (rc.ne.1) then
+        id_disk_kappa = 1.0
+      end if
+      if (id_disk_kappa .lt. 0.0) then
+        write(0,*)'Error: id_disk_kappa too small. Min value = 0.0',id_d
+     &isk_kappa
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_Asize',id_disk_Asize,1)
+      if (rc.ne.1) then
+        id_disk_Asize = 0.0
+      end if
+      rc = get_real_param(pfile,'id_disk_rhocut',id_disk_rhocut,1)
+      if (rc.ne.1) then
+        id_disk_rhocut = 0.0
+      end if
+      if (id_disk_rhocut .lt. 0.0) then
+        write(0,*)'Error: id_disk_rhocut too small. Min value = 0.0',id_
+     &disk_rhocut
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'id_disk_magnetic',id_disk_magnetic,1)
+      if (rc.ne.1) then
+        id_disk_magnetic = 0
+      end if
+      if (id_disk_magnetic .lt. 0) then
+        write(0,*)'Error: id_disk_magnetic too small. Min value = 0',id_
+     &disk_magnetic
+        err = err + 1
+      end if
+      if (id_disk_magnetic .gt. 10) then
+        write(0,*)'Error: id_disk_magnetic too big. Max value = 10',id_d
+     &isk_magnetic
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_rho0',id_disk_rho0,1)
+      if (rc.ne.1) then
+        id_disk_rho0 = 0.0
+      end if
+      if (id_disk_rho0 .lt. 0.0) then
+        write(0,*)'Error: id_disk_rho0 too small. Min value = 0.0',id_di
+     &sk_rho0
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_decay',id_disk_decay,1)
+      if (rc.ne.1) then
+        id_disk_decay = 1.0
+      end if
+      if (id_disk_decay .lt. 1.0e-10) then
+        write(0,*)'Error: id_disk_decay too small. Min value = 1.0e-10',
+     &id_disk_decay
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_kickvel',id_disk_kickvel,1)
+      if (rc.ne.1) then
+        id_disk_kickvel = 0.0
+      end if
+      if (id_disk_kickvel .lt. 0.0) then
+        write(0,*)'Error: id_disk_kickvel too small. Min value = 0.0',id
+     &_disk_kickvel
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_kicktheta',id_disk_kicktheta,1)
+     &
+      if (rc.ne.1) then
+        id_disk_kicktheta = 0.0
+      end if
+      if (id_disk_kicktheta .lt. 0.0) then
+        write(0,*)'Error: id_disk_kicktheta too small. Min value = 0.0',
+     &id_disk_kicktheta
+        err = err + 1
+      end if
+      if (id_disk_kicktheta .gt. 1.0) then
+        write(0,*)'Error: id_disk_kicktheta too big. Max value = 1.0',id
+     &_disk_kicktheta
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_kickphi',id_disk_kickphi,1)
+      if (rc.ne.1) then
+        id_disk_kickphi = 0.0
+      end if
+      if (id_disk_kickphi .lt. 0.0) then
+        write(0,*)'Error: id_disk_kickphi too small. Min value = 0.0',id
+     &_disk_kickphi
+        err = err + 1
+      end if
+      if (id_disk_kickphi .gt. 2.0) then
+        write(0,*)'Error: id_disk_kickphi too big. Max value = 2.0',id_d
+     &isk_kickphi
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_GammaB',id_disk_GammaB,1)
+      if (rc.ne.1) then
+        id_disk_GammaB = 2.0
+      end if
+      if (id_disk_GammaB .lt. 1.01) then
+        write(0,*)'Error: id_disk_GammaB too small. Min value = 1.01',id
+     &_disk_GammaB
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_cB',id_disk_cB,1)
+      if (rc.ne.1) then
+        id_disk_cB = 0.0
+      end if
+      rc = get_real_param(pfile,'id_disk_lbound',id_disk_lbound,1)
+      if (rc.ne.1) then
+        id_disk_lbound = 0.0
+      end if
+      if (id_disk_lbound .lt. 0.0) then
+        write(0,*)'Error: id_disk_lbound too small. Min value = 0.0',id_
+     &disk_lbound
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'id_disk_bhmass',id_disk_bhmass,1)
+      if (rc.ne.1) then
+        id_disk_bhmass = -1.0
+      end if
+      if (id_disk_bhmass .lt. -1.0) then
+        write(0,*)'Error: id_disk_bhmass too small. Min value = -1.0',id
+     &_disk_bhmass
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nx0',nx0,1)
+      if (rc.ne.1) then
+        nx0 = 10
+      end if
+      if (nx0 .lt. 1) then
+        write(0,*)'Error: nx0 too small. Min value = 1',nx0
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'ny0',ny0,1)
+      if (rc.ne.1) then
+        ny0 = 10
+      end if
+      if (ny0 .lt. 1) then
+        write(0,*)'Error: ny0 too small. Min value = 1',ny0
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nz0',nz0,1)
+      if (rc.ne.1) then
+        nz0 = 10
+      end if
+      if (nz0 .lt. 1) then
+        write(0,*)'Error: nz0 too small. Min value = 1',nz0
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nt0',nt0,1)
+      if (rc.ne.1) then
+        nt0 = 0
+      end if
+      if (nt0 .lt. 0) then
+        write(0,*)'Error: nt0 too small. Min value = 0',nt0
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'h',h,1)
+      if (rc.ne.1) then
+        h = 0.1
+      end if
+      if (h .lt. 0.0) then
+        write(0,*)'Error: h too small. Min value = 0.0',h
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'hx',hx,1)
+      if (rc.ne.1) then
+        hx = 0.1
+      end if
+      if (hx .lt. 0.0) then
+        write(0,*)'Error: hx too small. Min value = 0.0',hx
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'hy',hy,1)
+      if (rc.ne.1) then
+        hy = 0.1
+      end if
+      if (hy .lt. 0.0) then
+        write(0,*)'Error: hy too small. Min value = 0.0',hy
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'hz',hz,1)
+      if (rc.ne.1) then
+        hz = 0.1
+      end if
+      if (hz .lt. 0.0) then
+        write(0,*)'Error: hz too small. Min value = 0.0',hz
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'hxyz0',hxyz0,1)
+      if (rc.ne.1) then
+        hxyz0 = 0.0
+      end if
+      rc = get_real_param(pfile,'run_wtime',run_wtime,1)
+      if (rc.ne.1) then
+        run_wtime = 0.0
+      end if
+      if (run_wtime .lt. 0.0) then
+        write(0,*)'Error: run_wtime too small. Min value = 0.0',run_wtim
+     &e
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'amp',amp,1)
+      if (rc.ne.1) then
+        amp = 0.0
+      end if
+      rc = get_int_param(pfile,'idata',idata,1)
+      if (rc.ne.1) then
+        idata = 0
+      end if
+      rc = get_real_param(pfile,'maxchi_thresh',maxchi_thresh,1)
+      if (rc.ne.1) then
+        maxchi_thresh = 0.0
+      end if
+      if (maxchi_thresh .lt. 0.0) then
+        write(0,*)'Error: maxchi_thresh too small. Min value = 0.0',maxc
+     &hi_thresh
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'maxchi_minctime',maxchi_minctime,1)
+      if (rc.ne.1) then
+        maxchi_minctime = 0.0
+      end if
+      if (maxchi_minctime .lt. 0.0) then
+        write(0,*)'Error: maxchi_minctime too small. Min value = 0.0',ma
+     &xchi_minctime
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_nx',local_nx,1)
+      if (rc.ne.1) then
+        local_nx = 10
+      end if
+      if (local_nx .lt. 1) then
+        write(0,*)'Error: local_nx too small. Min value = 1',local_nx
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_ny',local_ny,1)
+      if (rc.ne.1) then
+        local_ny = 10
+      end if
+      if (local_ny .lt. 1) then
+        write(0,*)'Error: local_ny too small. Min value = 1',local_ny
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_nz',local_nz,1)
+      if (rc.ne.1) then
+        local_nz = 10
+      end if
+      if (local_nz .lt. 1) then
+        write(0,*)'Error: local_nz too small. Min value = 1',local_nz
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'global_nx',global_nx,1)
+      if (rc.ne.1) then
+        global_nx = 10
+      end if
+      if (global_nx .lt. 1) then
+        write(0,*)'Error: global_nx too small. Min value = 1',global_nx
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'global_ny',global_ny,1)
+      if (rc.ne.1) then
+        global_ny = 10
+      end if
+      if (global_ny .lt. 1) then
+        write(0,*)'Error: global_ny too small. Min value = 1',global_ny
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'global_nz',global_nz,1)
+      if (rc.ne.1) then
+        global_nz = 10
+      end if
+      if (global_nz .lt. 1) then
+        write(0,*)'Error: global_nz too small. Min value = 1',global_nz
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_lower_bnd_x',local_lower_bnd_x,1)
+      if (rc.ne.1) then
+        local_lower_bnd_x = 1
+      end if
+      if (local_lower_bnd_x .lt. 1) then
+        write(0,*)'Error: local_lower_bnd_x too small. Min value = 1',lo
+     &cal_lower_bnd_x
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_lower_bnd_y',local_lower_bnd_y,1)
+      if (rc.ne.1) then
+        local_lower_bnd_y = 1
+      end if
+      if (local_lower_bnd_y .lt. 1) then
+        write(0,*)'Error: local_lower_bnd_y too small. Min value = 1',lo
+     &cal_lower_bnd_y
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'local_lower_bnd_z',local_lower_bnd_z,1)
+      if (rc.ne.1) then
+        local_lower_bnd_z = 1
+      end if
+      if (local_lower_bnd_z .lt. 1) then
+        write(0,*)'Error: local_lower_bnd_z too small. Min value = 1',lo
+     &cal_lower_bnd_z
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bbox1',bbox1,1)
+      if (rc.ne.1) then
+        bbox1 = 1
+      end if
+      rc = get_int_param(pfile,'bbox2',bbox2,1)
+      if (rc.ne.1) then
+        bbox2 = 1
+      end if
+      rc = get_int_param(pfile,'bbox3',bbox3,1)
+      if (rc.ne.1) then
+        bbox3 = 1
+      end if
+      rc = get_int_param(pfile,'bbox4',bbox4,1)
+      if (rc.ne.1) then
+        bbox4 = 1
+      end if
+      rc = get_int_param(pfile,'bbox5',bbox5,1)
+      if (rc.ne.1) then
+        bbox5 = 1
+      end if
+      rc = get_int_param(pfile,'bbox6',bbox6,1)
+      if (rc.ne.1) then
+        bbox6 = 1
+      end if
+      rc = get_int_param(pfile,'nghostzones_x',nghostzones_x,1)
+      if (rc.ne.1) then
+        nghostzones_x = 0
+      end if
+      if (nghostzones_x .lt. 0) then
+        write(0,*)'Error: nghostzones_x too small. Min value = 0',nghost
+     &zones_x
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nghostzones_y',nghostzones_y,1)
+      if (rc.ne.1) then
+        nghostzones_y = 0
+      end if
+      if (nghostzones_y .lt. 0) then
+        write(0,*)'Error: nghostzones_y too small. Min value = 0',nghost
+     &zones_y
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nghostzones_z',nghostzones_z,1)
+      if (rc.ne.1) then
+        nghostzones_z = 0
+      end if
+      if (nghostzones_z .lt. 0) then
+        write(0,*)'Error: nghostzones_z too small. Min value = 0',nghost
+     &zones_z
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'dt',dt,1)
+      if (rc.ne.1) then
+        dt = 1.0
+      end if
+      rc = get_real_param(pfile,'dx',dx,1)
+      if (rc.ne.1) then
+        dx = 1.0
+      end if
+      rc = get_real_param(pfile,'dy',dy,1)
+      if (rc.ne.1) then
+        dy = 1.0
+      end if
+      rc = get_real_param(pfile,'dz',dz,1)
+      if (rc.ne.1) then
+        dz = 1.0
+      end if
+      rc = get_real_param(pfile,'local_time',local_time,1)
+      if (rc.ne.1) then
+        local_time = 0.0
+      end if
+      rc = get_int_param(pfile,'alt_coord_type',alt_coord_type,1)
+      if (rc.ne.1) then
+        alt_coord_type = 0
+      end if
+      if (alt_coord_type .lt. 0) then
+        write(0,*)'Error: alt_coord_type too small. Min value = 0',alt_c
+     &oord_type
+        err = err + 1
+      end if
+      if (alt_coord_type .gt. 1) then
+        write(0,*)'Error: alt_coord_type too big. Max value = 1',alt_coo
+     &rd_type
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'pc_coord_trans_rad',pc_coord_trans_rad,
+     &1)
+      if (rc.ne.1) then
+        pc_coord_trans_rad = 0.0
+      end if
+      if (pc_coord_trans_rad .lt. 0.0) then
+        write(0,*)'Error: pc_coord_trans_rad too small. Min value = 0.0'
+     &,pc_coord_trans_rad
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'pc_coord_trans_width',pc_coord_trans_wi
+     &dth,1)
+      if (rc.ne.1) then
+        pc_coord_trans_width = 1.0
+      end if
+      if (pc_coord_trans_width .lt. 0.0) then
+        write(0,*)'Error: pc_coord_trans_width too small. Min value = 0.
+     &0',pc_coord_trans_width
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'pc_coord_scale',pc_coord_scale,1)
+      if (rc.ne.1) then
+        pc_coord_scale = 1.0
+      end if
+      if (pc_coord_scale .lt. 1.0e-11) then
+        write(0,*)'Error: pc_coord_scale too small. Min value = 1.0e-11'
+     &,pc_coord_scale
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bc_type',bc_type,1)
+      if (rc.ne.1) then
+        bc_type = 0
+      end if
+      if (bc_type .lt. 0) then
+        write(0,*)'Error: bc_type too small. Min value = 0',bc_type
+        err = err + 1
+      end if
+      if (bc_type .gt. 4) then
+        write(0,*)'Error: bc_type too big. Max value = 4',bc_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'inner_bound_data',inner_bound_data,1)
+      if (rc.ne.1) then
+        inner_bound_data = 0
+      end if
+      if (inner_bound_data .lt. 0) then
+        write(0,*)'Error: inner_bound_data too small. Min value = 0',inn
+     &er_bound_data
+        err = err + 1
+      end if
+      if (inner_bound_data .gt. 1) then
+        write(0,*)'Error: inner_bound_data too big. Max value = 1',inner
+     &_bound_data
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'deriv_order',deriv_order,1)
+      if (rc.ne.1) then
+        deriv_order = 2
+      end if
+      if (deriv_order .lt. 1) then
+        write(0,*)'Error: deriv_order too small. Min value = 1',deriv_or
+     &der
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'dissipation',dissipation,1)
+      if (rc.ne.1) then
+        dissipation = 0
+      end if
+      if (dissipation .lt. 0) then
+        write(0,*)'Error: dissipation too small. Min value = 0',dissipat
+     &ion
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'sigma_diss',sigma_diss,1)
+      if (rc.ne.1) then
+        sigma_diss = 0.0
+      end if
+      if (sigma_diss .lt. 0.0) then
+        write(0,*)'Error: sigma_diss too small. Min value = 0.0',sigma_d
+     &iss
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'extradiss',extradiss,1)
+      if (rc.ne.1) then
+        extradiss = 0.0
+      end if
+      if (extradiss .lt. 0.0) then
+        write(0,*)'Error: extradiss too small. Min value = 0.0',extradis
+     &s
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'extradissOUT',extradissOUT,1)
+      if (rc.ne.1) then
+        extradissOUT = 0.0
+      end if
+      if (extradissOUT .lt. -1.0) then
+        write(0,*)'Error: extradissOUT too small. Min value = -1.0',extr
+     &adissOUT
+        err = err + 1
+      end if
+      if (extradissOUT .gt. 10.0) then
+        write(0,*)'Error: extradissOUT too big. Max value = 10.0',extrad
+     &issOUT
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'nbholes',nbholes,1)
+      if (rc.ne.1) then
+        nbholes = 0
+      end if
+      if (nbholes .lt. 0) then
+        write(0,*)'Error: nbholes too small. Min value = 0',nbholes
+        err = err + 1
+      end if
+      if (nbholes .gt. 2) then
+        write(0,*)'Error: nbholes too big. Max value = 2',nbholes
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'use_mask',use_mask,1)
+      if (rc.ne.1) then
+        use_mask = 0
+      end if
+      if (use_mask .lt. 0) then
+        write(0,*)'Error: use_mask too small. Min value = 0',use_mask
+        err = err + 1
+      end if
+      if (use_mask .gt. 1) then
+        write(0,*)'Error: use_mask too big. Max value = 1',use_mask
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'mask_type',mask_type,1)
+      if (rc.ne.1) then
+        mask_type = 1
+      end if
+      if (mask_type .lt. 0) then
+        write(0,*)'Error: mask_type too small. Min value = 0',mask_type
+        err = err + 1
+      end if
+      if (mask_type .gt. 1) then
+        write(0,*)'Error: mask_type too big. Max value = 1',mask_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'initial_analysis',initial_analysis,1)
+      if (rc.ne.1) then
+        initial_analysis = 1
+      end if
+      if (initial_analysis .lt. 0) then
+        write(0,*)'Error: initial_analysis too small. Min value = 0',ini
+     &tial_analysis
+        err = err + 1
+      end if
+      if (initial_analysis .gt. 1) then
+        write(0,*)'Error: initial_analysis too big. Max value = 1',initi
+     &al_analysis
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_mass',bh1_mass,1)
+      if (rc.ne.1) then
+        bh1_mass = 0.0
+      end if
+      if (bh1_mass .lt. -10.0) then
+        write(0,*)'Error: bh1_mass too small. Min value = -10.0',bh1_mas
+     &s
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_spin',bh1_spin,1)
+      if (rc.ne.1) then
+        bh1_spin = 0.0
+      end if
+      if (bh1_spin .lt. 0.0) then
+        write(0,*)'Error: bh1_spin too small. Min value = 0.0',bh1_spin
+        err = err + 1
+      end if
+      if (bh1_spin .gt. 1.0) then
+        write(0,*)'Error: bh1_spin too big. Max value = 1.0',bh1_spin
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_spin_phi',bh1_spin_phi,1)
+      if (rc.ne.1) then
+        bh1_spin_phi = 0.0
+      end if
+      if (bh1_spin_phi .lt. 0.0) then
+        write(0,*)'Error: bh1_spin_phi too small. Min value = 0.0',bh1_s
+     &pin_phi
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_spin_theta',bh1_spin_theta,1)
+      if (rc.ne.1) then
+        bh1_spin_theta = 0.0
+      end if
+      if (bh1_spin_theta .lt. 0.0) then
+        write(0,*)'Error: bh1_spin_theta too small. Min value = 0.0',bh1
+     &_spin_theta
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_x0',bh1_x0,1)
+      if (rc.ne.1) then
+        bh1_x0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh1_y0',bh1_y0,1)
+      if (rc.ne.1) then
+        bh1_y0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh1_z0',bh1_z0,1)
+      if (rc.ne.1) then
+        bh1_z0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh1_vx',bh1_vx,1)
+      if (rc.ne.1) then
+        bh1_vx = 0.0
+      end if
+      rc = get_real_param(pfile,'bh1_vy',bh1_vy,1)
+      if (rc.ne.1) then
+        bh1_vy = 0.0
+      end if
+      rc = get_real_param(pfile,'bh1_exc_rad',bh1_exc_rad,1)
+      if (rc.ne.1) then
+        bh1_exc_rad = 0.0
+      end if
+      if (bh1_exc_rad .lt. 0.0) then
+        write(0,*)'Error: bh1_exc_rad too small. Min value = 0.0',bh1_ex
+     &c_rad
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh1_velx',bh1_velx,1)
+      if (rc.ne.1) then
+        bh1_velx = 0.0
+      end if
+      rc = get_real_param(pfile,'bh2_mass',bh2_mass,1)
+      if (rc.ne.1) then
+        bh2_mass = 0.0
+      end if
+      if (bh2_mass .lt. 0.0) then
+        write(0,*)'Error: bh2_mass too small. Min value = 0.0',bh2_mass
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh2_spin',bh2_spin,1)
+      if (rc.ne.1) then
+        bh2_spin = 0.0
+      end if
+      if (bh2_spin .lt. 0.0) then
+        write(0,*)'Error: bh2_spin too small. Min value = 0.0',bh2_spin
+        err = err + 1
+      end if
+      if (bh2_spin .gt. 1.0) then
+        write(0,*)'Error: bh2_spin too big. Max value = 1.0',bh2_spin
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh2_spin_phi',bh2_spin_phi,1)
+      if (rc.ne.1) then
+        bh2_spin_phi = 0.0
+      end if
+      if (bh2_spin_phi .lt. 0.0) then
+        write(0,*)'Error: bh2_spin_phi too small. Min value = 0.0',bh2_s
+     &pin_phi
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh2_spin_theta',bh2_spin_theta,1)
+      if (rc.ne.1) then
+        bh2_spin_theta = 0.0
+      end if
+      if (bh2_spin_theta .lt. 0.0) then
+        write(0,*)'Error: bh2_spin_theta too small. Min value = 0.0',bh2
+     &_spin_theta
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh2_x0',bh2_x0,1)
+      if (rc.ne.1) then
+        bh2_x0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh2_y0',bh2_y0,1)
+      if (rc.ne.1) then
+        bh2_y0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh2_z0',bh2_z0,1)
+      if (rc.ne.1) then
+        bh2_z0 = 0.0
+      end if
+      rc = get_real_param(pfile,'bh2_exc_rad',bh2_exc_rad,1)
+      if (rc.ne.1) then
+        bh2_exc_rad = 0.0
+      end if
+      if (bh2_exc_rad .lt. 0.0) then
+        write(0,*)'Error: bh2_exc_rad too small. Min value = 0.0',bh2_ex
+     &c_rad
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bh2_velx',bh2_velx,1)
+      if (rc.ne.1) then
+        bh2_velx = 0.0
+      end if
+      rc = get_int_param(pfile,'boundary_conditions',boundary_conditions
+     &,1)
+      if (rc.ne.1) then
+        boundary_conditions = 1
+      end if
+      if (boundary_conditions .lt. -1) then
+        write(0,*)'Error: boundary_conditions too small. Min value = -1'
+     &,boundary_conditions
+        err = err + 1
+      end if
+      if (boundary_conditions .gt. 15) then
+        write(0,*)'Error: boundary_conditions too big. Max value = 15',b
+     &oundary_conditions
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'penalty',penalty,1)
+      if (rc.ne.1) then
+        penalty = 0.0
+      end if
+      rc = get_int_param(pfile,'PP',PP,1)
+      if (rc.ne.1) then
+        PP = 7
+      end if
+      if (PP .lt. 0) then
+        write(0,*)'Error: PP too small. Min value = 0',PP
+        err = err + 1
+      end if
+      if (PP .gt. 7) then
+        write(0,*)'Error: PP too big. Max value = 7',PP
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'QQ',QQ,1)
+      if (rc.ne.1) then
+        QQ = 0
+      end if
+      if (QQ .lt. -1) then
+        write(0,*)'Error: QQ too small. Min value = -1',QQ
+        err = err + 1
+      end if
+      if (QQ .gt. 1) then
+        write(0,*)'Error: QQ too big. Max value = 1',QQ
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'t0',t0,1)
+      if (rc.ne.1) then
+        t0 = 5.0
+      end if
+      if (t0 .lt. 0.0) then
+        write(0,*)'Error: t0 too small. Min value = 0.0',t0
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'sigma_t',sigma_t,1)
+      if (rc.ne.1) then
+        sigma_t = 0.5
+      end if
+      if (sigma_t .lt. 0.01) then
+        write(0,*)'Error: sigma_t too small. Min value = 0.01',sigma_t
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'amp_boundary',amp_boundary,1)
+      if (rc.ne.1) then
+        amp_boundary = 0.0
+      end if
+      if (amp_boundary .lt. 0.0) then
+        write(0,*)'Error: amp_boundary too small. Min value = 0.0',amp_b
+     &oundary
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'amp_random_bc',amp_random_bc,1)
+      if (rc.ne.1) then
+        amp_random_bc = 0.0
+      end if
+      rc = get_real_param(pfile,'sigma_rho',sigma_rho,1)
+      if (rc.ne.1) then
+        sigma_rho = 0.05
+      end if
+      if (sigma_rho .lt. 0.01) then
+        write(0,*)'Error: sigma_rho too small. Min value = 0.01',sigma_r
+     &ho
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'interp_id',interp_id,1)
+      if (rc.ne.1) then
+        interp_id = 1
+      end if
+      if (interp_id .lt. 0) then
+        write(0,*)'Error: interp_id too small. Min value = 0',interp_id
+        err = err + 1
+      end if
+      if (interp_id .gt. 1) then
+        write(0,*)'Error: interp_id too big. Max value = 1',interp_id
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'runge_kutta_type',runge_kutta_type,1)
+      if (rc.ne.1) then
+        runge_kutta_type = 1
+      end if
+      if (runge_kutta_type .lt. 1) then
+        write(0,*)'Error: runge_kutta_type too small. Min value = 1',run
+     &ge_kutta_type
+        err = err + 1
+      end if
+      if (runge_kutta_type .gt. 13) then
+        write(0,*)'Error: runge_kutta_type too big. Max value = 13',rung
+     &e_kutta_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'runge_kutta_bound',runge_kutta_bound,1)
+      if (rc.ne.1) then
+        runge_kutta_bound = 1
+      end if
+      if (runge_kutta_bound .lt. 1) then
+        write(0,*)'Error: runge_kutta_bound too small. Min value = 1',ru
+     &nge_kutta_bound
+        err = err + 1
+      end if
+      if (runge_kutta_bound .gt. 2) then
+        write(0,*)'Error: runge_kutta_bound too big. Max value = 2',rung
+     &e_kutta_bound
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'point_wise_analysis',point_wise_analysis
+     &,1)
+      if (rc.ne.1) then
+        point_wise_analysis = 0
+      end if
+      if (point_wise_analysis .lt. 0) then
+        write(0,*)'Error: point_wise_analysis too small. Min value = 0',
+     &point_wise_analysis
+        err = err + 1
+      end if
+      if (point_wise_analysis .gt. 1) then
+        write(0,*)'Error: point_wise_analysis too big. Max value = 1',po
+     &int_wise_analysis
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'psi4_analysis',psi4_analysis,1)
+      if (rc.ne.1) then
+        psi4_analysis = 0
+      end if
+      if (psi4_analysis .lt. 0) then
+        write(0,*)'Error: psi4_analysis too small. Min value = 0',psi4_a
+     &nalysis
+        err = err + 1
+      end if
+      if (psi4_analysis .gt. 4) then
+        write(0,*)'Error: psi4_analysis too big. Max value = 4',psi4_ana
+     &lysis
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'rk_iter',rk_iter,1)
+      if (rc.ne.1) then
+        rk_iter = 0
+      end if
+      if (rk_iter .lt. 0) then
+        write(0,*)'Error: rk_iter too small. Min value = 0',rk_iter
+        err = err + 1
+      end if
+      if (rk_iter .gt. 0) then
+        write(0,*)'Error: rk_iter too big. Max value = 0',rk_iter
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'asf_ntheta',asf_ntheta,1)
+      if (rc.ne.1) then
+        asf_ntheta = 33
+      end if
+      if (asf_ntheta .lt. 1) then
+        write(0,*)'Error: asf_ntheta too small. Min value = 1',asf_nthet
+     &a
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'asf_nphi',asf_nphi,1)
+      if (rc.ne.1) then
+        asf_nphi = 33
+      end if
+      if (asf_nphi .lt. 1) then
+        write(0,*)'Error: asf_nphi too small. Min value = 1',asf_nphi
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'asf_period',asf_period,1)
+      if (rc.ne.1) then
+        asf_period = 1
+      end if
+      if (asf_period .lt. 0) then
+        write(0,*)'Error: asf_period too small. Min value = 0',asf_perio
+     &d
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'asf_level',asf_level,1)
+      if (rc.ne.1) then
+        asf_level = 0
+      end if
+      if (asf_level .lt. 0) then
+        write(0,*)'Error: asf_level too small. Min value = 0',asf_level
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'asf_rconst',asf_rconst,1)
+      if (rc.ne.1) then
+        asf_rconst = 1.d0
+      end if
+      if (asf_rconst .lt. 0.d0) then
+        write(0,*)'Error: asf_rconst too small. Min value = 0.d0',asf_rc
+     &onst
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bsf_ntheta',bsf_ntheta,1)
+      if (rc.ne.1) then
+        bsf_ntheta = 33
+      end if
+      if (bsf_ntheta .lt. 1) then
+        write(0,*)'Error: bsf_ntheta too small. Min value = 1',bsf_nthet
+     &a
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bsf_nphi',bsf_nphi,1)
+      if (rc.ne.1) then
+        bsf_nphi = 33
+      end if
+      if (bsf_nphi .lt. 1) then
+        write(0,*)'Error: bsf_nphi too small. Min value = 1',bsf_nphi
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bsf_period',bsf_period,1)
+      if (rc.ne.1) then
+        bsf_period = 1
+      end if
+      if (bsf_period .lt. 0) then
+        write(0,*)'Error: bsf_period too small. Min value = 0',bsf_perio
+     &d
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'bsf_level',bsf_level,1)
+      if (rc.ne.1) then
+        bsf_level = 0
+      end if
+      if (bsf_level .lt. 0) then
+        write(0,*)'Error: bsf_level too small. Min value = 0',bsf_level
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'bsf_rconst',bsf_rconst,1)
+      if (rc.ne.1) then
+        bsf_rconst = 1.d0
+      end if
+      if (bsf_rconst .lt. 0.d0) then
+        write(0,*)'Error: bsf_rconst too small. Min value = 0.d0',bsf_rc
+     &onst
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'csf_ntheta',csf_ntheta,1)
+      if (rc.ne.1) then
+        csf_ntheta = 33
+      end if
+      if (csf_ntheta .lt. 1) then
+        write(0,*)'Error: csf_ntheta too small. Min value = 1',csf_nthet
+     &a
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'csf_nphi',csf_nphi,1)
+      if (rc.ne.1) then
+        csf_nphi = 33
+      end if
+      if (csf_nphi .lt. 1) then
+        write(0,*)'Error: csf_nphi too small. Min value = 1',csf_nphi
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'csf_period',csf_period,1)
+      if (rc.ne.1) then
+        csf_period = 1
+      end if
+      if (csf_period .lt. 0) then
+        write(0,*)'Error: csf_period too small. Min value = 0',csf_perio
+     &d
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'csf_level',csf_level,1)
+      if (rc.ne.1) then
+        csf_level = 0
+      end if
+      if (csf_level .lt. 0) then
+        write(0,*)'Error: csf_level too small. Min value = 0',csf_level
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'csf_rconst',csf_rconst,1)
+      if (rc.ne.1) then
+        csf_rconst = 1.d0
+      end if
+      if (csf_rconst .lt. 0.d0) then
+        write(0,*)'Error: csf_rconst too small. Min value = 0.d0',csf_rc
+     &onst
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'lambda',lambda,1)
+      if (rc.ne.1) then
+        lambda = 0.01
+      end if
+      if (lambda .lt. 0.0) then
+        write(0,*)'Error: lambda too small. Min value = ',lambda
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'refine_factor',refine_factor,1)
+      if (rc.ne.1) then
+        refine_factor = 2
+      end if
+      if (refine_factor .lt. 2) then
+        write(0,*)'Error: refine_factor too small. Min value = ',refine_
+     &factor
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'refine_period_ctrl',refine_period_ctrl,1
+     &)
+      if (rc.ne.1) then
+        refine_period_ctrl = 0
+      end if
+      if (refine_period_ctrl .lt. 0) then
+        write(0,*)'Error: refine_period_ctrl too small. Min value = ',re
+     &fine_period_ctrl
+        err = err + 1
+      end if
+      if (refine_period_ctrl .gt. 1) then
+        write(0,*)'Error: refine_period_ctrl too big. Max value = ',refi
+     &ne_period_ctrl
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'refine_period',refine_period,1)
+      if (rc.ne.1) then
+        refine_period = 1000000
+      end if
+      if (refine_period .lt. 0) then
+        write(0,*)'Error: refine_period too small. Min value = ',refine_
+     &period
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'refine_deltat',refine_deltat,1)
+      if (rc.ne.1) then
+        refine_deltat = 1000000.0
+      end if
+      if (refine_deltat .lt. 0) then
+        write(0,*)'Error: refine_deltat too small. Min value = ',refine_
+     &deltat
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'simpleFMR',simpleFMR,1)
+      if (rc.ne.1) then
+        simpleFMR = 0
+      end if
+      if (simpleFMR .lt. 0) then
+        write(0,*)'Error: simpleFMR too small. Min value = ',simpleFMR
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'clusterDD',clusterDD,1)
+      if (rc.ne.1) then
+        clusterDD = 0
+      end if
+      rc = get_int_param(pfile,'clusterstyle',clusterstyle,1)
+      if (rc.ne.1) then
+        clusterstyle = 0
+      end if
+      if (clusterstyle .lt. 0) then
+        write(0,*)'Error: clusterstyle too small. Min value = ',clusters
+     &tyle
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'diss_afterinj',diss_afterinj,1)
+      if (rc.ne.1) then
+        diss_afterinj = 0
+      end if
+      if (diss_afterinj .lt. 0) then
+        write(0,*)'Error: diss_afterinj too small. Min value = ',diss_af
+     &terinj
+        err = err + 1
+      end if
+      if (diss_afterinj .gt. 1) then
+        write(0,*)'Error: diss_afterinj too big. Max value = ',diss_afte
+     &rinj
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'allowedl',allowedl,1)
+      if (rc.ne.1) then
+        allowedl = 0
+      end if
+      if (allowedl .lt. 0) then
+        write(0,*)'Error: allowedl too small. Min value = ',allowedl
+        err = err + 1
+      end if
+      if (allowedl .gt. 24) then
+        write(0,*)'Error: allowedl too big. Max value = ',allowedl
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'linearbounds',linearbounds,1)
+      if (rc.ne.1) then
+        linearbounds = 1
+      end if
+      if (linearbounds .lt. 0) then
+        write(0,*)'Error: linearbounds too small. Min value = ',linearbo
+     &unds
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'shadow',shadow,1)
+      if (rc.ne.1) then
+        shadow = 0
+      end if
+      if (shadow .lt. 0) then
+        write(0,*)'Error: shadow too small. Min value = ',shadow
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'minx0',minx0,1)
+      if (rc.ne.1) then
+        minx0 = 0.0
+      end if
+      rc = get_real_param(pfile,'miny0',miny0,1)
+      if (rc.ne.1) then
+        miny0 = 0.0
+      end if
+      rc = get_real_param(pfile,'minz0',minz0,1)
+      if (rc.ne.1) then
+        minz0 = 0.0
+      end if
+      rc = get_real_param(pfile,'maxx0',maxx0,1)
+      if (rc.ne.1) then
+        maxx0 = 1.0
+      end if
+      rc = get_real_param(pfile,'maxy0',maxy0,1)
+      if (rc.ne.1) then
+        maxy0 = 1.0
+      end if
+      rc = get_real_param(pfile,'maxz0',maxz0,1)
+      if (rc.ne.1) then
+        maxz0 = 1.0
+      end if
+      rc = get_int_param(pfile,'trace_level',trace_level,1)
+      if (rc.ne.1) then
+        trace_level = 1
+      end if
+      if (trace_level .lt. 0) then
+        write(0,*)'Error: trace_level too small. Min value = ',trace_lev
+     &el
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'ethreshold',ethreshold,1)
+      if (rc.ne.1) then
+        ethreshold = 1.0
+      end if
+      if (ethreshold .lt. 0) then
+        write(0,*)'Error: ethreshold too small. Min value = ',ethreshold
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'buffer',buffer,1)
+      if (rc.ne.1) then
+        buffer = 1
+      end if
+      if (buffer .lt. 0) then
+        write(0,*)'Error: buffer too small. Min value = ',buffer
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'mindim',mindim,1)
+      if (rc.ne.1) then
+        mindim = 1
+      end if
+      if (mindim .lt. 0) then
+        write(0,*)'Error: mindim too small. Min value = ',mindim
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'window',window,1)
+      if (rc.ne.1) then
+        window = 1
+      end if
+      if (window .lt. 0) then
+        write(0,*)'Error: window too small. Min value = ',window
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'minefficiency',minefficiency,1)
+      if (rc.ne.1) then
+        minefficiency = 0.7
+      end if
+      if (minefficiency .lt. 0) then
+        write(0,*)'Error: minefficiency too small. Min value = ',mineffi
+     &ciency
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_style',output_style,1)
+      if (rc.ne.1) then
+        output_style = 1
+      end if
+      if (output_style .lt. 0) then
+        write(0,*)'Error: output_style too small. Min value = ',output_s
+     &tyle
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_dim',output_dim,1)
+      if (rc.ne.1) then
+        output_dim = 3
+      end if
+      if (output_dim .lt. 0) then
+        write(0,*)'Error: output_dim too small. Min value = ',output_dim
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f1_type',output_f1_type,1)
+      if (rc.ne.1) then
+        output_f1_type = 11
+      end if
+      if (output_f1_type .lt. 0) then
+        write(0,*)'Error: output_f1_type too small. Min value = ',output
+     &_f1_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f1_level',output_f1_level,1)
+      if (rc.ne.1) then
+        output_f1_level = 1
+      end if
+      if (output_f1_level .lt. 0) then
+        write(0,*)'Error: output_f1_level too small. Min value = ',outpu
+     &t_f1_level
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f1_period',output_f1_period,1)
+      if (rc.ne.1) then
+        output_f1_period = 0
+      end if
+      if (output_f1_period .lt. 0) then
+        write(0,*)'Error: output_f1_period too small. Min value = ',outp
+     &ut_f1_period
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'output_f1_lb1',output_f1_lb1,1)
+      if (rc.ne.1) then
+        output_f1_lb1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f1_lb2',output_f1_lb2,1)
+      if (rc.ne.1) then
+        output_f1_lb2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f1_lb3',output_f1_lb3,1)
+      if (rc.ne.1) then
+        output_f1_lb3 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f1_ub1',output_f1_ub1,1)
+      if (rc.ne.1) then
+        output_f1_ub1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f1_ub2',output_f1_ub2,1)
+      if (rc.ne.1) then
+        output_f1_ub2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f1_ub3',output_f1_ub3,1)
+      if (rc.ne.1) then
+        output_f1_ub3 = 0.0
+      end if
+      rc = get_int_param(pfile,'output_f2_type',output_f2_type,1)
+      if (rc.ne.1) then
+        output_f2_type = 11
+      end if
+      if (output_f2_type .lt. 0) then
+        write(0,*)'Error: output_f2_type too small. Min value = ',output
+     &_f2_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f2_level',output_f2_level,1)
+      if (rc.ne.1) then
+        output_f2_level = 1
+      end if
+      if (output_f2_level .lt. 0) then
+        write(0,*)'Error: output_f2_level too small. Min value = ',outpu
+     &t_f2_level
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f2_period',output_f2_period,1)
+      if (rc.ne.1) then
+        output_f2_period = 0
+      end if
+      if (output_f2_period .lt. 0) then
+        write(0,*)'Error: output_f2_period too small. Min value = ',outp
+     &ut_f2_period
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'output_f2_lb1',output_f2_lb1,1)
+      if (rc.ne.1) then
+        output_f2_lb1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f2_lb2',output_f2_lb2,1)
+      if (rc.ne.1) then
+        output_f2_lb2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f2_lb3',output_f2_lb3,1)
+      if (rc.ne.1) then
+        output_f2_lb3 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f2_ub1',output_f2_ub1,1)
+      if (rc.ne.1) then
+        output_f2_ub1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f2_ub2',output_f2_ub2,1)
+      if (rc.ne.1) then
+        output_f2_ub2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f2_ub3',output_f2_ub3,1)
+      if (rc.ne.1) then
+        output_f2_ub3 = 0.0
+      end if
+      rc = get_int_param(pfile,'output_f3_type',output_f3_type,1)
+      if (rc.ne.1) then
+        output_f3_type = 11
+      end if
+      if (output_f3_type .lt. 0) then
+        write(0,*)'Error: output_f3_type too small. Min value = ',output
+     &_f3_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f3_level',output_f3_level,1)
+      if (rc.ne.1) then
+        output_f3_level = 1
+      end if
+      if (output_f3_level .lt. 0) then
+        write(0,*)'Error: output_f3_level too small. Min value = ',outpu
+     &t_f3_level
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f3_period',output_f3_period,1)
+      if (rc.ne.1) then
+        output_f3_period = 0
+      end if
+      if (output_f3_period .lt. 0) then
+        write(0,*)'Error: output_f3_period too small. Min value = ',outp
+     &ut_f3_period
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'output_f3_lb1',output_f3_lb1,1)
+      if (rc.ne.1) then
+        output_f3_lb1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f3_lb2',output_f3_lb2,1)
+      if (rc.ne.1) then
+        output_f3_lb2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f3_lb3',output_f3_lb3,1)
+      if (rc.ne.1) then
+        output_f3_lb3 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f3_ub1',output_f3_ub1,1)
+      if (rc.ne.1) then
+        output_f3_ub1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f3_ub2',output_f3_ub2,1)
+      if (rc.ne.1) then
+        output_f3_ub2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f3_ub3',output_f3_ub3,1)
+      if (rc.ne.1) then
+        output_f3_ub3 = 0.0
+      end if
+      rc = get_int_param(pfile,'output_f4_type',output_f4_type,1)
+      if (rc.ne.1) then
+        output_f4_type = 11
+      end if
+      if (output_f4_type .lt. 0) then
+        write(0,*)'Error: output_f4_type too small. Min value = ',output
+     &_f4_type
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f4_level',output_f4_level,1)
+      if (rc.ne.1) then
+        output_f4_level = 1
+      end if
+      if (output_f4_level .lt. 0) then
+        write(0,*)'Error: output_f4_level too small. Min value = ',outpu
+     &t_f4_level
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_f4_period',output_f4_period,1)
+      if (rc.ne.1) then
+        output_f4_period = 0
+      end if
+      if (output_f4_period .lt. 0) then
+        write(0,*)'Error: output_f4_period too small. Min value = ',outp
+     &ut_f4_period
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'output_f4_lb1',output_f4_lb1,1)
+      if (rc.ne.1) then
+        output_f4_lb1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f4_lb2',output_f4_lb2,1)
+      if (rc.ne.1) then
+        output_f4_lb2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f4_lb3',output_f4_lb3,1)
+      if (rc.ne.1) then
+        output_f4_lb3 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f4_ub1',output_f4_ub1,1)
+      if (rc.ne.1) then
+        output_f4_ub1 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f4_ub2',output_f4_ub2,1)
+      if (rc.ne.1) then
+        output_f4_ub2 = 0.0
+      end if
+      rc = get_real_param(pfile,'output_f4_ub3',output_f4_ub3,1)
+      if (rc.ne.1) then
+        output_f4_ub3 = 0.0
+      end if
+      rc = get_int_param(pfile,'clusterreadwrite',clusterreadwrite,1)
+      if (rc.ne.1) then
+        clusterreadwrite = 0
+      end if
+      if (clusterreadwrite .lt. 0) then
+        write(0,*)'Error: clusterreadwrite too small. Min value = ',clus
+     &terreadwrite
+        err = err + 1
+      end if
+      if (clusterreadwrite .gt. 2) then
+        write(0,*)'Error: clusterreadwrite too big. Max value = ',cluste
+     &rreadwrite
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'ghostwidth',ghostwidth,1)
+      if (rc.ne.1) then
+        ghostwidth = 1
+      end if
+      if (ghostwidth .lt. 1) then
+        write(0,*)'Error: ghostwidth too small. Min value = ',ghostwidth
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'update_scheme',update_scheme,1)
+      if (rc.ne.1) then
+        update_scheme = 0
+      end if
+      if (update_scheme .lt. 0) then
+        write(0,*)'Error: update_scheme too small. Min value = ',update_
+     &scheme
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'amrbound_prepost',amrbound_prepost,1)
+      if (rc.ne.1) then
+        amrbound_prepost = 0
+      end if
+      if (amrbound_prepost .lt. 0) then
+        write(0,*)'Error: amrbound_prepost too small. Min value = ',amrb
+     &ound_prepost
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'amrbound_timealign',amrbound_timealign,1
+     &)
+      if (rc.ne.1) then
+        amrbound_timealign = 0
+      end if
+      if (amrbound_timealign .lt. 0) then
+        write(0,*)'Error: amrbound_timealign too small. Min value = ',am
+     &rbound_timealign
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'elliptic_solve',elliptic_solve,1)
+      if (rc.ne.1) then
+        elliptic_solve = 0
+      end if
+      rc = get_int_param(pfile,'nvcycle',nvcycle,1)
+      if (rc.ne.1) then
+        nvcycle = 1
+      end if
+      if (nvcycle .lt. 0) then
+        write(0,*)'Error: nvcycle too small. Min value = ',nvcycle
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'preswp',preswp,1)
+      if (rc.ne.1) then
+        preswp = 3
+      end if
+      if (preswp .lt. 0) then
+        write(0,*)'Error: preswp too small. Min value = ',preswp
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'pstswp',pstswp,1)
+      if (rc.ne.1) then
+        pstswp = 3
+      end if
+      if (pstswp .lt. 0) then
+        write(0,*)'Error: pstswp too small. Min value = ',pstswp
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'maxsweeps',maxsweeps,1)
+      if (rc.ne.1) then
+        maxsweeps = 1000
+      end if
+      if (maxsweeps .lt. 0) then
+        write(0,*)'Error: maxsweeps too small. Min value = ',maxsweeps
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'ell_epsilon',ell_epsilon,1)
+      if (rc.ne.1) then
+        ell_epsilon = 9.d-15
+      end if
+      if (ell_epsilon .lt. 0) then
+        write(0,*)'Error: ell_epsilon too small. Min value = ',ell_epsil
+     &on
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'num_evol_iters',num_evol_iters,1)
+      if (rc.ne.1) then
+        num_evol_iters = 3
+      end if
+      if (num_evol_iters .lt. 0) then
+        write(0,*)'Error: num_evol_iters too small. Min value = ',num_ev
+     &ol_iters
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'chkpt_period',chkpt_period,1)
+      if (rc.ne.1) then
+        chkpt_period = 0
+      end if
+      rc = get_int_param(pfile,'chkpt_readstate',chkpt_readstate,1)
+      if (rc.ne.1) then
+        chkpt_readstate = 0
+      end if
+      rc = get_int_param(pfile,'chkpt_control',chkpt_control,1)
+      if (rc.ne.1) then
+        chkpt_control = 0
+      end if
+      rc = get_int_param(pfile,'bound_width',bound_width,1)
+      if (rc.ne.1) then
+        bound_width = 3
+      end if
+      if (bound_width .lt. 1) then
+        write(0,*)'Error: bound_width too small. Min value = ',bound_wid
+     &th
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'weno_interp',weno_interp,1)
+      if (rc.ne.1) then
+        weno_interp = 0
+      end if
+      if (weno_interp .lt. 0) then
+        write(0,*)'Error: weno_interp too small. Min value = ',weno_inte
+     &rp
+        err = err + 1
+      end if
+      if (weno_interp .gt. 1) then
+        write(0,*)'Error: weno_interp too big. Max value = ',weno_interp
+     &
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'findhorizon',findhorizon,1)
+      if (rc.ne.1) then
+        findhorizon = 0
+      end if
+      rc = get_int_param(pfile,'mask_period',mask_period,1)
+      if (rc.ne.1) then
+        mask_period = 1
+      end if
+      if (mask_period .lt. 1) then
+        write(0,*)'Error: mask_period too small. Min value = ',mask_peri
+     &od
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'mask_usemin',mask_usemin,1)
+      if (rc.ne.1) then
+        mask_usemin = 0
+      end if
+      rc = get_int_param(pfile,'mask_minfield',mask_minfield,1)
+      if (rc.ne.1) then
+        mask_minfield = 1
+      end if
+      if (mask_minfield .lt. 1) then
+        write(0,*)'Error: mask_minfield too small. Min value = ',mask_mi
+     &nfield
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'horizon_ntheta',horizon_ntheta,1)
+      if (rc.ne.1) then
+        horizon_ntheta = 30
+      end if
+      if (horizon_ntheta .lt. 1) then
+        write(0,*)'Error: horizon_ntheta too small. Min value = ',horizo
+     &n_ntheta
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'horizon_nphi',horizon_nphi,1)
+      if (rc.ne.1) then
+        horizon_nphi = 30
+      end if
+      if (horizon_nphi .lt. 1) then
+        write(0,*)'Error: horizon_nphi too small. Min value = ',horizon_
+     &nphi
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'horizon_thresh',horizon_thresh,1)
+      if (rc.ne.1) then
+        horizon_thresh = 1.d-1
+      end if
+      if (horizon_thresh .lt. 0) then
+        write(0,*)'Error: horizon_thresh too small. Min value = ',horizo
+     &n_thresh
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'horizon_nholes',horizon_nholes,1)
+      if (rc.ne.1) then
+        horizon_nholes = 1
+      end if
+      if (horizon_nholes .lt. 0) then
+        write(0,*)'Error: horizon_nholes too small. Min value = ',horizo
+     &n_nholes
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'horizon_recenterp',horizon_recenterp,1)
+      if (rc.ne.1) then
+        horizon_recenterp = 0
+      end if
+      if (horizon_recenterp .lt. 0) then
+        write(0,*)'Error: horizon_recenterp too small. Min value = ',hor
+     &izon_recenterp
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'horizon_growth',horizon_growth,1)
+      if (rc.ne.1) then
+        horizon_growth = 1.0d0
+      end if
+      if (horizon_growth .lt. 0) then
+        write(0,*)'Error: horizon_growth too small. Min value = ',horizo
+     &n_growth
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'emulate_proc',emulate_proc,1)
+      if (rc.ne.1) then
+        emulate_proc = -1
+      end if
+      if (emulate_proc .lt. -1) then
+        write(0,*)'Error: emulate_proc too small. Min value = ',emulate_
+     &proc
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'assume_symmetry',assume_symmetry,1)
+      if (rc.ne.1) then
+        assume_symmetry = 0
+      end if
+      if (assume_symmetry .lt. 0) then
+        write(0,*)'Error: assume_symmetry too small. Min value = ',assum
+     &e_symmetry
+        err = err + 1
+      end if
+      if (assume_symmetry .gt. 6) then
+        write(0,*)'Error: assume_symmetry too big. Max value = ',assume_
+     &symmetry
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'flush_period',flush_period,1)
+      if (rc.ne.1) then
+        flush_period = 0
+      end if
+      if (flush_period .lt. 0) then
+        write(0,*)'Error: flush_period too small. Min value = ',flush_pe
+     &riod
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'tracers_period',tracers_period,1)
+      if (rc.ne.1) then
+        tracers_period = 0
+      end if
+      if (tracers_period .lt. 0) then
+        write(0,*)'Error: tracers_period too small. Min value = ',tracer
+     &s_period
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'tracers_initial',tracers_initial,1)
+      if (rc.ne.1) then
+        tracers_initial = 0
+      end if
+      if (tracers_initial .lt. 0) then
+        write(0,*)'Error: tracers_initial too small. Min value = ',trace
+     &rs_initial
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'tracers_scheme',tracers_scheme,1)
+      if (rc.ne.1) then
+        tracers_scheme = 0
+      end if
+      if (tracers_scheme .lt. 0) then
+        write(0,*)'Error: tracers_scheme too small. Min value = ',tracer
+     &s_scheme
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'variable_timestep',variable_timestep,1)
+      if (rc.ne.1) then
+        variable_timestep = 0
+      end if
+      if (variable_timestep .lt. 0) then
+        write(0,*)'Error: variable_timestep too small. Min value = ',var
+     &iable_timestep
+        err = err + 1
+      end if
+      if (variable_timestep .gt. 1) then
+        write(0,*)'Error: variable_timestep too big. Max value = ',varia
+     &ble_timestep
+        err = err + 1
+      end if
+      rc = get_real_param(pfile,'cfl_lambda',cfl_lambda,1)
+      if (rc.ne.1) then
+        cfl_lambda = 0.4
+      end if
+      if (cfl_lambda .lt. 0) then
+        write(0,*)'Error: cfl_lambda too small. Min value = ',cfl_lambda
+     &
+        err = err + 1
+      end if
+      if (cfl_lambda .gt. 1.0) then
+        write(0,*)'Error: cfl_lambda too big. Max value = ',cfl_lambda
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'periodicBC',periodicBC,1)
+      if (rc.ne.1) then
+        periodicBC = 0
+      end if
+      if (periodicBC .lt. 0) then
+        write(0,*)'Error: periodicBC too small. Min value = ',periodicBC
+     &
+        err = err + 1
+      end if
+      if (periodicBC .gt. 2) then
+        write(0,*)'Error: periodicBC too big. Max value = ',periodicBC
+        err = err + 1
+      end if
+      rc = get_int_param(pfile,'output_gt11',output_gt11,1)
+      if (rc .ne. 1) then
+        output_gt11 = 0
+      end if
+      gfunc_out(1) = output_gt11
+      rc = get_int_param(pfile,'analysis_gt11',analysis_gt11,1)
+      if (rc .ne. 1) then
+        analysis_gt11 = 0
+      end if
+      gfunc_ana(1) = analysis_gt11
+      rc = get_int_param(pfile,'output_gt11_np1',output_gt11_np1,1)
+      if (rc .ne. 1) then
+        output_gt11_np1 = 0
+      end if
+      gfunc_out(2) = output_gt11_np1
+      rc = get_int_param(pfile,'analysis_gt11_np1',analysis_gt11_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt11_np1 = 0
+      end if
+      gfunc_ana(2) = analysis_gt11_np1
+      rc = get_int_param(pfile,'output_gt12',output_gt12,1)
+      if (rc .ne. 1) then
+        output_gt12 = 0
+      end if
+      gfunc_out(3) = output_gt12
+      rc = get_int_param(pfile,'analysis_gt12',analysis_gt12,1)
+      if (rc .ne. 1) then
+        analysis_gt12 = 0
+      end if
+      gfunc_ana(3) = analysis_gt12
+      rc = get_int_param(pfile,'output_gt12_np1',output_gt12_np1,1)
+      if (rc .ne. 1) then
+        output_gt12_np1 = 0
+      end if
+      gfunc_out(4) = output_gt12_np1
+      rc = get_int_param(pfile,'analysis_gt12_np1',analysis_gt12_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt12_np1 = 0
+      end if
+      gfunc_ana(4) = analysis_gt12_np1
+      rc = get_int_param(pfile,'output_gt13',output_gt13,1)
+      if (rc .ne. 1) then
+        output_gt13 = 0
+      end if
+      gfunc_out(5) = output_gt13
+      rc = get_int_param(pfile,'analysis_gt13',analysis_gt13,1)
+      if (rc .ne. 1) then
+        analysis_gt13 = 0
+      end if
+      gfunc_ana(5) = analysis_gt13
+      rc = get_int_param(pfile,'output_gt13_np1',output_gt13_np1,1)
+      if (rc .ne. 1) then
+        output_gt13_np1 = 0
+      end if
+      gfunc_out(6) = output_gt13_np1
+      rc = get_int_param(pfile,'analysis_gt13_np1',analysis_gt13_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt13_np1 = 0
+      end if
+      gfunc_ana(6) = analysis_gt13_np1
+      rc = get_int_param(pfile,'output_gt22',output_gt22,1)
+      if (rc .ne. 1) then
+        output_gt22 = 0
+      end if
+      gfunc_out(7) = output_gt22
+      rc = get_int_param(pfile,'analysis_gt22',analysis_gt22,1)
+      if (rc .ne. 1) then
+        analysis_gt22 = 0
+      end if
+      gfunc_ana(7) = analysis_gt22
+      rc = get_int_param(pfile,'output_gt22_np1',output_gt22_np1,1)
+      if (rc .ne. 1) then
+        output_gt22_np1 = 0
+      end if
+      gfunc_out(8) = output_gt22_np1
+      rc = get_int_param(pfile,'analysis_gt22_np1',analysis_gt22_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt22_np1 = 0
+      end if
+      gfunc_ana(8) = analysis_gt22_np1
+      rc = get_int_param(pfile,'output_gt23',output_gt23,1)
+      if (rc .ne. 1) then
+        output_gt23 = 0
+      end if
+      gfunc_out(9) = output_gt23
+      rc = get_int_param(pfile,'analysis_gt23',analysis_gt23,1)
+      if (rc .ne. 1) then
+        analysis_gt23 = 0
+      end if
+      gfunc_ana(9) = analysis_gt23
+      rc = get_int_param(pfile,'output_gt23_np1',output_gt23_np1,1)
+      if (rc .ne. 1) then
+        output_gt23_np1 = 0
+      end if
+      gfunc_out(10) = output_gt23_np1
+      rc = get_int_param(pfile,'analysis_gt23_np1',analysis_gt23_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt23_np1 = 0
+      end if
+      gfunc_ana(10) = analysis_gt23_np1
+      rc = get_int_param(pfile,'output_gt33',output_gt33,1)
+      if (rc .ne. 1) then
+        output_gt33 = 0
+      end if
+      gfunc_out(11) = output_gt33
+      rc = get_int_param(pfile,'analysis_gt33',analysis_gt33,1)
+      if (rc .ne. 1) then
+        analysis_gt33 = 0
+      end if
+      gfunc_ana(11) = analysis_gt33
+      rc = get_int_param(pfile,'output_gt33_np1',output_gt33_np1,1)
+      if (rc .ne. 1) then
+        output_gt33_np1 = 0
+      end if
+      gfunc_out(12) = output_gt33_np1
+      rc = get_int_param(pfile,'analysis_gt33_np1',analysis_gt33_np1,1)
+      if (rc .ne. 1) then
+        analysis_gt33_np1 = 0
+      end if
+      gfunc_ana(12) = analysis_gt33_np1
+      rc = get_int_param(pfile,'output_A11',output_A11,1)
+      if (rc .ne. 1) then
+        output_A11 = 0
+      end if
+      gfunc_out(13) = output_A11
+      rc = get_int_param(pfile,'analysis_A11',analysis_A11,1)
+      if (rc .ne. 1) then
+        analysis_A11 = 0
+      end if
+      gfunc_ana(13) = analysis_A11
+      rc = get_int_param(pfile,'output_A11_np1',output_A11_np1,1)
+      if (rc .ne. 1) then
+        output_A11_np1 = 0
+      end if
+      gfunc_out(14) = output_A11_np1
+      rc = get_int_param(pfile,'analysis_A11_np1',analysis_A11_np1,1)
+      if (rc .ne. 1) then
+        analysis_A11_np1 = 0
+      end if
+      gfunc_ana(14) = analysis_A11_np1
+      rc = get_int_param(pfile,'output_A12',output_A12,1)
+      if (rc .ne. 1) then
+        output_A12 = 0
+      end if
+      gfunc_out(15) = output_A12
+      rc = get_int_param(pfile,'analysis_A12',analysis_A12,1)
+      if (rc .ne. 1) then
+        analysis_A12 = 0
+      end if
+      gfunc_ana(15) = analysis_A12
+      rc = get_int_param(pfile,'output_A12_np1',output_A12_np1,1)
+      if (rc .ne. 1) then
+        output_A12_np1 = 0
+      end if
+      gfunc_out(16) = output_A12_np1
+      rc = get_int_param(pfile,'analysis_A12_np1',analysis_A12_np1,1)
+      if (rc .ne. 1) then
+        analysis_A12_np1 = 0
+      end if
+      gfunc_ana(16) = analysis_A12_np1
+      rc = get_int_param(pfile,'output_A13',output_A13,1)
+      if (rc .ne. 1) then
+        output_A13 = 0
+      end if
+      gfunc_out(17) = output_A13
+      rc = get_int_param(pfile,'analysis_A13',analysis_A13,1)
+      if (rc .ne. 1) then
+        analysis_A13 = 0
+      end if
+      gfunc_ana(17) = analysis_A13
+      rc = get_int_param(pfile,'output_A13_np1',output_A13_np1,1)
+      if (rc .ne. 1) then
+        output_A13_np1 = 0
+      end if
+      gfunc_out(18) = output_A13_np1
+      rc = get_int_param(pfile,'analysis_A13_np1',analysis_A13_np1,1)
+      if (rc .ne. 1) then
+        analysis_A13_np1 = 0
+      end if
+      gfunc_ana(18) = analysis_A13_np1
+      rc = get_int_param(pfile,'output_A22',output_A22,1)
+      if (rc .ne. 1) then
+        output_A22 = 0
+      end if
+      gfunc_out(19) = output_A22
+      rc = get_int_param(pfile,'analysis_A22',analysis_A22,1)
+      if (rc .ne. 1) then
+        analysis_A22 = 0
+      end if
+      gfunc_ana(19) = analysis_A22
+      rc = get_int_param(pfile,'output_A22_np1',output_A22_np1,1)
+      if (rc .ne. 1) then
+        output_A22_np1 = 0
+      end if
+      gfunc_out(20) = output_A22_np1
+      rc = get_int_param(pfile,'analysis_A22_np1',analysis_A22_np1,1)
+      if (rc .ne. 1) then
+        analysis_A22_np1 = 0
+      end if
+      gfunc_ana(20) = analysis_A22_np1
+      rc = get_int_param(pfile,'output_A23',output_A23,1)
+      if (rc .ne. 1) then
+        output_A23 = 0
+      end if
+      gfunc_out(21) = output_A23
+      rc = get_int_param(pfile,'analysis_A23',analysis_A23,1)
+      if (rc .ne. 1) then
+        analysis_A23 = 0
+      end if
+      gfunc_ana(21) = analysis_A23
+      rc = get_int_param(pfile,'output_A23_np1',output_A23_np1,1)
+      if (rc .ne. 1) then
+        output_A23_np1 = 0
+      end if
+      gfunc_out(22) = output_A23_np1
+      rc = get_int_param(pfile,'analysis_A23_np1',analysis_A23_np1,1)
+      if (rc .ne. 1) then
+        analysis_A23_np1 = 0
+      end if
+      gfunc_ana(22) = analysis_A23_np1
+      rc = get_int_param(pfile,'output_A33',output_A33,1)
+      if (rc .ne. 1) then
+        output_A33 = 0
+      end if
+      gfunc_out(23) = output_A33
+      rc = get_int_param(pfile,'analysis_A33',analysis_A33,1)
+      if (rc .ne. 1) then
+        analysis_A33 = 0
+      end if
+      gfunc_ana(23) = analysis_A33
+      rc = get_int_param(pfile,'output_A33_np1',output_A33_np1,1)
+      if (rc .ne. 1) then
+        output_A33_np1 = 0
+      end if
+      gfunc_out(24) = output_A33_np1
+      rc = get_int_param(pfile,'analysis_A33_np1',analysis_A33_np1,1)
+      if (rc .ne. 1) then
+        analysis_A33_np1 = 0
+      end if
+      gfunc_ana(24) = analysis_A33_np1
+      rc = get_int_param(pfile,'output_chi',output_chi,1)
+      if (rc .ne. 1) then
+        output_chi = 0
+      end if
+      gfunc_out(25) = output_chi
+      rc = get_int_param(pfile,'analysis_chi',analysis_chi,1)
+      if (rc .ne. 1) then
+        analysis_chi = 0
+      end if
+      gfunc_ana(25) = analysis_chi
+      rc = get_int_param(pfile,'output_chi_np1',output_chi_np1,1)
+      if (rc .ne. 1) then
+        output_chi_np1 = 0
+      end if
+      gfunc_out(26) = output_chi_np1
+      rc = get_int_param(pfile,'analysis_chi_np1',analysis_chi_np1,1)
+      if (rc .ne. 1) then
+        analysis_chi_np1 = 0
+      end if
+      gfunc_ana(26) = analysis_chi_np1
+      rc = get_int_param(pfile,'output_trK',output_trK,1)
+      if (rc .ne. 1) then
+        output_trK = 0
+      end if
+      gfunc_out(27) = output_trK
+      rc = get_int_param(pfile,'analysis_trK',analysis_trK,1)
+      if (rc .ne. 1) then
+        analysis_trK = 0
+      end if
+      gfunc_ana(27) = analysis_trK
+      rc = get_int_param(pfile,'output_trK_np1',output_trK_np1,1)
+      if (rc .ne. 1) then
+        output_trK_np1 = 0
+      end if
+      gfunc_out(28) = output_trK_np1
+      rc = get_int_param(pfile,'analysis_trK_np1',analysis_trK_np1,1)
+      if (rc .ne. 1) then
+        analysis_trK_np1 = 0
+      end if
+      gfunc_ana(28) = analysis_trK_np1
+      rc = get_int_param(pfile,'output_Gam1',output_Gam1,1)
+      if (rc .ne. 1) then
+        output_Gam1 = 0
+      end if
+      gfunc_out(29) = output_Gam1
+      rc = get_int_param(pfile,'analysis_Gam1',analysis_Gam1,1)
+      if (rc .ne. 1) then
+        analysis_Gam1 = 0
+      end if
+      gfunc_ana(29) = analysis_Gam1
+      rc = get_int_param(pfile,'output_Gam1_np1',output_Gam1_np1,1)
+      if (rc .ne. 1) then
+        output_Gam1_np1 = 0
+      end if
+      gfunc_out(30) = output_Gam1_np1
+      rc = get_int_param(pfile,'analysis_Gam1_np1',analysis_Gam1_np1,1)
+      if (rc .ne. 1) then
+        analysis_Gam1_np1 = 0
+      end if
+      gfunc_ana(30) = analysis_Gam1_np1
+      rc = get_int_param(pfile,'output_Gam2',output_Gam2,1)
+      if (rc .ne. 1) then
+        output_Gam2 = 0
+      end if
+      gfunc_out(31) = output_Gam2
+      rc = get_int_param(pfile,'analysis_Gam2',analysis_Gam2,1)
+      if (rc .ne. 1) then
+        analysis_Gam2 = 0
+      end if
+      gfunc_ana(31) = analysis_Gam2
+      rc = get_int_param(pfile,'output_Gam2_np1',output_Gam2_np1,1)
+      if (rc .ne. 1) then
+        output_Gam2_np1 = 0
+      end if
+      gfunc_out(32) = output_Gam2_np1
+      rc = get_int_param(pfile,'analysis_Gam2_np1',analysis_Gam2_np1,1)
+      if (rc .ne. 1) then
+        analysis_Gam2_np1 = 0
+      end if
+      gfunc_ana(32) = analysis_Gam2_np1
+      rc = get_int_param(pfile,'output_Gam3',output_Gam3,1)
+      if (rc .ne. 1) then
+        output_Gam3 = 0
+      end if
+      gfunc_out(33) = output_Gam3
+      rc = get_int_param(pfile,'analysis_Gam3',analysis_Gam3,1)
+      if (rc .ne. 1) then
+        analysis_Gam3 = 0
+      end if
+      gfunc_ana(33) = analysis_Gam3
+      rc = get_int_param(pfile,'output_Gam3_np1',output_Gam3_np1,1)
+      if (rc .ne. 1) then
+        output_Gam3_np1 = 0
+      end if
+      gfunc_out(34) = output_Gam3_np1
+      rc = get_int_param(pfile,'analysis_Gam3_np1',analysis_Gam3_np1,1)
+      if (rc .ne. 1) then
+        analysis_Gam3_np1 = 0
+      end if
+      gfunc_ana(34) = analysis_Gam3_np1
+      rc = get_int_param(pfile,'output_alpha',output_alpha,1)
+      if (rc .ne. 1) then
+        output_alpha = 0
+      end if
+      gfunc_out(35) = output_alpha
+      rc = get_int_param(pfile,'analysis_alpha',analysis_alpha,1)
+      if (rc .ne. 1) then
+        analysis_alpha = 0
+      end if
+      gfunc_ana(35) = analysis_alpha
+      rc = get_int_param(pfile,'output_alpha_np1',output_alpha_np1,1)
+      if (rc .ne. 1) then
+        output_alpha_np1 = 0
+      end if
+      gfunc_out(36) = output_alpha_np1
+      rc = get_int_param(pfile,'analysis_alpha_np1',analysis_alpha_np1,1
+     &)
+      if (rc .ne. 1) then
+        analysis_alpha_np1 = 0
+      end if
+      gfunc_ana(36) = analysis_alpha_np1
+      rc = get_int_param(pfile,'output_shift1',output_shift1,1)
+      if (rc .ne. 1) then
+        output_shift1 = 0
+      end if
+      gfunc_out(37) = output_shift1
+      rc = get_int_param(pfile,'analysis_shift1',analysis_shift1,1)
+      if (rc .ne. 1) then
+        analysis_shift1 = 0
+      end if
+      gfunc_ana(37) = analysis_shift1
+      rc = get_int_param(pfile,'output_shift1_np1',output_shift1_np1,1)
+      if (rc .ne. 1) then
+        output_shift1_np1 = 0
+      end if
+      gfunc_out(38) = output_shift1_np1
+      rc = get_int_param(pfile,'analysis_shift1_np1',analysis_shift1_np1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift1_np1 = 0
+      end if
+      gfunc_ana(38) = analysis_shift1_np1
+      rc = get_int_param(pfile,'output_shift2',output_shift2,1)
+      if (rc .ne. 1) then
+        output_shift2 = 0
+      end if
+      gfunc_out(39) = output_shift2
+      rc = get_int_param(pfile,'analysis_shift2',analysis_shift2,1)
+      if (rc .ne. 1) then
+        analysis_shift2 = 0
+      end if
+      gfunc_ana(39) = analysis_shift2
+      rc = get_int_param(pfile,'output_shift2_np1',output_shift2_np1,1)
+      if (rc .ne. 1) then
+        output_shift2_np1 = 0
+      end if
+      gfunc_out(40) = output_shift2_np1
+      rc = get_int_param(pfile,'analysis_shift2_np1',analysis_shift2_np1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift2_np1 = 0
+      end if
+      gfunc_ana(40) = analysis_shift2_np1
+      rc = get_int_param(pfile,'output_shift3',output_shift3,1)
+      if (rc .ne. 1) then
+        output_shift3 = 0
+      end if
+      gfunc_out(41) = output_shift3
+      rc = get_int_param(pfile,'analysis_shift3',analysis_shift3,1)
+      if (rc .ne. 1) then
+        analysis_shift3 = 0
+      end if
+      gfunc_ana(41) = analysis_shift3
+      rc = get_int_param(pfile,'output_shift3_np1',output_shift3_np1,1)
+      if (rc .ne. 1) then
+        output_shift3_np1 = 0
+      end if
+      gfunc_out(42) = output_shift3_np1
+      rc = get_int_param(pfile,'analysis_shift3_np1',analysis_shift3_np1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift3_np1 = 0
+      end if
+      gfunc_ana(42) = analysis_shift3_np1
+      rc = get_int_param(pfile,'output_gb1',output_gb1,1)
+      if (rc .ne. 1) then
+        output_gb1 = 0
+      end if
+      gfunc_out(43) = output_gb1
+      rc = get_int_param(pfile,'analysis_gb1',analysis_gb1,1)
+      if (rc .ne. 1) then
+        analysis_gb1 = 0
+      end if
+      gfunc_ana(43) = analysis_gb1
+      rc = get_int_param(pfile,'output_gb1_np1',output_gb1_np1,1)
+      if (rc .ne. 1) then
+        output_gb1_np1 = 0
+      end if
+      gfunc_out(44) = output_gb1_np1
+      rc = get_int_param(pfile,'analysis_gb1_np1',analysis_gb1_np1,1)
+      if (rc .ne. 1) then
+        analysis_gb1_np1 = 0
+      end if
+      gfunc_ana(44) = analysis_gb1_np1
+      rc = get_int_param(pfile,'output_gb2',output_gb2,1)
+      if (rc .ne. 1) then
+        output_gb2 = 0
+      end if
+      gfunc_out(45) = output_gb2
+      rc = get_int_param(pfile,'analysis_gb2',analysis_gb2,1)
+      if (rc .ne. 1) then
+        analysis_gb2 = 0
+      end if
+      gfunc_ana(45) = analysis_gb2
+      rc = get_int_param(pfile,'output_gb2_np1',output_gb2_np1,1)
+      if (rc .ne. 1) then
+        output_gb2_np1 = 0
+      end if
+      gfunc_out(46) = output_gb2_np1
+      rc = get_int_param(pfile,'analysis_gb2_np1',analysis_gb2_np1,1)
+      if (rc .ne. 1) then
+        analysis_gb2_np1 = 0
+      end if
+      gfunc_ana(46) = analysis_gb2_np1
+      rc = get_int_param(pfile,'output_gb3',output_gb3,1)
+      if (rc .ne. 1) then
+        output_gb3 = 0
+      end if
+      gfunc_out(47) = output_gb3
+      rc = get_int_param(pfile,'analysis_gb3',analysis_gb3,1)
+      if (rc .ne. 1) then
+        analysis_gb3 = 0
+      end if
+      gfunc_ana(47) = analysis_gb3
+      rc = get_int_param(pfile,'output_gb3_np1',output_gb3_np1,1)
+      if (rc .ne. 1) then
+        output_gb3_np1 = 0
+      end if
+      gfunc_out(48) = output_gb3_np1
+      rc = get_int_param(pfile,'analysis_gb3_np1',analysis_gb3_np1,1)
+      if (rc .ne. 1) then
+        analysis_gb3_np1 = 0
+      end if
+      gfunc_ana(48) = analysis_gb3_np1
+      rc = get_int_param(pfile,'output_Ex',output_Ex,1)
+      if (rc .ne. 1) then
+        output_Ex = 0
+      end if
+      gfunc_out(49) = output_Ex
+      rc = get_int_param(pfile,'analysis_Ex',analysis_Ex,1)
+      if (rc .ne. 1) then
+        analysis_Ex = 0
+      end if
+      gfunc_ana(49) = analysis_Ex
+      rc = get_int_param(pfile,'output_Ex_np1',output_Ex_np1,1)
+      if (rc .ne. 1) then
+        output_Ex_np1 = 0
+      end if
+      gfunc_out(50) = output_Ex_np1
+      rc = get_int_param(pfile,'analysis_Ex_np1',analysis_Ex_np1,1)
+      if (rc .ne. 1) then
+        analysis_Ex_np1 = 0
+      end if
+      gfunc_ana(50) = analysis_Ex_np1
+      rc = get_int_param(pfile,'output_Ey',output_Ey,1)
+      if (rc .ne. 1) then
+        output_Ey = 0
+      end if
+      gfunc_out(51) = output_Ey
+      rc = get_int_param(pfile,'analysis_Ey',analysis_Ey,1)
+      if (rc .ne. 1) then
+        analysis_Ey = 0
+      end if
+      gfunc_ana(51) = analysis_Ey
+      rc = get_int_param(pfile,'output_Ey_np1',output_Ey_np1,1)
+      if (rc .ne. 1) then
+        output_Ey_np1 = 0
+      end if
+      gfunc_out(52) = output_Ey_np1
+      rc = get_int_param(pfile,'analysis_Ey_np1',analysis_Ey_np1,1)
+      if (rc .ne. 1) then
+        analysis_Ey_np1 = 0
+      end if
+      gfunc_ana(52) = analysis_Ey_np1
+      rc = get_int_param(pfile,'output_Ez',output_Ez,1)
+      if (rc .ne. 1) then
+        output_Ez = 0
+      end if
+      gfunc_out(53) = output_Ez
+      rc = get_int_param(pfile,'analysis_Ez',analysis_Ez,1)
+      if (rc .ne. 1) then
+        analysis_Ez = 0
+      end if
+      gfunc_ana(53) = analysis_Ez
+      rc = get_int_param(pfile,'output_Ez_np1',output_Ez_np1,1)
+      if (rc .ne. 1) then
+        output_Ez_np1 = 0
+      end if
+      gfunc_out(54) = output_Ez_np1
+      rc = get_int_param(pfile,'analysis_Ez_np1',analysis_Ez_np1,1)
+      if (rc .ne. 1) then
+        analysis_Ez_np1 = 0
+      end if
+      gfunc_ana(54) = analysis_Ez_np1
+      rc = get_int_param(pfile,'output_Bx',output_Bx,1)
+      if (rc .ne. 1) then
+        output_Bx = 0
+      end if
+      gfunc_out(55) = output_Bx
+      rc = get_int_param(pfile,'analysis_Bx',analysis_Bx,1)
+      if (rc .ne. 1) then
+        analysis_Bx = 0
+      end if
+      gfunc_ana(55) = analysis_Bx
+      rc = get_int_param(pfile,'output_Bx_np1',output_Bx_np1,1)
+      if (rc .ne. 1) then
+        output_Bx_np1 = 0
+      end if
+      gfunc_out(56) = output_Bx_np1
+      rc = get_int_param(pfile,'analysis_Bx_np1',analysis_Bx_np1,1)
+      if (rc .ne. 1) then
+        analysis_Bx_np1 = 0
+      end if
+      gfunc_ana(56) = analysis_Bx_np1
+      rc = get_int_param(pfile,'output_By',output_By,1)
+      if (rc .ne. 1) then
+        output_By = 0
+      end if
+      gfunc_out(57) = output_By
+      rc = get_int_param(pfile,'analysis_By',analysis_By,1)
+      if (rc .ne. 1) then
+        analysis_By = 0
+      end if
+      gfunc_ana(57) = analysis_By
+      rc = get_int_param(pfile,'output_By_np1',output_By_np1,1)
+      if (rc .ne. 1) then
+        output_By_np1 = 0
+      end if
+      gfunc_out(58) = output_By_np1
+      rc = get_int_param(pfile,'analysis_By_np1',analysis_By_np1,1)
+      if (rc .ne. 1) then
+        analysis_By_np1 = 0
+      end if
+      gfunc_ana(58) = analysis_By_np1
+      rc = get_int_param(pfile,'output_Bz',output_Bz,1)
+      if (rc .ne. 1) then
+        output_Bz = 0
+      end if
+      gfunc_out(59) = output_Bz
+      rc = get_int_param(pfile,'analysis_Bz',analysis_Bz,1)
+      if (rc .ne. 1) then
+        analysis_Bz = 0
+      end if
+      gfunc_ana(59) = analysis_Bz
+      rc = get_int_param(pfile,'output_Bz_np1',output_Bz_np1,1)
+      if (rc .ne. 1) then
+        output_Bz_np1 = 0
+      end if
+      gfunc_out(60) = output_Bz_np1
+      rc = get_int_param(pfile,'analysis_Bz_np1',analysis_Bz_np1,1)
+      if (rc .ne. 1) then
+        analysis_Bz_np1 = 0
+      end if
+      gfunc_ana(60) = analysis_Bz_np1
+      rc = get_int_param(pfile,'output_Phi_em',output_Phi_em,1)
+      if (rc .ne. 1) then
+        output_Phi_em = 0
+      end if
+      gfunc_out(61) = output_Phi_em
+      rc = get_int_param(pfile,'analysis_Phi_em',analysis_Phi_em,1)
+      if (rc .ne. 1) then
+        analysis_Phi_em = 0
+      end if
+      gfunc_ana(61) = analysis_Phi_em
+      rc = get_int_param(pfile,'output_Phi_em_np1',output_Phi_em_np1,1)
+      if (rc .ne. 1) then
+        output_Phi_em_np1 = 0
+      end if
+      gfunc_out(62) = output_Phi_em_np1
+      rc = get_int_param(pfile,'analysis_Phi_em_np1',analysis_Phi_em_np1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_Phi_em_np1 = 0
+      end if
+      gfunc_ana(62) = analysis_Phi_em_np1
+      rc = get_int_param(pfile,'output_Psi_em',output_Psi_em,1)
+      if (rc .ne. 1) then
+        output_Psi_em = 0
+      end if
+      gfunc_out(63) = output_Psi_em
+      rc = get_int_param(pfile,'analysis_Psi_em',analysis_Psi_em,1)
+      if (rc .ne. 1) then
+        analysis_Psi_em = 0
+      end if
+      gfunc_ana(63) = analysis_Psi_em
+      rc = get_int_param(pfile,'output_Psi_em_np1',output_Psi_em_np1,1)
+      if (rc .ne. 1) then
+        output_Psi_em_np1 = 0
+      end if
+      gfunc_out(64) = output_Psi_em_np1
+      rc = get_int_param(pfile,'analysis_Psi_em_np1',analysis_Psi_em_np1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_Psi_em_np1 = 0
+      end if
+      gfunc_ana(64) = analysis_Psi_em_np1
+      rc = get_int_param(pfile,'output_phiR',output_phiR,1)
+      if (rc .ne. 1) then
+        output_phiR = 0
+      end if
+      gfunc_out(65) = output_phiR
+      rc = get_int_param(pfile,'analysis_phiR',analysis_phiR,1)
+      if (rc .ne. 1) then
+        analysis_phiR = 0
+      end if
+      gfunc_ana(65) = analysis_phiR
+      rc = get_int_param(pfile,'output_phiR_np1',output_phiR_np1,1)
+      if (rc .ne. 1) then
+        output_phiR_np1 = 0
+      end if
+      gfunc_out(66) = output_phiR_np1
+      rc = get_int_param(pfile,'analysis_phiR_np1',analysis_phiR_np1,1)
+      if (rc .ne. 1) then
+        analysis_phiR_np1 = 0
+      end if
+      gfunc_ana(66) = analysis_phiR_np1
+      rc = get_int_param(pfile,'output_phiI',output_phiI,1)
+      if (rc .ne. 1) then
+        output_phiI = 0
+      end if
+      gfunc_out(67) = output_phiI
+      rc = get_int_param(pfile,'analysis_phiI',analysis_phiI,1)
+      if (rc .ne. 1) then
+        analysis_phiI = 0
+      end if
+      gfunc_ana(67) = analysis_phiI
+      rc = get_int_param(pfile,'output_phiI_np1',output_phiI_np1,1)
+      if (rc .ne. 1) then
+        output_phiI_np1 = 0
+      end if
+      gfunc_out(68) = output_phiI_np1
+      rc = get_int_param(pfile,'analysis_phiI_np1',analysis_phiI_np1,1)
+      if (rc .ne. 1) then
+        analysis_phiI_np1 = 0
+      end if
+      gfunc_ana(68) = analysis_phiI_np1
+      rc = get_int_param(pfile,'output_piR',output_piR,1)
+      if (rc .ne. 1) then
+        output_piR = 0
+      end if
+      gfunc_out(69) = output_piR
+      rc = get_int_param(pfile,'analysis_piR',analysis_piR,1)
+      if (rc .ne. 1) then
+        analysis_piR = 0
+      end if
+      gfunc_ana(69) = analysis_piR
+      rc = get_int_param(pfile,'output_piR_np1',output_piR_np1,1)
+      if (rc .ne. 1) then
+        output_piR_np1 = 0
+      end if
+      gfunc_out(70) = output_piR_np1
+      rc = get_int_param(pfile,'analysis_piR_np1',analysis_piR_np1,1)
+      if (rc .ne. 1) then
+        analysis_piR_np1 = 0
+      end if
+      gfunc_ana(70) = analysis_piR_np1
+      rc = get_int_param(pfile,'output_piI',output_piI,1)
+      if (rc .ne. 1) then
+        output_piI = 0
+      end if
+      gfunc_out(71) = output_piI
+      rc = get_int_param(pfile,'analysis_piI',analysis_piI,1)
+      if (rc .ne. 1) then
+        analysis_piI = 0
+      end if
+      gfunc_ana(71) = analysis_piI
+      rc = get_int_param(pfile,'output_piI_np1',output_piI_np1,1)
+      if (rc .ne. 1) then
+        output_piI_np1 = 0
+      end if
+      gfunc_out(72) = output_piI_np1
+      rc = get_int_param(pfile,'analysis_piI_np1',analysis_piI_np1,1)
+      if (rc .ne. 1) then
+        analysis_piI_np1 = 0
+      end if
+      gfunc_ana(72) = analysis_piI_np1
+      rc = get_int_param(pfile,'output_gt11_rk1',output_gt11_rk1,1)
+      if (rc .ne. 1) then
+        output_gt11_rk1 = 0
+      end if
+      gfunc_out(73) = output_gt11_rk1
+      rc = get_int_param(pfile,'analysis_gt11_rk1',analysis_gt11_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt11_rk1 = 0
+      end if
+      gfunc_ana(73) = analysis_gt11_rk1
+      rc = get_int_param(pfile,'output_gt12_rk1',output_gt12_rk1,1)
+      if (rc .ne. 1) then
+        output_gt12_rk1 = 0
+      end if
+      gfunc_out(74) = output_gt12_rk1
+      rc = get_int_param(pfile,'analysis_gt12_rk1',analysis_gt12_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt12_rk1 = 0
+      end if
+      gfunc_ana(74) = analysis_gt12_rk1
+      rc = get_int_param(pfile,'output_gt13_rk1',output_gt13_rk1,1)
+      if (rc .ne. 1) then
+        output_gt13_rk1 = 0
+      end if
+      gfunc_out(75) = output_gt13_rk1
+      rc = get_int_param(pfile,'analysis_gt13_rk1',analysis_gt13_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt13_rk1 = 0
+      end if
+      gfunc_ana(75) = analysis_gt13_rk1
+      rc = get_int_param(pfile,'output_gt22_rk1',output_gt22_rk1,1)
+      if (rc .ne. 1) then
+        output_gt22_rk1 = 0
+      end if
+      gfunc_out(76) = output_gt22_rk1
+      rc = get_int_param(pfile,'analysis_gt22_rk1',analysis_gt22_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt22_rk1 = 0
+      end if
+      gfunc_ana(76) = analysis_gt22_rk1
+      rc = get_int_param(pfile,'output_gt23_rk1',output_gt23_rk1,1)
+      if (rc .ne. 1) then
+        output_gt23_rk1 = 0
+      end if
+      gfunc_out(77) = output_gt23_rk1
+      rc = get_int_param(pfile,'analysis_gt23_rk1',analysis_gt23_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt23_rk1 = 0
+      end if
+      gfunc_ana(77) = analysis_gt23_rk1
+      rc = get_int_param(pfile,'output_gt33_rk1',output_gt33_rk1,1)
+      if (rc .ne. 1) then
+        output_gt33_rk1 = 0
+      end if
+      gfunc_out(78) = output_gt33_rk1
+      rc = get_int_param(pfile,'analysis_gt33_rk1',analysis_gt33_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gt33_rk1 = 0
+      end if
+      gfunc_ana(78) = analysis_gt33_rk1
+      rc = get_int_param(pfile,'output_A11_rk1',output_A11_rk1,1)
+      if (rc .ne. 1) then
+        output_A11_rk1 = 0
+      end if
+      gfunc_out(79) = output_A11_rk1
+      rc = get_int_param(pfile,'analysis_A11_rk1',analysis_A11_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A11_rk1 = 0
+      end if
+      gfunc_ana(79) = analysis_A11_rk1
+      rc = get_int_param(pfile,'output_A12_rk1',output_A12_rk1,1)
+      if (rc .ne. 1) then
+        output_A12_rk1 = 0
+      end if
+      gfunc_out(80) = output_A12_rk1
+      rc = get_int_param(pfile,'analysis_A12_rk1',analysis_A12_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A12_rk1 = 0
+      end if
+      gfunc_ana(80) = analysis_A12_rk1
+      rc = get_int_param(pfile,'output_A13_rk1',output_A13_rk1,1)
+      if (rc .ne. 1) then
+        output_A13_rk1 = 0
+      end if
+      gfunc_out(81) = output_A13_rk1
+      rc = get_int_param(pfile,'analysis_A13_rk1',analysis_A13_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A13_rk1 = 0
+      end if
+      gfunc_ana(81) = analysis_A13_rk1
+      rc = get_int_param(pfile,'output_A22_rk1',output_A22_rk1,1)
+      if (rc .ne. 1) then
+        output_A22_rk1 = 0
+      end if
+      gfunc_out(82) = output_A22_rk1
+      rc = get_int_param(pfile,'analysis_A22_rk1',analysis_A22_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A22_rk1 = 0
+      end if
+      gfunc_ana(82) = analysis_A22_rk1
+      rc = get_int_param(pfile,'output_A23_rk1',output_A23_rk1,1)
+      if (rc .ne. 1) then
+        output_A23_rk1 = 0
+      end if
+      gfunc_out(83) = output_A23_rk1
+      rc = get_int_param(pfile,'analysis_A23_rk1',analysis_A23_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A23_rk1 = 0
+      end if
+      gfunc_ana(83) = analysis_A23_rk1
+      rc = get_int_param(pfile,'output_A33_rk1',output_A33_rk1,1)
+      if (rc .ne. 1) then
+        output_A33_rk1 = 0
+      end if
+      gfunc_out(84) = output_A33_rk1
+      rc = get_int_param(pfile,'analysis_A33_rk1',analysis_A33_rk1,1)
+      if (rc .ne. 1) then
+        analysis_A33_rk1 = 0
+      end if
+      gfunc_ana(84) = analysis_A33_rk1
+      rc = get_int_param(pfile,'output_chi_rk1',output_chi_rk1,1)
+      if (rc .ne. 1) then
+        output_chi_rk1 = 0
+      end if
+      gfunc_out(85) = output_chi_rk1
+      rc = get_int_param(pfile,'analysis_chi_rk1',analysis_chi_rk1,1)
+      if (rc .ne. 1) then
+        analysis_chi_rk1 = 0
+      end if
+      gfunc_ana(85) = analysis_chi_rk1
+      rc = get_int_param(pfile,'output_trK_rk1',output_trK_rk1,1)
+      if (rc .ne. 1) then
+        output_trK_rk1 = 0
+      end if
+      gfunc_out(86) = output_trK_rk1
+      rc = get_int_param(pfile,'analysis_trK_rk1',analysis_trK_rk1,1)
+      if (rc .ne. 1) then
+        analysis_trK_rk1 = 0
+      end if
+      gfunc_ana(86) = analysis_trK_rk1
+      rc = get_int_param(pfile,'output_Gam1_rk1',output_Gam1_rk1,1)
+      if (rc .ne. 1) then
+        output_Gam1_rk1 = 0
+      end if
+      gfunc_out(87) = output_Gam1_rk1
+      rc = get_int_param(pfile,'analysis_Gam1_rk1',analysis_Gam1_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Gam1_rk1 = 0
+      end if
+      gfunc_ana(87) = analysis_Gam1_rk1
+      rc = get_int_param(pfile,'output_Gam2_rk1',output_Gam2_rk1,1)
+      if (rc .ne. 1) then
+        output_Gam2_rk1 = 0
+      end if
+      gfunc_out(88) = output_Gam2_rk1
+      rc = get_int_param(pfile,'analysis_Gam2_rk1',analysis_Gam2_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Gam2_rk1 = 0
+      end if
+      gfunc_ana(88) = analysis_Gam2_rk1
+      rc = get_int_param(pfile,'output_Gam3_rk1',output_Gam3_rk1,1)
+      if (rc .ne. 1) then
+        output_Gam3_rk1 = 0
+      end if
+      gfunc_out(89) = output_Gam3_rk1
+      rc = get_int_param(pfile,'analysis_Gam3_rk1',analysis_Gam3_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Gam3_rk1 = 0
+      end if
+      gfunc_ana(89) = analysis_Gam3_rk1
+      rc = get_int_param(pfile,'output_alpha_rk1',output_alpha_rk1,1)
+      if (rc .ne. 1) then
+        output_alpha_rk1 = 0
+      end if
+      gfunc_out(90) = output_alpha_rk1
+      rc = get_int_param(pfile,'analysis_alpha_rk1',analysis_alpha_rk1,1
+     &)
+      if (rc .ne. 1) then
+        analysis_alpha_rk1 = 0
+      end if
+      gfunc_ana(90) = analysis_alpha_rk1
+      rc = get_int_param(pfile,'output_shift1_rk1',output_shift1_rk1,1)
+      if (rc .ne. 1) then
+        output_shift1_rk1 = 0
+      end if
+      gfunc_out(91) = output_shift1_rk1
+      rc = get_int_param(pfile,'analysis_shift1_rk1',analysis_shift1_rk1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift1_rk1 = 0
+      end if
+      gfunc_ana(91) = analysis_shift1_rk1
+      rc = get_int_param(pfile,'output_shift2_rk1',output_shift2_rk1,1)
+      if (rc .ne. 1) then
+        output_shift2_rk1 = 0
+      end if
+      gfunc_out(92) = output_shift2_rk1
+      rc = get_int_param(pfile,'analysis_shift2_rk1',analysis_shift2_rk1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift2_rk1 = 0
+      end if
+      gfunc_ana(92) = analysis_shift2_rk1
+      rc = get_int_param(pfile,'output_shift3_rk1',output_shift3_rk1,1)
+      if (rc .ne. 1) then
+        output_shift3_rk1 = 0
+      end if
+      gfunc_out(93) = output_shift3_rk1
+      rc = get_int_param(pfile,'analysis_shift3_rk1',analysis_shift3_rk1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_shift3_rk1 = 0
+      end if
+      gfunc_ana(93) = analysis_shift3_rk1
+      rc = get_int_param(pfile,'output_gb1_rk1',output_gb1_rk1,1)
+      if (rc .ne. 1) then
+        output_gb1_rk1 = 0
+      end if
+      gfunc_out(94) = output_gb1_rk1
+      rc = get_int_param(pfile,'analysis_gb1_rk1',analysis_gb1_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gb1_rk1 = 0
+      end if
+      gfunc_ana(94) = analysis_gb1_rk1
+      rc = get_int_param(pfile,'output_gb2_rk1',output_gb2_rk1,1)
+      if (rc .ne. 1) then
+        output_gb2_rk1 = 0
+      end if
+      gfunc_out(95) = output_gb2_rk1
+      rc = get_int_param(pfile,'analysis_gb2_rk1',analysis_gb2_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gb2_rk1 = 0
+      end if
+      gfunc_ana(95) = analysis_gb2_rk1
+      rc = get_int_param(pfile,'output_gb3_rk1',output_gb3_rk1,1)
+      if (rc .ne. 1) then
+        output_gb3_rk1 = 0
+      end if
+      gfunc_out(96) = output_gb3_rk1
+      rc = get_int_param(pfile,'analysis_gb3_rk1',analysis_gb3_rk1,1)
+      if (rc .ne. 1) then
+        analysis_gb3_rk1 = 0
+      end if
+      gfunc_ana(96) = analysis_gb3_rk1
+      rc = get_int_param(pfile,'output_Ex_rk1',output_Ex_rk1,1)
+      if (rc .ne. 1) then
+        output_Ex_rk1 = 0
+      end if
+      gfunc_out(97) = output_Ex_rk1
+      rc = get_int_param(pfile,'analysis_Ex_rk1',analysis_Ex_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Ex_rk1 = 0
+      end if
+      gfunc_ana(97) = analysis_Ex_rk1
+      rc = get_int_param(pfile,'output_Ey_rk1',output_Ey_rk1,1)
+      if (rc .ne. 1) then
+        output_Ey_rk1 = 0
+      end if
+      gfunc_out(98) = output_Ey_rk1
+      rc = get_int_param(pfile,'analysis_Ey_rk1',analysis_Ey_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Ey_rk1 = 0
+      end if
+      gfunc_ana(98) = analysis_Ey_rk1
+      rc = get_int_param(pfile,'output_Ez_rk1',output_Ez_rk1,1)
+      if (rc .ne. 1) then
+        output_Ez_rk1 = 0
+      end if
+      gfunc_out(99) = output_Ez_rk1
+      rc = get_int_param(pfile,'analysis_Ez_rk1',analysis_Ez_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Ez_rk1 = 0
+      end if
+      gfunc_ana(99) = analysis_Ez_rk1
+      rc = get_int_param(pfile,'output_Bx_rk1',output_Bx_rk1,1)
+      if (rc .ne. 1) then
+        output_Bx_rk1 = 0
+      end if
+      gfunc_out(100) = output_Bx_rk1
+      rc = get_int_param(pfile,'analysis_Bx_rk1',analysis_Bx_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Bx_rk1 = 0
+      end if
+      gfunc_ana(100) = analysis_Bx_rk1
+      rc = get_int_param(pfile,'output_By_rk1',output_By_rk1,1)
+      if (rc .ne. 1) then
+        output_By_rk1 = 0
+      end if
+      gfunc_out(101) = output_By_rk1
+      rc = get_int_param(pfile,'analysis_By_rk1',analysis_By_rk1,1)
+      if (rc .ne. 1) then
+        analysis_By_rk1 = 0
+      end if
+      gfunc_ana(101) = analysis_By_rk1
+      rc = get_int_param(pfile,'output_Bz_rk1',output_Bz_rk1,1)
+      if (rc .ne. 1) then
+        output_Bz_rk1 = 0
+      end if
+      gfunc_out(102) = output_Bz_rk1
+      rc = get_int_param(pfile,'analysis_Bz_rk1',analysis_Bz_rk1,1)
+      if (rc .ne. 1) then
+        analysis_Bz_rk1 = 0
+      end if
+      gfunc_ana(102) = analysis_Bz_rk1
+      rc = get_int_param(pfile,'output_Phi_em_rk1',output_Phi_em_rk1,1)
+      if (rc .ne. 1) then
+        output_Phi_em_rk1 = 0
+      end if
+      gfunc_out(103) = output_Phi_em_rk1
+      rc = get_int_param(pfile,'analysis_Phi_em_rk1',analysis_Phi_em_rk1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_Phi_em_rk1 = 0
+      end if
+      gfunc_ana(103) = analysis_Phi_em_rk1
+      rc = get_int_param(pfile,'output_Psi_em_rk1',output_Psi_em_rk1,1)
+      if (rc .ne. 1) then
+        output_Psi_em_rk1 = 0
+      end if
+      gfunc_out(104) = output_Psi_em_rk1
+      rc = get_int_param(pfile,'analysis_Psi_em_rk1',analysis_Psi_em_rk1
+     &,1)
+      if (rc .ne. 1) then
+        analysis_Psi_em_rk1 = 0
+      end if
+      gfunc_ana(104) = analysis_Psi_em_rk1
+      rc = get_int_param(pfile,'output_phiR_rk1',output_phiR_rk1,1)
+      if (rc .ne. 1) then
+        output_phiR_rk1 = 0
+      end if
+      gfunc_out(105) = output_phiR_rk1
+      rc = get_int_param(pfile,'analysis_phiR_rk1',analysis_phiR_rk1,1)
+      if (rc .ne. 1) then
+        analysis_phiR_rk1 = 0
+      end if
+      gfunc_ana(105) = analysis_phiR_rk1
+      rc = get_int_param(pfile,'output_phiI_rk1',output_phiI_rk1,1)
+      if (rc .ne. 1) then
+        output_phiI_rk1 = 0
+      end if
+      gfunc_out(106) = output_phiI_rk1
+      rc = get_int_param(pfile,'analysis_phiI_rk1',analysis_phiI_rk1,1)
+      if (rc .ne. 1) then
+        analysis_phiI_rk1 = 0
+      end if
+      gfunc_ana(106) = analysis_phiI_rk1
+      rc = get_int_param(pfile,'output_piR_rk1',output_piR_rk1,1)
+      if (rc .ne. 1) then
+        output_piR_rk1 = 0
+      end if
+      gfunc_out(107) = output_piR_rk1
+      rc = get_int_param(pfile,'analysis_piR_rk1',analysis_piR_rk1,1)
+      if (rc .ne. 1) then
+        analysis_piR_rk1 = 0
+      end if
+      gfunc_ana(107) = analysis_piR_rk1
+      rc = get_int_param(pfile,'output_piI_rk1',output_piI_rk1,1)
+      if (rc .ne. 1) then
+        output_piI_rk1 = 0
+      end if
+      gfunc_out(108) = output_piI_rk1
+      rc = get_int_param(pfile,'analysis_piI_rk1',analysis_piI_rk1,1)
+      if (rc .ne. 1) then
+        analysis_piI_rk1 = 0
+      end if
+      gfunc_ana(108) = analysis_piI_rk1
+      rc = get_int_param(pfile,'output_g11',output_g11,1)
+      if (rc .ne. 1) then
+        output_g11 = 0
+      end if
+      gfunc_out(109) = output_g11
+      rc = get_int_param(pfile,'analysis_g11',analysis_g11,1)
+      if (rc .ne. 1) then
+        analysis_g11 = 0
+      end if
+      gfunc_ana(109) = analysis_g11
+      rc = get_int_param(pfile,'output_g12',output_g12,1)
+      if (rc .ne. 1) then
+        output_g12 = 0
+      end if
+      gfunc_out(110) = output_g12
+      rc = get_int_param(pfile,'analysis_g12',analysis_g12,1)
+      if (rc .ne. 1) then
+        analysis_g12 = 0
+      end if
+      gfunc_ana(110) = analysis_g12
+      rc = get_int_param(pfile,'output_g13',output_g13,1)
+      if (rc .ne. 1) then
+        output_g13 = 0
+      end if
+      gfunc_out(111) = output_g13
+      rc = get_int_param(pfile,'analysis_g13',analysis_g13,1)
+      if (rc .ne. 1) then
+        analysis_g13 = 0
+      end if
+      gfunc_ana(111) = analysis_g13
+      rc = get_int_param(pfile,'output_g22',output_g22,1)
+      if (rc .ne. 1) then
+        output_g22 = 0
+      end if
+      gfunc_out(112) = output_g22
+      rc = get_int_param(pfile,'analysis_g22',analysis_g22,1)
+      if (rc .ne. 1) then
+        analysis_g22 = 0
+      end if
+      gfunc_ana(112) = analysis_g22
+      rc = get_int_param(pfile,'output_g23',output_g23,1)
+      if (rc .ne. 1) then
+        output_g23 = 0
+      end if
+      gfunc_out(113) = output_g23
+      rc = get_int_param(pfile,'analysis_g23',analysis_g23,1)
+      if (rc .ne. 1) then
+        analysis_g23 = 0
+      end if
+      gfunc_ana(113) = analysis_g23
+      rc = get_int_param(pfile,'output_g33',output_g33,1)
+      if (rc .ne. 1) then
+        output_g33 = 0
+      end if
+      gfunc_out(114) = output_g33
+      rc = get_int_param(pfile,'analysis_g33',analysis_g33,1)
+      if (rc .ne. 1) then
+        analysis_g33 = 0
+      end if
+      gfunc_ana(114) = analysis_g33
+      rc = get_int_param(pfile,'output_sdetg',output_sdetg,1)
+      if (rc .ne. 1) then
+        output_sdetg = 0
+      end if
+      gfunc_out(115) = output_sdetg
+      rc = get_int_param(pfile,'analysis_sdetg',analysis_sdetg,1)
+      if (rc .ne. 1) then
+        analysis_sdetg = 0
+      end if
+      gfunc_ana(115) = analysis_sdetg
+      rc = get_int_param(pfile,'output_rad_exp',output_rad_exp,1)
+      if (rc .ne. 1) then
+        output_rad_exp = 0
+      end if
+      gfunc_out(116) = output_rad_exp
+      rc = get_int_param(pfile,'analysis_rad_exp',analysis_rad_exp,1)
+      if (rc .ne. 1) then
+        analysis_rad_exp = 0
+      end if
+      gfunc_ana(116) = analysis_rad_exp
+      rc = get_int_param(pfile,'output_psi4R',output_psi4R,1)
+      if (rc .ne. 1) then
+        output_psi4R = 0
+      end if
+      gfunc_out(117) = output_psi4R
+      rc = get_int_param(pfile,'analysis_psi4R',analysis_psi4R,1)
+      if (rc .ne. 1) then
+        analysis_psi4R = 0
+      end if
+      gfunc_ana(117) = analysis_psi4R
+      rc = get_int_param(pfile,'output_psi4I',output_psi4I,1)
+      if (rc .ne. 1) then
+        output_psi4I = 0
+      end if
+      gfunc_out(118) = output_psi4I
+      rc = get_int_param(pfile,'analysis_psi4I',analysis_psi4I,1)
+      if (rc .ne. 1) then
+        analysis_psi4I = 0
+      end if
+      gfunc_ana(118) = analysis_psi4I
+      rc = get_int_param(pfile,'output_massADM',output_massADM,1)
+      if (rc .ne. 1) then
+        output_massADM = 0
+      end if
+      gfunc_out(119) = output_massADM
+      rc = get_int_param(pfile,'analysis_massADM',analysis_massADM,1)
+      if (rc .ne. 1) then
+        analysis_massADM = 0
+      end if
+      gfunc_ana(119) = analysis_massADM
+      rc = get_int_param(pfile,'output_massBONDI',output_massBONDI,1)
+      if (rc .ne. 1) then
+        output_massBONDI = 0
+      end if
+      gfunc_out(120) = output_massBONDI
+      rc = get_int_param(pfile,'analysis_massBONDI',analysis_massBONDI,1
+     &)
+      if (rc .ne. 1) then
+        analysis_massBONDI = 0
+      end if
+      gfunc_ana(120) = analysis_massBONDI
+      rc = get_int_param(pfile,'output_curvature',output_curvature,1)
+      if (rc .ne. 1) then
+        output_curvature = 0
+      end if
+      gfunc_out(121) = output_curvature
+      rc = get_int_param(pfile,'analysis_curvature',analysis_curvature,1
+     &)
+      if (rc .ne. 1) then
+        analysis_curvature = 0
+      end if
+      gfunc_ana(121) = analysis_curvature
+      rc = get_int_param(pfile,'output_phi2R',output_phi2R,1)
+      if (rc .ne. 1) then
+        output_phi2R = 0
+      end if
+      gfunc_out(122) = output_phi2R
+      rc = get_int_param(pfile,'analysis_phi2R',analysis_phi2R,1)
+      if (rc .ne. 1) then
+        analysis_phi2R = 0
+      end if
+      gfunc_ana(122) = analysis_phi2R
+      rc = get_int_param(pfile,'output_phi2I',output_phi2I,1)
+      if (rc .ne. 1) then
+        output_phi2I = 0
+      end if
+      gfunc_out(123) = output_phi2I
+      rc = get_int_param(pfile,'analysis_phi2I',analysis_phi2I,1)
+      if (rc .ne. 1) then
+        analysis_phi2I = 0
+      end if
+      gfunc_ana(123) = analysis_phi2I
+      rc = get_int_param(pfile,'output_phi0R',output_phi0R,1)
+      if (rc .ne. 1) then
+        output_phi0R = 0
+      end if
+      gfunc_out(124) = output_phi0R
+      rc = get_int_param(pfile,'analysis_phi0R',analysis_phi0R,1)
+      if (rc .ne. 1) then
+        analysis_phi0R = 0
+      end if
+      gfunc_ana(124) = analysis_phi0R
+      rc = get_int_param(pfile,'output_phi0I',output_phi0I,1)
+      if (rc .ne. 1) then
+        output_phi0I = 0
+      end if
+      gfunc_out(125) = output_phi0I
+      rc = get_int_param(pfile,'analysis_phi0I',analysis_phi0I,1)
+      if (rc .ne. 1) then
+        analysis_phi0I = 0
+      end if
+      gfunc_ana(125) = analysis_phi0I
+      rc = get_int_param(pfile,'output_vbr_omega',output_vbr_omega,1)
+      if (rc .ne. 1) then
+        output_vbr_omega = 0
+      end if
+      gfunc_out(126) = output_vbr_omega
+      rc = get_int_param(pfile,'analysis_vbr_omega',analysis_vbr_omega,1
+     &)
+      if (rc .ne. 1) then
+        analysis_vbr_omega = 0
+      end if
+      gfunc_ana(126) = analysis_vbr_omega
+      rc = get_int_param(pfile,'output_vbth_omega',output_vbth_omega,1)
+      if (rc .ne. 1) then
+        output_vbth_omega = 0
+      end if
+      gfunc_out(127) = output_vbth_omega
+      rc = get_int_param(pfile,'analysis_vbth_omega',analysis_vbth_omega
+     &,1)
+      if (rc .ne. 1) then
+        analysis_vbth_omega = 0
+      end if
+      gfunc_ana(127) = analysis_vbth_omega
+      rc = get_int_param(pfile,'output_charge',output_charge,1)
+      if (rc .ne. 1) then
+        output_charge = 0
+      end if
+      gfunc_out(128) = output_charge
+      rc = get_int_param(pfile,'analysis_charge',analysis_charge,1)
+      if (rc .ne. 1) then
+        analysis_charge = 0
+      end if
+      gfunc_ana(128) = analysis_charge
+      rc = get_int_param(pfile,'output_J1',output_J1,1)
+      if (rc .ne. 1) then
+        output_J1 = 0
+      end if
+      gfunc_out(129) = output_J1
+      rc = get_int_param(pfile,'analysis_J1',analysis_J1,1)
+      if (rc .ne. 1) then
+        analysis_J1 = 0
+      end if
+      gfunc_ana(129) = analysis_J1
+      rc = get_int_param(pfile,'output_J2',output_J2,1)
+      if (rc .ne. 1) then
+        output_J2 = 0
+      end if
+      gfunc_out(130) = output_J2
+      rc = get_int_param(pfile,'analysis_J2',analysis_J2,1)
+      if (rc .ne. 1) then
+        analysis_J2 = 0
+      end if
+      gfunc_ana(130) = analysis_J2
+      rc = get_int_param(pfile,'output_J3',output_J3,1)
+      if (rc .ne. 1) then
+        output_J3 = 0
+      end if
+      gfunc_out(131) = output_J3
+      rc = get_int_param(pfile,'analysis_J3',analysis_J3,1)
+      if (rc .ne. 1) then
+        analysis_J3 = 0
+      end if
+      gfunc_ana(131) = analysis_J3
+      rc = get_int_param(pfile,'output_poyntingx_dens',output_poyntingx_
+     &dens,1)
+      if (rc .ne. 1) then
+        output_poyntingx_dens = 0
+      end if
+      gfunc_out(132) = output_poyntingx_dens
+      rc = get_int_param(pfile,'analysis_poyntingx_dens',analysis_poynti
+     &ngx_dens,1)
+      if (rc .ne. 1) then
+        analysis_poyntingx_dens = 0
+      end if
+      gfunc_ana(132) = analysis_poyntingx_dens
+      rc = get_int_param(pfile,'output_poyntingy_dens',output_poyntingy_
+     &dens,1)
+      if (rc .ne. 1) then
+        output_poyntingy_dens = 0
+      end if
+      gfunc_out(133) = output_poyntingy_dens
+      rc = get_int_param(pfile,'analysis_poyntingy_dens',analysis_poynti
+     &ngy_dens,1)
+      if (rc .ne. 1) then
+        analysis_poyntingy_dens = 0
+      end if
+      gfunc_ana(133) = analysis_poyntingy_dens
+      rc = get_int_param(pfile,'output_poyntingz_dens',output_poyntingz_
+     &dens,1)
+      if (rc .ne. 1) then
+        output_poyntingz_dens = 0
+      end if
+      gfunc_out(134) = output_poyntingz_dens
+      rc = get_int_param(pfile,'analysis_poyntingz_dens',analysis_poynti
+     &ngz_dens,1)
+      if (rc .ne. 1) then
+        analysis_poyntingz_dens = 0
+      end if
+      gfunc_ana(134) = analysis_poyntingz_dens
+      rc = get_int_param(pfile,'output_uell',output_uell,1)
+      if (rc .ne. 1) then
+        output_uell = 0
+      end if
+      gfunc_out(135) = output_uell
+      rc = get_int_param(pfile,'analysis_uell',analysis_uell,1)
+      if (rc .ne. 1) then
+        analysis_uell = 0
+      end if
+      gfunc_ana(135) = analysis_uell
+      rc = get_int_param(pfile,'output_uell_st1',output_uell_st1,1)
+      if (rc .ne. 1) then
+        output_uell_st1 = 0
+      end if
+      gfunc_out(136) = output_uell_st1
+      rc = get_int_param(pfile,'analysis_uell_st1',analysis_uell_st1,1)
+      if (rc .ne. 1) then
+        analysis_uell_st1 = 0
+      end if
+      gfunc_ana(136) = analysis_uell_st1
+      rc = get_int_param(pfile,'output_uell_st2',output_uell_st2,1)
+      if (rc .ne. 1) then
+        output_uell_st2 = 0
+      end if
+      gfunc_out(137) = output_uell_st2
+      rc = get_int_param(pfile,'analysis_uell_st2',analysis_uell_st2,1)
+      if (rc .ne. 1) then
+        analysis_uell_st2 = 0
+      end if
+      gfunc_ana(137) = analysis_uell_st2
+      rc = get_int_param(pfile,'output_uell_rhs',output_uell_rhs,1)
+      if (rc .ne. 1) then
+        output_uell_rhs = 0
+      end if
+      gfunc_out(138) = output_uell_rhs
+      rc = get_int_param(pfile,'analysis_uell_rhs',analysis_uell_rhs,1)
+      if (rc .ne. 1) then
+        analysis_uell_rhs = 0
+      end if
+      gfunc_ana(138) = analysis_uell_rhs
+      rc = get_int_param(pfile,'output_ham',output_ham,1)
+      if (rc .ne. 1) then
+        output_ham = 0
+      end if
+      gfunc_out(139) = output_ham
+      rc = get_int_param(pfile,'analysis_ham',analysis_ham,1)
+      if (rc .ne. 1) then
+        analysis_ham = 0
+      end if
+      gfunc_ana(139) = analysis_ham
+      rc = get_int_param(pfile,'output_momx',output_momx,1)
+      if (rc .ne. 1) then
+        output_momx = 0
+      end if
+      gfunc_out(140) = output_momx
+      rc = get_int_param(pfile,'analysis_momx',analysis_momx,1)
+      if (rc .ne. 1) then
+        analysis_momx = 0
+      end if
+      gfunc_ana(140) = analysis_momx
+      rc = get_int_param(pfile,'output_momy',output_momy,1)
+      if (rc .ne. 1) then
+        output_momy = 0
+      end if
+      gfunc_out(141) = output_momy
+      rc = get_int_param(pfile,'analysis_momy',analysis_momy,1)
+      if (rc .ne. 1) then
+        analysis_momy = 0
+      end if
+      gfunc_ana(141) = analysis_momy
+      rc = get_int_param(pfile,'output_momz',output_momz,1)
+      if (rc .ne. 1) then
+        output_momz = 0
+      end if
+      gfunc_out(142) = output_momz
+      rc = get_int_param(pfile,'analysis_momz',analysis_momz,1)
+      if (rc .ne. 1) then
+        analysis_momz = 0
+      end if
+      gfunc_ana(142) = analysis_momz
+      rc = get_int_param(pfile,'output_div_B',output_div_B,1)
+      if (rc .ne. 1) then
+        output_div_B = 0
+      end if
+      gfunc_out(143) = output_div_B
+      rc = get_int_param(pfile,'analysis_div_B',analysis_div_B,1)
+      if (rc .ne. 1) then
+        analysis_div_B = 0
+      end if
+      gfunc_ana(143) = analysis_div_B
+      rc = get_int_param(pfile,'output_div_E',output_div_E,1)
+      if (rc .ne. 1) then
+        output_div_E = 0
+      end if
+      gfunc_out(144) = output_div_E
+      rc = get_int_param(pfile,'analysis_div_E',analysis_div_E,1)
+      if (rc .ne. 1) then
+        analysis_div_E = 0
+      end if
+      gfunc_ana(144) = analysis_div_E
+      rc = get_int_param(pfile,'output_tr_A',output_tr_A,1)
+      if (rc .ne. 1) then
+        output_tr_A = 0
+      end if
+      gfunc_out(145) = output_tr_A
+      rc = get_int_param(pfile,'analysis_tr_A',analysis_tr_A,1)
+      if (rc .ne. 1) then
+        analysis_tr_A = 0
+      end if
+      gfunc_ana(145) = analysis_tr_A
+      rc = get_int_param(pfile,'output_detgt_m1',output_detgt_m1,1)
+      if (rc .ne. 1) then
+        output_detgt_m1 = 0
+      end if
+      gfunc_out(146) = output_detgt_m1
+      rc = get_int_param(pfile,'analysis_detgt_m1',analysis_detgt_m1,1)
+      if (rc .ne. 1) then
+        analysis_detgt_m1 = 0
+      end if
+      gfunc_ana(146) = analysis_detgt_m1
+      rc = get_int_param(pfile,'output_gamtx_con',output_gamtx_con,1)
+      if (rc .ne. 1) then
+        output_gamtx_con = 0
+      end if
+      gfunc_out(147) = output_gamtx_con
+      rc = get_int_param(pfile,'analysis_gamtx_con',analysis_gamtx_con,1
+     &)
+      if (rc .ne. 1) then
+        analysis_gamtx_con = 0
+      end if
+      gfunc_ana(147) = analysis_gamtx_con
+      rc = get_int_param(pfile,'output_gamty_con',output_gamty_con,1)
+      if (rc .ne. 1) then
+        output_gamty_con = 0
+      end if
+      gfunc_out(148) = output_gamty_con
+      rc = get_int_param(pfile,'analysis_gamty_con',analysis_gamty_con,1
+     &)
+      if (rc .ne. 1) then
+        analysis_gamty_con = 0
+      end if
+      gfunc_ana(148) = analysis_gamty_con
+      rc = get_int_param(pfile,'output_gamtz_con',output_gamtz_con,1)
+      if (rc .ne. 1) then
+        output_gamtz_con = 0
+      end if
+      gfunc_out(149) = output_gamtz_con
+      rc = get_int_param(pfile,'analysis_gamtz_con',analysis_gamtz_con,1
+     &)
+      if (rc .ne. 1) then
+        analysis_gamtz_con = 0
+      end if
+      gfunc_ana(149) = analysis_gamtz_con
+      rc = get_int_param(pfile,'output_calgamtx_con',output_calgamtx_con
+     &,1)
+      if (rc .ne. 1) then
+        output_calgamtx_con = 0
+      end if
+      gfunc_out(150) = output_calgamtx_con
+      rc = get_int_param(pfile,'analysis_calgamtx_con',analysis_calgamtx
+     &_con,1)
+      if (rc .ne. 1) then
+        analysis_calgamtx_con = 0
+      end if
+      gfunc_ana(150) = analysis_calgamtx_con
+      rc = get_int_param(pfile,'output_calgamty_con',output_calgamty_con
+     &,1)
+      if (rc .ne. 1) then
+        output_calgamty_con = 0
+      end if
+      gfunc_out(151) = output_calgamty_con
+      rc = get_int_param(pfile,'analysis_calgamty_con',analysis_calgamty
+     &_con,1)
+      if (rc .ne. 1) then
+        analysis_calgamty_con = 0
+      end if
+      gfunc_ana(151) = analysis_calgamty_con
+      rc = get_int_param(pfile,'output_calgamtz_con',output_calgamtz_con
+     &,1)
+      if (rc .ne. 1) then
+        output_calgamtz_con = 0
+      end if
+      gfunc_out(152) = output_calgamtz_con
+      rc = get_int_param(pfile,'analysis_calgamtz_con',analysis_calgamtz
+     &_con,1)
+      if (rc .ne. 1) then
+        analysis_calgamtz_con = 0
+      end if
+      gfunc_ana(152) = analysis_calgamtz_con
+      rc = get_int_param(pfile,'output_cctk_x',output_cctk_x,1)
+      if (rc .ne. 1) then
+        output_cctk_x = 0
+      end if
+      gfunc_out(153) = output_cctk_x
+      rc = get_int_param(pfile,'analysis_cctk_x',analysis_cctk_x,1)
+      if (rc .ne. 1) then
+        analysis_cctk_x = 0
+      end if
+      gfunc_ana(153) = analysis_cctk_x
+      rc = get_int_param(pfile,'output_cctk_y',output_cctk_y,1)
+      if (rc .ne. 1) then
+        output_cctk_y = 0
+      end if
+      gfunc_out(154) = output_cctk_y
+      rc = get_int_param(pfile,'analysis_cctk_y',analysis_cctk_y,1)
+      if (rc .ne. 1) then
+        analysis_cctk_y = 0
+      end if
+      gfunc_ana(154) = analysis_cctk_y
+      rc = get_int_param(pfile,'output_cctk_z',output_cctk_z,1)
+      if (rc .ne. 1) then
+        output_cctk_z = 0
+      end if
+      gfunc_out(155) = output_cctk_z
+      rc = get_int_param(pfile,'analysis_cctk_z',analysis_cctk_z,1)
+      if (rc .ne. 1) then
+        analysis_cctk_z = 0
+      end if
+      gfunc_ana(155) = analysis_cctk_z
+      rc = get_int_param(pfile,'output_r',output_r,1)
+      if (rc .ne. 1) then
+        output_r = 0
+      end if
+      gfunc_out(156) = output_r
+      rc = get_int_param(pfile,'analysis_r',analysis_r,1)
+      if (rc .ne. 1) then
+        analysis_r = 0
+      end if
+      gfunc_ana(156) = analysis_r
+      rc = get_int_param(pfile,'output_xphys',output_xphys,1)
+      if (rc .ne. 1) then
+        output_xphys = 0
+      end if
+      gfunc_out(157) = output_xphys
+      rc = get_int_param(pfile,'analysis_xphys',analysis_xphys,1)
+      if (rc .ne. 1) then
+        analysis_xphys = 0
+      end if
+      gfunc_ana(157) = analysis_xphys
+      rc = get_int_param(pfile,'output_yphys',output_yphys,1)
+      if (rc .ne. 1) then
+        output_yphys = 0
+      end if
+      gfunc_out(158) = output_yphys
+      rc = get_int_param(pfile,'analysis_yphys',analysis_yphys,1)
+      if (rc .ne. 1) then
+        analysis_yphys = 0
+      end if
+      gfunc_ana(158) = analysis_yphys
+      rc = get_int_param(pfile,'output_zphys',output_zphys,1)
+      if (rc .ne. 1) then
+        output_zphys = 0
+      end if
+      gfunc_out(159) = output_zphys
+      rc = get_int_param(pfile,'analysis_zphys',analysis_zphys,1)
+      if (rc .ne. 1) then
+        analysis_zphys = 0
+      end if
+      gfunc_ana(159) = analysis_zphys
+      rc = get_int_param(pfile,'output_mask',output_mask,1)
+      if (rc .ne. 1) then
+        output_mask = 0
+      end if
+      gfunc_out(160) = output_mask
+      rc = get_int_param(pfile,'analysis_mask',analysis_mask,1)
+      if (rc .ne. 1) then
+        analysis_mask = 0
+      end if
+      gfunc_ana(160) = analysis_mask
+      rc = get_int_param(pfile,'output_wdiss',output_wdiss,1)
+      if (rc .ne. 1) then
+        output_wdiss = 0
+      end if
+      gfunc_out(161) = output_wdiss
+      rc = get_int_param(pfile,'analysis_wdiss',analysis_wdiss,1)
+      if (rc .ne. 1) then
+        analysis_wdiss = 0
+      end if
+      gfunc_ana(161) = analysis_wdiss
+      rc = get_int_param(pfile,'output_chr',output_chr,1)
+      if (rc .ne. 1) then
+        output_chr = 0
+      end if
+      gfunc_out(162) = output_chr
+      rc = get_int_param(pfile,'analysis_chr',analysis_chr,1)
+      if (rc .ne. 1) then
+        analysis_chr = 0
+      end if
+      gfunc_ana(162) = analysis_chr
+      rc = get_int_param(pfile,'output_error',output_error,1)
+      if (rc .ne. 1) then
+        output_error = 0
+      end if
+      gfunc_out(163) = output_error
+      rc = get_int_param(pfile,'analysis_error',analysis_error,1)
+      if (rc .ne. 1) then
+        analysis_error = 0
+      end if
+      gfunc_ana(163) = analysis_error
+      rc = get_int_param(pfile,'output_flag',output_flag,1)
+      if (rc .ne. 1) then
+        output_flag = 0
+      end if
+      gfunc_out(164) = output_flag
+      rc = get_int_param(pfile,'analysis_flag',analysis_flag,1)
+      if (rc .ne. 1) then
+        analysis_flag = 0
+      end if
+      gfunc_ana(164) = analysis_flag
+      rc = get_int_param(pfile,'asf_out_rap4',asf_out_rap4,1)
+      if (rc .ne. 1) then
+        asf_out_rap4 = -1
+      end if
+      asf_out(1) = asf_out_rap4
+      rc = get_int_param(pfile,'asf_out_iap4',asf_out_iap4,1)
+      if (rc .ne. 1) then
+        asf_out_iap4 = -1
+      end if
+      asf_out(2) = asf_out_iap4
+      rc = get_int_param(pfile,'asf_out_rap2',asf_out_rap2,1)
+      if (rc .ne. 1) then
+        asf_out_rap2 = -1
+      end if
+      asf_out(3) = asf_out_rap2
+      rc = get_int_param(pfile,'asf_out_iap2',asf_out_iap2,1)
+      if (rc .ne. 1) then
+        asf_out_iap2 = -1
+      end if
+      asf_out(4) = asf_out_iap2
+      rc = get_int_param(pfile,'asf_out_rap0',asf_out_rap0,1)
+      if (rc .ne. 1) then
+        asf_out_rap0 = -1
+      end if
+      asf_out(5) = asf_out_rap0
+      rc = get_int_param(pfile,'asf_out_iap0',asf_out_iap0,1)
+      if (rc .ne. 1) then
+        asf_out_iap0 = -1
+      end if
+      asf_out(6) = asf_out_iap0
+      rc = get_int_param(pfile,'asf_out_chr_tmp',asf_out_chr_tmp,1)
+      if (rc .ne. 1) then
+        asf_out_chr_tmp = -1
+      end if
+      asf_out(7) = asf_out_chr_tmp
+      rc = get_int_param(pfile,'bsf_out_rbp4',bsf_out_rbp4,1)
+      if (rc .ne. 1) then
+        bsf_out_rbp4 = -1
+      end if
+      bsf_out(1) = bsf_out_rbp4
+      rc = get_int_param(pfile,'bsf_out_ibp4',bsf_out_ibp4,1)
+      if (rc .ne. 1) then
+        bsf_out_ibp4 = -1
+      end if
+      bsf_out(2) = bsf_out_ibp4
+      rc = get_int_param(pfile,'bsf_out_rbp2',bsf_out_rbp2,1)
+      if (rc .ne. 1) then
+        bsf_out_rbp2 = -1
+      end if
+      bsf_out(3) = bsf_out_rbp2
+      rc = get_int_param(pfile,'bsf_out_ibp2',bsf_out_ibp2,1)
+      if (rc .ne. 1) then
+        bsf_out_ibp2 = -1
+      end if
+      bsf_out(4) = bsf_out_ibp2
+      rc = get_int_param(pfile,'bsf_out_rbp0',bsf_out_rbp0,1)
+      if (rc .ne. 1) then
+        bsf_out_rbp0 = -1
+      end if
+      bsf_out(5) = bsf_out_rbp0
+      rc = get_int_param(pfile,'bsf_out_ibp0',bsf_out_ibp0,1)
+      if (rc .ne. 1) then
+        bsf_out_ibp0 = -1
+      end if
+      bsf_out(6) = bsf_out_ibp0
+      rc = get_int_param(pfile,'bsf_out_chr_tmp',bsf_out_chr_tmp,1)
+      if (rc .ne. 1) then
+        bsf_out_chr_tmp = -1
+      end if
+      bsf_out(7) = bsf_out_chr_tmp
+      rc = get_int_param(pfile,'csf_out_rcp4',csf_out_rcp4,1)
+      if (rc .ne. 1) then
+        csf_out_rcp4 = -1
+      end if
+      csf_out(1) = csf_out_rcp4
+      rc = get_int_param(pfile,'csf_out_icp4',csf_out_icp4,1)
+      if (rc .ne. 1) then
+        csf_out_icp4 = -1
+      end if
+      csf_out(2) = csf_out_icp4
+      rc = get_int_param(pfile,'csf_out_rcp2',csf_out_rcp2,1)
+      if (rc .ne. 1) then
+        csf_out_rcp2 = -1
+      end if
+      csf_out(3) = csf_out_rcp2
+      rc = get_int_param(pfile,'csf_out_icp2',csf_out_icp2,1)
+      if (rc .ne. 1) then
+        csf_out_icp2 = -1
+      end if
+      csf_out(4) = csf_out_icp2
+      rc = get_int_param(pfile,'csf_out_rcp0',csf_out_rcp0,1)
+      if (rc .ne. 1) then
+        csf_out_rcp0 = -1
+      end if
+      csf_out(5) = csf_out_rcp0
+      rc = get_int_param(pfile,'csf_out_icp0',csf_out_icp0,1)
+      if (rc .ne. 1) then
+        csf_out_icp0 = -1
+      end if
+      csf_out(6) = csf_out_icp0
+      rc = get_int_param(pfile,'csf_out_chr_tmp',csf_out_chr_tmp,1)
+      if (rc .ne. 1) then
+        csf_out_chr_tmp = -1
+      end if
+      csf_out(7) = csf_out_chr_tmp
+      rc = get_int_param(pfile,'output_level_0',output_level_0,1)
+      if (rc .ne. 1) then
+        output_level_0 = 0
+      end if
+      out_period(0) = output_level_0
+      rc = get_real_param(pfile,'refine_level_0',refine_level_0,1)
+      if (rc .ne. 1) then
+        refine_level_0 = 1.d0
+      end if
+      ref_level(0) = refine_level_0
+      rc = get_int_param(pfile,'output_level_1',output_level_1,1)
+      if (rc .ne. 1) then
+        output_level_1 = 0
+      end if
+      out_period(1) = output_level_1
+      rc = get_real_param(pfile,'refine_level_1',refine_level_1,1)
+      if (rc .ne. 1) then
+        refine_level_1 = 1.d0
+      end if
+      ref_level(1) = refine_level_1
+      rc = get_int_param(pfile,'output_level_2',output_level_2,1)
+      if (rc .ne. 1) then
+        output_level_2 = 0
+      end if
+      out_period(2) = output_level_2
+      rc = get_real_param(pfile,'refine_level_2',refine_level_2,1)
+      if (rc .ne. 1) then
+        refine_level_2 = 1.d0
+      end if
+      ref_level(2) = refine_level_2
+      rc = get_int_param(pfile,'output_level_3',output_level_3,1)
+      if (rc .ne. 1) then
+        output_level_3 = 0
+      end if
+      out_period(3) = output_level_3
+      rc = get_real_param(pfile,'refine_level_3',refine_level_3,1)
+      if (rc .ne. 1) then
+        refine_level_3 = 1.d0
+      end if
+      ref_level(3) = refine_level_3
+      rc = get_int_param(pfile,'output_level_4',output_level_4,1)
+      if (rc .ne. 1) then
+        output_level_4 = 0
+      end if
+      out_period(4) = output_level_4
+      rc = get_real_param(pfile,'refine_level_4',refine_level_4,1)
+      if (rc .ne. 1) then
+        refine_level_4 = 1.d0
+      end if
+      ref_level(4) = refine_level_4
+      rc = get_int_param(pfile,'output_level_5',output_level_5,1)
+      if (rc .ne. 1) then
+        output_level_5 = 0
+      end if
+      out_period(5) = output_level_5
+      rc = get_real_param(pfile,'refine_level_5',refine_level_5,1)
+      if (rc .ne. 1) then
+        refine_level_5 = 1.d0
+      end if
+      ref_level(5) = refine_level_5
+      rc = get_int_param(pfile,'output_level_6',output_level_6,1)
+      if (rc .ne. 1) then
+        output_level_6 = 0
+      end if
+      out_period(6) = output_level_6
+      rc = get_real_param(pfile,'refine_level_6',refine_level_6,1)
+      if (rc .ne. 1) then
+        refine_level_6 = 1.d0
+      end if
+      ref_level(6) = refine_level_6
+      rc = get_int_param(pfile,'output_level_7',output_level_7,1)
+      if (rc .ne. 1) then
+        output_level_7 = 0
+      end if
+      out_period(7) = output_level_7
+      rc = get_real_param(pfile,'refine_level_7',refine_level_7,1)
+      if (rc .ne. 1) then
+        refine_level_7 = 1.d0
+      end if
+      ref_level(7) = refine_level_7
+      rc = get_int_param(pfile,'output_level_8',output_level_8,1)
+      if (rc .ne. 1) then
+        output_level_8 = 0
+      end if
+      out_period(8) = output_level_8
+      rc = get_real_param(pfile,'refine_level_8',refine_level_8,1)
+      if (rc .ne. 1) then
+        refine_level_8 = 1.d0
+      end if
+      ref_level(8) = refine_level_8
+      rc = get_int_param(pfile,'output_level_9',output_level_9,1)
+      if (rc .ne. 1) then
+        output_level_9 = 0
+      end if
+      out_period(9) = output_level_9
+      rc = get_real_param(pfile,'refine_level_9',refine_level_9,1)
+      if (rc .ne. 1) then
+        refine_level_9 = 1.d0
+      end if
+      ref_level(9) = refine_level_9
+      rc = get_int_param(pfile,'output_level_10',output_level_10,1)
+      if (rc .ne. 1) then
+        output_level_10 = 0
+      end if
+      out_period(10) = output_level_10
+      rc = get_real_param(pfile,'refine_level_10',refine_level_10,1)
+      if (rc .ne. 1) then
+        refine_level_10 = 1.d0
+      end if
+      ref_level(10) = refine_level_10
+      rc = get_int_param(pfile,'output_level_11',output_level_11,1)
+      if (rc .ne. 1) then
+        output_level_11 = 0
+      end if
+      out_period(11) = output_level_11
+      rc = get_real_param(pfile,'refine_level_11',refine_level_11,1)
+      if (rc .ne. 1) then
+        refine_level_11 = 1.d0
+      end if
+      ref_level(11) = refine_level_11
+      rc = get_int_param(pfile,'output_level_12',output_level_12,1)
+      if (rc .ne. 1) then
+        output_level_12 = 0
+      end if
+      out_period(12) = output_level_12
+      rc = get_real_param(pfile,'refine_level_12',refine_level_12,1)
+      if (rc .ne. 1) then
+        refine_level_12 = 1.d0
+      end if
+      ref_level(12) = refine_level_12
+      rc = get_int_param(pfile,'output_level_13',output_level_13,1)
+      if (rc .ne. 1) then
+        output_level_13 = 0
+      end if
+      out_period(13) = output_level_13
+      rc = get_real_param(pfile,'refine_level_13',refine_level_13,1)
+      if (rc .ne. 1) then
+        refine_level_13 = 1.d0
+      end if
+      ref_level(13) = refine_level_13
+      rc = get_int_param(pfile,'output_level_14',output_level_14,1)
+      if (rc .ne. 1) then
+        output_level_14 = 0
+      end if
+      out_period(14) = output_level_14
+      rc = get_real_param(pfile,'refine_level_14',refine_level_14,1)
+      if (rc .ne. 1) then
+        refine_level_14 = 1.d0
+      end if
+      ref_level(14) = refine_level_14
+      rc = get_int_param(pfile,'output_level_15',output_level_15,1)
+      if (rc .ne. 1) then
+        output_level_15 = 0
+      end if
+      out_period(15) = output_level_15
+      rc = get_real_param(pfile,'refine_level_15',refine_level_15,1)
+      if (rc .ne. 1) then
+        refine_level_15 = 1.d0
+      end if
+      ref_level(15) = refine_level_15
+      rc = get_int_param(pfile,'output_level_16',output_level_16,1)
+      if (rc .ne. 1) then
+        output_level_16 = 0
+      end if
+      out_period(16) = output_level_16
+      rc = get_real_param(pfile,'refine_level_16',refine_level_16,1)
+      if (rc .ne. 1) then
+        refine_level_16 = 1.d0
+      end if
+      ref_level(16) = refine_level_16
+      rc = get_int_param(pfile,'output_level_17',output_level_17,1)
+      if (rc .ne. 1) then
+        output_level_17 = 0
+      end if
+      out_period(17) = output_level_17
+      rc = get_real_param(pfile,'refine_level_17',refine_level_17,1)
+      if (rc .ne. 1) then
+        refine_level_17 = 1.d0
+      end if
+      ref_level(17) = refine_level_17
+      rc = get_int_param(pfile,'output_level_18',output_level_18,1)
+      if (rc .ne. 1) then
+        output_level_18 = 0
+      end if
+      out_period(18) = output_level_18
+      rc = get_real_param(pfile,'refine_level_18',refine_level_18,1)
+      if (rc .ne. 1) then
+        refine_level_18 = 1.d0
+      end if
+      ref_level(18) = refine_level_18
+      rc = get_int_param(pfile,'output_level_19',output_level_19,1)
+      if (rc .ne. 1) then
+        output_level_19 = 0
+      end if
+      out_period(19) = output_level_19
+      rc = get_real_param(pfile,'refine_level_19',refine_level_19,1)
+      if (rc .ne. 1) then
+        refine_level_19 = 1.d0
+      end if
+      ref_level(19) = refine_level_19
+      rc = get_int_param(pfile,'output_level_20',output_level_20,1)
+      if (rc .ne. 1) then
+        output_level_20 = 0
+      end if
+      out_period(20) = output_level_20
+      rc = get_real_param(pfile,'refine_level_20',refine_level_20,1)
+      if (rc .ne. 1) then
+        refine_level_20 = 1.d0
+      end if
+      ref_level(20) = refine_level_20
+      rc = get_int_param(pfile,'output_level_21',output_level_21,1)
+      if (rc .ne. 1) then
+        output_level_21 = 0
+      end if
+      out_period(21) = output_level_21
+      rc = get_real_param(pfile,'refine_level_21',refine_level_21,1)
+      if (rc .ne. 1) then
+        refine_level_21 = 1.d0
+      end if
+      ref_level(21) = refine_level_21
+      rc = get_int_param(pfile,'output_level_22',output_level_22,1)
+      if (rc .ne. 1) then
+        output_level_22 = 0
+      end if
+      out_period(22) = output_level_22
+      rc = get_real_param(pfile,'refine_level_22',refine_level_22,1)
+      if (rc .ne. 1) then
+        refine_level_22 = 1.d0
+      end if
+      ref_level(22) = refine_level_22
+      rc = get_int_param(pfile,'output_level_23',output_level_23,1)
+      if (rc .ne. 1) then
+        output_level_23 = 0
+      end if
+      out_period(23) = output_level_23
+      rc = get_real_param(pfile,'refine_level_23',refine_level_23,1)
+      if (rc .ne. 1) then
+        refine_level_23 = 1.d0
+      end if
+      ref_level(23) = refine_level_23
+      rc = get_int_param(pfile,'output_level_24',output_level_24,1)
+      if (rc .ne. 1) then
+        output_level_24 = 0
+      end if
+      out_period(24) = output_level_24
+      rc = get_real_param(pfile,'refine_level_24',refine_level_24,1)
+      if (rc .ne. 1) then
+        refine_level_24 = 1.d0
+      end if
+      ref_level(24) = refine_level_24
+      if (deriv_order .eq. 42 .or. deriv_order .eq. 44) then
+        if (mindim .lt. 7) then
+          mindim = 7
+          write(*,*)'mindim is likely too small for derivatives.'
+          write(*,*)'Resetting mindim to ',mindim
+        end if
+      else if (deriv_order .eq. 642 .or. deriv_order .eq. 666) then
+        if (mindim .lt. 9) then
+          mindim = 9
+          write(*,*)'mindim is likely too small for derivatives.'
+          write(*,*)'Resetting mindim to ',mindim
+        end if
+      else if (deriv_order .eq. 8642 .or. deriv_order .eq. 8888) then
+        if (mindim .lt. 11) then
+          mindim = 11
+          write(*,*)'mindim is likely too small for derivatives.'
+          write(*,*)'Resetting mindim to ',mindim
+        end if
+      end if
+      if (refine_period.eq.0) then
+         refine_period = LARGEINT
+         write(*,*) 'params_read: Assuming a zero refine_period'
+         write(*,*) 'params_read: indicates never refine.'
+         write(*,*) 'params_read: Resetting to: ',refine_period
+      end if
+      if (err .gt. 0) then
+        write(0,*)'params_read: Problem reading in parameters'
+        call my_exit('Problem reading in parameters')
+      end if
+      return
+      end
+       subroutine params_pack()
+       implicit none
+       include 'glob.inc'
+       include 'param.inc'
+       include 'tracers.inc'
+       include 'mpif.h'
+       include 'mpi_stuff.inc'
+      tmp_ints(1) = gauge_type
+      tmp_ints(2) = idtype
+      tmp_ints(3) = evolve_geometry
+      tmp_ints(4) = evolve_em_field
+      tmp_ints(5) = evolve_scalar_field
+      tmp_ints(6) = temperature_type
+      tmp_ints(7) = read_file_alp
+      tmp_ints(8) = read_file_b
+      tmp_ints(9) = read_file_g
+      tmp_ints(10) = read_file_k
+      tmp_ints(11) = read_file_psi
+      tmp_ints(12) = read_file_phir
+      tmp_ints(13) = read_file_phic
+      tmp_ints(14) = read_file_phim
+      tmp_ints(15) = read_data_level
+      tmp_ints(16) = id_d_diff_order
+      tmp_dbls(1) = mr_amp
+      tmp_dbls(2) = mr_shift
+      tmp_dbls(3) = bamp
+      tmp_dbls(4) = e1_amp
+      tmp_dbls(5) = e2_amp
+      tmp_ints(17) = initial_b
+      tmp_dbls(6) = sf_amp
+      tmp_ints(18) = initial_sf
+      tmp_dbls(7) = sf_amp_axn
+      tmp_dbls(8) = dil_mass
+      tmp_dbls(9) = dil_alpha
+      tmp_dbls(10) = dil_infty
+      tmp_ints(19) = emd_bh_type
+      tmp_dbls(11) = axn_mass
+      tmp_dbls(12) = axn_alpha
+      tmp_dbls(13) = axn_infty
+      tmp_dbls(14) = sen_alpha
+      tmp_dbls(15) = a_ang_par
+      tmp_dbls(16) = q_elec
+      tmp_dbls(17) = p_mag
+      tmp_dbls(18) = bs_1_x0
+      tmp_dbls(19) = bs_1_y0
+      tmp_dbls(20) = bs_1_z0
+      tmp_dbls(21) = bs_1_vx
+      tmp_dbls(22) = bs_1_vy
+      tmp_dbls(23) = bs_1_vz
+      tmp_dbls(24) = bs_1_omega
+      tmp_dbls(25) = bs_2_x0
+      tmp_dbls(26) = bs_2_y0
+      tmp_dbls(27) = bs_2_z0
+      tmp_dbls(28) = bs_2_vx
+      tmp_dbls(29) = bs_2_vy
+      tmp_dbls(30) = bs_2_vz
+      tmp_dbls(31) = bs_2_omega
+      tmp_ints(20) = bh_n
+      tmp_ints(21) = bh_type
+      tmp_dbls(32) = bh_1_mass
+      tmp_dbls(33) = bh_2_mass
+      tmp_dbls(34) = bh_3_mass
+      tmp_dbls(35) = bh_4_mass
+      tmp_dbls(36) = bh_1_x
+      tmp_dbls(37) = bh_1_y
+      tmp_dbls(38) = bh_1_z
+      tmp_dbls(39) = bh_2_x
+      tmp_dbls(40) = bh_2_y
+      tmp_dbls(41) = bh_2_z
+      tmp_dbls(42) = bh_3_x
+      tmp_dbls(43) = bh_3_y
+      tmp_dbls(44) = bh_3_z
+      tmp_dbls(45) = bh_4_x
+      tmp_dbls(46) = bh_4_y
+      tmp_dbls(47) = bh_4_z
+      tmp_dbls(48) = bh_1_px
+      tmp_dbls(49) = bh_1_py
+      tmp_dbls(50) = bh_1_pz
+      tmp_dbls(51) = bh_2_px
+      tmp_dbls(52) = bh_2_py
+      tmp_dbls(53) = bh_2_pz
+      tmp_dbls(54) = bh_3_px
+      tmp_dbls(55) = bh_3_py
+      tmp_dbls(56) = bh_3_pz
+      tmp_dbls(57) = bh_4_px
+      tmp_dbls(58) = bh_4_py
+      tmp_dbls(59) = bh_4_pz
+      tmp_dbls(60) = bh_1_spin
+      tmp_dbls(61) = bh_1_sth
+      tmp_dbls(62) = bh_1_sphi
+      tmp_dbls(63) = bh_2_spin
+      tmp_dbls(64) = bh_2_sth
+      tmp_dbls(65) = bh_2_sphi
+      tmp_dbls(66) = bh_3_spin
+      tmp_dbls(67) = bh_3_sth
+      tmp_dbls(68) = bh_3_sphi
+      tmp_dbls(69) = bh_4_spin
+      tmp_dbls(70) = bh_4_sth
+      tmp_dbls(71) = bh_4_sphi
+      tmp_dbls(72) = outer_boundary
+      tmp_dbls(73) = gr_bound_cond
+      tmp_dbls(74) = fluid_bound_cond
+      tmp_ints(22) = bssn_lambda_1
+      tmp_ints(23) = bssn_lambda_2
+      tmp_ints(24) = bssn_lambda_3
+      tmp_ints(25) = bssn_lambda_4
+      tmp_dbls(75) = bssn_lambda_f0
+      tmp_dbls(76) = bssn_lambda_f1
+      tmp_dbls(77) = bssn_lambda_f2
+      tmp_dbls(78) = bssn_lambda_f3
+      tmp_dbls(79) = bssn_eta_damping
+      tmp_dbls(80) = bssn_R_0
+      tmp_dbls(81) = bssn_eta_damping_exp
+      tmp_dbls(82) = bssn_eta
+      tmp_dbls(83) = bssn_trk0
+      tmp_dbls(84) = bssn_kappa1
+      tmp_dbls(85) = bssn_kappa2
+      tmp_dbls(86) = bssn_chi_floor
+      tmp_ints(26) = bssn_adv_derivs
+      tmp_ints(27) = geometry_type
+      tmp_ints(28) = gr_idtype
+      tmp_ints(29) = mhd_idtype
+      tmp_ints(30) = detgwarn
+      tmp_ints(31) = force_free
+      tmp_dbls(87) = q1
+      tmp_dbls(88) = vinj
+      tmp_dbls(89) = Kappajan
+      tmp_dbls(90) = djump
+      tmp_dbls(91) = rpeak
+      tmp_dbls(92) = rout
+      tmp_dbls(93) = stab
+      tmp_dbls(94) = rho_real
+      tmp_dbls(95) = magcase
+      tmp_dbls(96) = kappa_max
+      tmp_ints(32) = calcDivB
+      tmp_ints(33) = constraints_analysis
+      tmp_dbls(97) = G_scale_factor
+      tmp_dbls(98) = B_scale_factor
+      tmp_ints(34) = anti_aligned
+      tmp_ints(35) = bfield_vacuumfreeze
+      tmp_dbls(99) = bfield_taperrange
+      tmp_ints(36) = project_div_B
+      tmp_dbls(100) = psi_ch
+      tmp_dbls(101) = psi_cr
+      tmp_ints(37) = damp
+      tmp_dbls(102) = id_bondi_sonic_r
+      tmp_dbls(103) = id_bondi_rhoc
+      tmp_dbls(104) = id_bondi_rstart
+      tmp_ints(38) = id_bondi_fixedIBC
+      tmp_dbls(105) = id_tov_depletion
+      tmp_dbls(106) = id_tovbh_vx
+      tmp_dbls(107) = id_tovbh_vy
+      tmp_dbls(108) = id_tovbh_vz
+      tmp_ints(39) = id_tov_average
+      tmp_dbls(109) = id_tov_p_pres
+      tmp_dbls(110) = id_tov_p_r
+      tmp_dbls(111) = id_tov_p_sigma
+      tmp_ints(40) = id_tov_magnetic
+      tmp_dbls(112) = id_tov_Asize
+      tmp_dbls(113) = id_drns_r_e
+      tmp_dbls(114) = id_center_x1
+      tmp_dbls(115) = id_center_y1
+      tmp_dbls(116) = id_center_x2
+      tmp_dbls(117) = id_center_y2
+      tmp_dbls(118) = id_vx1
+      tmp_dbls(119) = id_vy1
+      tmp_dbls(120) = id_vx2
+      tmp_dbls(121) = id_vy2
+      tmp_ints(41) = id_perturb_m
+      tmp_dbls(122) = id_perturb_p
+      tmp_dbls(123) = id_perturb_rho
+      tmp_dbls(124) = id_disk_width
+      tmp_dbls(125) = id_disk_rin
+      tmp_dbls(126) = id_disk_rout
+      tmp_dbls(127) = id_disk_B
+      tmp_ints(42) = id_disk_type
+      tmp_dbls(128) = id_disk_angmom
+      tmp_dbls(129) = id_disk_potential
+      tmp_dbls(130) = id_disk_atmosphere
+      tmp_dbls(131) = id_disk_kappa
+      tmp_dbls(132) = id_disk_Asize
+      tmp_dbls(133) = id_disk_rhocut
+      tmp_ints(43) = id_disk_magnetic
+      tmp_dbls(134) = id_disk_rho0
+      tmp_dbls(135) = id_disk_decay
+      tmp_dbls(136) = id_disk_kickvel
+      tmp_dbls(137) = id_disk_kicktheta
+      tmp_dbls(138) = id_disk_kickphi
+      tmp_dbls(139) = id_disk_GammaB
+      tmp_dbls(140) = id_disk_cB
+      tmp_dbls(141) = id_disk_lbound
+      tmp_dbls(142) = id_disk_bhmass
+      tmp_ints(44) = nx0
+      tmp_ints(45) = ny0
+      tmp_ints(46) = nz0
+      tmp_ints(47) = nt0
+      tmp_dbls(143) = h
+      tmp_dbls(144) = hx
+      tmp_dbls(145) = hy
+      tmp_dbls(146) = hz
+      tmp_dbls(147) = hxyz0
+      tmp_dbls(148) = run_wtime
+      tmp_dbls(149) = amp
+      tmp_ints(48) = idata
+      tmp_dbls(150) = maxchi_thresh
+      tmp_dbls(151) = maxchi_minctime
+      tmp_ints(49) = local_nx
+      tmp_ints(50) = local_ny
+      tmp_ints(51) = local_nz
+      tmp_ints(52) = global_nx
+      tmp_ints(53) = global_ny
+      tmp_ints(54) = global_nz
+      tmp_ints(55) = local_lower_bnd_x
+      tmp_ints(56) = local_lower_bnd_y
+      tmp_ints(57) = local_lower_bnd_z
+      tmp_ints(58) = bbox1
+      tmp_ints(59) = bbox2
+      tmp_ints(60) = bbox3
+      tmp_ints(61) = bbox4
+      tmp_ints(62) = bbox5
+      tmp_ints(63) = bbox6
+      tmp_ints(64) = nghostzones_x
+      tmp_ints(65) = nghostzones_y
+      tmp_ints(66) = nghostzones_z
+      tmp_dbls(152) = dt
+      tmp_dbls(153) = dx
+      tmp_dbls(154) = dy
+      tmp_dbls(155) = dz
+      tmp_dbls(156) = local_time
+      tmp_ints(67) = alt_coord_type
+      tmp_dbls(157) = pc_coord_trans_rad
+      tmp_dbls(158) = pc_coord_trans_width
+      tmp_dbls(159) = pc_coord_scale
+      tmp_ints(68) = bc_type
+      tmp_ints(69) = inner_bound_data
+      tmp_ints(70) = deriv_order
+      tmp_ints(71) = dissipation
+      tmp_dbls(160) = sigma_diss
+      tmp_dbls(161) = extradiss
+      tmp_dbls(162) = extradissOUT
+      tmp_ints(72) = nbholes
+      tmp_ints(73) = use_mask
+      tmp_ints(74) = mask_type
+      tmp_ints(75) = initial_analysis
+      tmp_dbls(163) = bh1_mass
+      tmp_dbls(164) = bh1_spin
+      tmp_dbls(165) = bh1_spin_phi
+      tmp_dbls(166) = bh1_spin_theta
+      tmp_dbls(167) = bh1_x0
+      tmp_dbls(168) = bh1_y0
+      tmp_dbls(169) = bh1_z0
+      tmp_dbls(170) = bh1_vx
+      tmp_dbls(171) = bh1_vy
+      tmp_dbls(172) = bh1_exc_rad
+      tmp_dbls(173) = bh1_velx
+      tmp_dbls(174) = bh2_mass
+      tmp_dbls(175) = bh2_spin
+      tmp_dbls(176) = bh2_spin_phi
+      tmp_dbls(177) = bh2_spin_theta
+      tmp_dbls(178) = bh2_x0
+      tmp_dbls(179) = bh2_y0
+      tmp_dbls(180) = bh2_z0
+      tmp_dbls(181) = bh2_exc_rad
+      tmp_dbls(182) = bh2_velx
+      tmp_ints(76) = boundary_conditions
+      tmp_dbls(183) = penalty
+      tmp_ints(77) = PP
+      tmp_ints(78) = QQ
+      tmp_dbls(184) = t0
+      tmp_dbls(185) = sigma_t
+      tmp_dbls(186) = amp_boundary
+      tmp_dbls(187) = amp_random_bc
+      tmp_dbls(188) = sigma_rho
+      tmp_ints(79) = interp_id
+      tmp_ints(80) = runge_kutta_type
+      tmp_ints(81) = runge_kutta_bound
+      tmp_ints(82) = point_wise_analysis
+      tmp_ints(83) = psi4_analysis
+      tmp_ints(84) = rk_iter
+      tmp_ints(85) = asf_ntheta
+      tmp_ints(86) = asf_nphi
+      tmp_ints(87) = asf_period
+      tmp_ints(88) = asf_level
+      tmp_dbls(189) = asf_rconst
+      tmp_ints(89) = bsf_ntheta
+      tmp_ints(90) = bsf_nphi
+      tmp_ints(91) = bsf_period
+      tmp_ints(92) = bsf_level
+      tmp_dbls(190) = bsf_rconst
+      tmp_ints(93) = csf_ntheta
+      tmp_ints(94) = csf_nphi
+      tmp_ints(95) = csf_period
+      tmp_ints(96) = csf_level
+      tmp_dbls(191) = csf_rconst
+      tmp_dbls(192) = lambda
+      tmp_ints(97) = refine_factor
+      tmp_ints(98) = refine_period_ctrl
+      tmp_ints(99) = refine_period
+      tmp_dbls(193) = refine_deltat
+      tmp_ints(100) = simpleFMR
+      tmp_ints(101) = clusterDD
+      tmp_ints(102) = clusterstyle
+      tmp_ints(103) = diss_afterinj
+      tmp_ints(104) = allowedl
+      tmp_ints(105) = linearbounds
+      tmp_ints(106) = shadow
+      tmp_dbls(194) = minx0
+      tmp_dbls(195) = miny0
+      tmp_dbls(196) = minz0
+      tmp_dbls(197) = maxx0
+      tmp_dbls(198) = maxy0
+      tmp_dbls(199) = maxz0
+      tmp_ints(107) = trace_level
+      tmp_dbls(200) = ethreshold
+      tmp_ints(108) = buffer
+      tmp_ints(109) = mindim
+      tmp_ints(110) = window
+      tmp_dbls(201) = minefficiency
+      tmp_ints(111) = output_style
+      tmp_ints(112) = output_dim
+      tmp_ints(113) = output_f1_type
+      tmp_ints(114) = output_f1_level
+      tmp_ints(115) = output_f1_period
+      tmp_dbls(202) = output_f1_lb1
+      tmp_dbls(203) = output_f1_lb2
+      tmp_dbls(204) = output_f1_lb3
+      tmp_dbls(205) = output_f1_ub1
+      tmp_dbls(206) = output_f1_ub2
+      tmp_dbls(207) = output_f1_ub3
+      tmp_ints(116) = output_f2_type
+      tmp_ints(117) = output_f2_level
+      tmp_ints(118) = output_f2_period
+      tmp_dbls(208) = output_f2_lb1
+      tmp_dbls(209) = output_f2_lb2
+      tmp_dbls(210) = output_f2_lb3
+      tmp_dbls(211) = output_f2_ub1
+      tmp_dbls(212) = output_f2_ub2
+      tmp_dbls(213) = output_f2_ub3
+      tmp_ints(119) = output_f3_type
+      tmp_ints(120) = output_f3_level
+      tmp_ints(121) = output_f3_period
+      tmp_dbls(214) = output_f3_lb1
+      tmp_dbls(215) = output_f3_lb2
+      tmp_dbls(216) = output_f3_lb3
+      tmp_dbls(217) = output_f3_ub1
+      tmp_dbls(218) = output_f3_ub2
+      tmp_dbls(219) = output_f3_ub3
+      tmp_ints(122) = output_f4_type
+      tmp_ints(123) = output_f4_level
+      tmp_ints(124) = output_f4_period
+      tmp_dbls(220) = output_f4_lb1
+      tmp_dbls(221) = output_f4_lb2
+      tmp_dbls(222) = output_f4_lb3
+      tmp_dbls(223) = output_f4_ub1
+      tmp_dbls(224) = output_f4_ub2
+      tmp_dbls(225) = output_f4_ub3
+      tmp_ints(125) = clusterreadwrite
+      tmp_ints(126) = ghostwidth
+      tmp_ints(127) = update_scheme
+      tmp_ints(128) = amrbound_prepost
+      tmp_ints(129) = amrbound_timealign
+      tmp_ints(130) = elliptic_solve
+      tmp_ints(131) = nvcycle
+      tmp_ints(132) = preswp
+      tmp_ints(133) = pstswp
+      tmp_ints(134) = maxsweeps
+      tmp_dbls(226) = ell_epsilon
+      tmp_ints(135) = num_evol_iters
+      tmp_ints(136) = chkpt_period
+      tmp_ints(137) = chkpt_readstate
+      tmp_ints(138) = chkpt_control
+      tmp_ints(139) = bound_width
+      tmp_ints(140) = weno_interp
+      tmp_ints(141) = findhorizon
+      tmp_ints(142) = mask_period
+      tmp_ints(143) = mask_usemin
+      tmp_ints(144) = mask_minfield
+      tmp_ints(145) = horizon_ntheta
+      tmp_ints(146) = horizon_nphi
+      tmp_dbls(227) = horizon_thresh
+      tmp_ints(147) = horizon_nholes
+      tmp_ints(148) = horizon_recenterp
+      tmp_dbls(228) = horizon_growth
+      tmp_ints(149) = emulate_proc
+      tmp_ints(150) = assume_symmetry
+      tmp_ints(151) = flush_period
+      tmp_ints(152) = tracers_period
+      tmp_ints(153) = tracers_initial
+      tmp_ints(154) = tracers_scheme
+      tmp_ints(155) = variable_timestep
+      tmp_dbls(229) = cfl_lambda
+      tmp_ints(156) = periodicBC
+      return
+      end
+       subroutine params_bcast()
+       implicit none
+       include 'glob.inc'
+       include 'grid.inc'
+       include 'param.inc'
+       include 'tracers.inc'
+       include 'mpif.h'
+       include 'mpi_stuff.inc'
+       integer taglength, mystringlength, i
+       character(4) tmp
+       integer num_ints, num_dbls
+      num_ints = 156
+      num_dbls = 229
+       if (num_ints .gt. num_int_params) then
+          write(*,*) 'params_bcast: Problem! Increase num_int_params. '
+          write(*,*) 'params_bcast: num_ints       = ',num_ints
+          write(*,*) 'params_bcast: num_int_params = ',num_int_params
+          call my_exit('Incrase num_int_params')
+       end if
+       if (num_dbls .gt. num_dbl_params) then
+          write(*,*) 'params_bcast: Problem! Increase num_dbl_params. '
+          write(*,*) 'params_bcast: num_dbls       = ',num_dbls
+          write(*,*) 'params_bcast: num_dbl_params = ',num_dbl_params
+          call my_exit('Incrase num_dbl_params')
+       end if
+       call MPI_BCAST(tmp_dbls, num_dbls, MPI_DOUBLE_PRECISION,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(tmp_ints, num_ints, MPI_INTEGER,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(gfunc_out, num_gfuncs, MPI_INTEGER,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(gfunc_ana, num_gfuncs, MPI_INTEGER,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(out_period,maxlev, MPI_INTEGER,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(ref_level, maxlev, MPI_DOUBLE_PRECISION,
+     & master, MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(tag, 4, MPI_CHARACTER,
+     & master, MPI_COMM_WORLD, ierr)
+       call int2str(myid,tag)
+      gauge_type = tmp_ints(1)
+      idtype = tmp_ints(2)
+      evolve_geometry = tmp_ints(3)
+      evolve_em_field = tmp_ints(4)
+      evolve_scalar_field = tmp_ints(5)
+      temperature_type = tmp_ints(6)
+      read_file_alp = tmp_ints(7)
+      read_file_b = tmp_ints(8)
+      read_file_g = tmp_ints(9)
+      read_file_k = tmp_ints(10)
+      read_file_psi = tmp_ints(11)
+      read_file_phir = tmp_ints(12)
+      read_file_phic = tmp_ints(13)
+      read_file_phim = tmp_ints(14)
+      read_data_level = tmp_ints(15)
+      id_d_diff_order = tmp_ints(16)
+      mr_amp = tmp_dbls(1)
+      mr_shift = tmp_dbls(2)
+      bamp = tmp_dbls(3)
+      e1_amp = tmp_dbls(4)
+      e2_amp = tmp_dbls(5)
+      initial_b = tmp_ints(17)
+      sf_amp = tmp_dbls(6)
+      initial_sf = tmp_ints(18)
+      sf_amp_axn = tmp_dbls(7)
+      dil_mass = tmp_dbls(8)
+      dil_alpha = tmp_dbls(9)
+      dil_infty = tmp_dbls(10)
+      emd_bh_type = tmp_ints(19)
+      axn_mass = tmp_dbls(11)
+      axn_alpha = tmp_dbls(12)
+      axn_infty = tmp_dbls(13)
+      sen_alpha = tmp_dbls(14)
+      a_ang_par = tmp_dbls(15)
+      q_elec = tmp_dbls(16)
+      p_mag = tmp_dbls(17)
+      bs_1_x0 = tmp_dbls(18)
+      bs_1_y0 = tmp_dbls(19)
+      bs_1_z0 = tmp_dbls(20)
+      bs_1_vx = tmp_dbls(21)
+      bs_1_vy = tmp_dbls(22)
+      bs_1_vz = tmp_dbls(23)
+      bs_1_omega = tmp_dbls(24)
+      bs_2_x0 = tmp_dbls(25)
+      bs_2_y0 = tmp_dbls(26)
+      bs_2_z0 = tmp_dbls(27)
+      bs_2_vx = tmp_dbls(28)
+      bs_2_vy = tmp_dbls(29)
+      bs_2_vz = tmp_dbls(30)
+      bs_2_omega = tmp_dbls(31)
+      bh_n = tmp_ints(20)
+      bh_type = tmp_ints(21)
+      bh_1_mass = tmp_dbls(32)
+      bh_2_mass = tmp_dbls(33)
+      bh_3_mass = tmp_dbls(34)
+      bh_4_mass = tmp_dbls(35)
+      bh_1_x = tmp_dbls(36)
+      bh_1_y = tmp_dbls(37)
+      bh_1_z = tmp_dbls(38)
+      bh_2_x = tmp_dbls(39)
+      bh_2_y = tmp_dbls(40)
+      bh_2_z = tmp_dbls(41)
+      bh_3_x = tmp_dbls(42)
+      bh_3_y = tmp_dbls(43)
+      bh_3_z = tmp_dbls(44)
+      bh_4_x = tmp_dbls(45)
+      bh_4_y = tmp_dbls(46)
+      bh_4_z = tmp_dbls(47)
+      bh_1_px = tmp_dbls(48)
+      bh_1_py = tmp_dbls(49)
+      bh_1_pz = tmp_dbls(50)
+      bh_2_px = tmp_dbls(51)
+      bh_2_py = tmp_dbls(52)
+      bh_2_pz = tmp_dbls(53)
+      bh_3_px = tmp_dbls(54)
+      bh_3_py = tmp_dbls(55)
+      bh_3_pz = tmp_dbls(56)
+      bh_4_px = tmp_dbls(57)
+      bh_4_py = tmp_dbls(58)
+      bh_4_pz = tmp_dbls(59)
+      bh_1_spin = tmp_dbls(60)
+      bh_1_sth = tmp_dbls(61)
+      bh_1_sphi = tmp_dbls(62)
+      bh_2_spin = tmp_dbls(63)
+      bh_2_sth = tmp_dbls(64)
+      bh_2_sphi = tmp_dbls(65)
+      bh_3_spin = tmp_dbls(66)
+      bh_3_sth = tmp_dbls(67)
+      bh_3_sphi = tmp_dbls(68)
+      bh_4_spin = tmp_dbls(69)
+      bh_4_sth = tmp_dbls(70)
+      bh_4_sphi = tmp_dbls(71)
+      outer_boundary = tmp_dbls(72)
+      gr_bound_cond = tmp_dbls(73)
+      fluid_bound_cond = tmp_dbls(74)
+      bssn_lambda_1 = tmp_ints(22)
+      bssn_lambda_2 = tmp_ints(23)
+      bssn_lambda_3 = tmp_ints(24)
+      bssn_lambda_4 = tmp_ints(25)
+      bssn_lambda_f0 = tmp_dbls(75)
+      bssn_lambda_f1 = tmp_dbls(76)
+      bssn_lambda_f2 = tmp_dbls(77)
+      bssn_lambda_f3 = tmp_dbls(78)
+      bssn_eta_damping = tmp_dbls(79)
+      bssn_R_0 = tmp_dbls(80)
+      bssn_eta_damping_exp = tmp_dbls(81)
+      bssn_eta = tmp_dbls(82)
+      bssn_trk0 = tmp_dbls(83)
+      bssn_kappa1 = tmp_dbls(84)
+      bssn_kappa2 = tmp_dbls(85)
+      bssn_chi_floor = tmp_dbls(86)
+      bssn_adv_derivs = tmp_ints(26)
+      geometry_type = tmp_ints(27)
+      gr_idtype = tmp_ints(28)
+      mhd_idtype = tmp_ints(29)
+      detgwarn = tmp_ints(30)
+      force_free = tmp_ints(31)
+      q1 = tmp_dbls(87)
+      vinj = tmp_dbls(88)
+      Kappajan = tmp_dbls(89)
+      djump = tmp_dbls(90)
+      rpeak = tmp_dbls(91)
+      rout = tmp_dbls(92)
+      stab = tmp_dbls(93)
+      rho_real = tmp_dbls(94)
+      magcase = tmp_dbls(95)
+      kappa_max = tmp_dbls(96)
+      calcDivB = tmp_ints(32)
+      constraints_analysis = tmp_ints(33)
+      G_scale_factor = tmp_dbls(97)
+      B_scale_factor = tmp_dbls(98)
+      anti_aligned = tmp_ints(34)
+      bfield_vacuumfreeze = tmp_ints(35)
+      bfield_taperrange = tmp_dbls(99)
+      project_div_B = tmp_ints(36)
+      psi_ch = tmp_dbls(100)
+      psi_cr = tmp_dbls(101)
+      damp = tmp_ints(37)
+      id_bondi_sonic_r = tmp_dbls(102)
+      id_bondi_rhoc = tmp_dbls(103)
+      id_bondi_rstart = tmp_dbls(104)
+      id_bondi_fixedIBC = tmp_ints(38)
+      id_tov_depletion = tmp_dbls(105)
+      id_tovbh_vx = tmp_dbls(106)
+      id_tovbh_vy = tmp_dbls(107)
+      id_tovbh_vz = tmp_dbls(108)
+      id_tov_average = tmp_ints(39)
+      id_tov_p_pres = tmp_dbls(109)
+      id_tov_p_r = tmp_dbls(110)
+      id_tov_p_sigma = tmp_dbls(111)
+      id_tov_magnetic = tmp_ints(40)
+      id_tov_Asize = tmp_dbls(112)
+      id_drns_r_e = tmp_dbls(113)
+      id_center_x1 = tmp_dbls(114)
+      id_center_y1 = tmp_dbls(115)
+      id_center_x2 = tmp_dbls(116)
+      id_center_y2 = tmp_dbls(117)
+      id_vx1 = tmp_dbls(118)
+      id_vy1 = tmp_dbls(119)
+      id_vx2 = tmp_dbls(120)
+      id_vy2 = tmp_dbls(121)
+      id_perturb_m = tmp_ints(41)
+      id_perturb_p = tmp_dbls(122)
+      id_perturb_rho = tmp_dbls(123)
+      id_disk_width = tmp_dbls(124)
+      id_disk_rin = tmp_dbls(125)
+      id_disk_rout = tmp_dbls(126)
+      id_disk_B = tmp_dbls(127)
+      id_disk_type = tmp_ints(42)
+      id_disk_angmom = tmp_dbls(128)
+      id_disk_potential = tmp_dbls(129)
+      id_disk_atmosphere = tmp_dbls(130)
+      id_disk_kappa = tmp_dbls(131)
+      id_disk_Asize = tmp_dbls(132)
+      id_disk_rhocut = tmp_dbls(133)
+      id_disk_magnetic = tmp_ints(43)
+      id_disk_rho0 = tmp_dbls(134)
+      id_disk_decay = tmp_dbls(135)
+      id_disk_kickvel = tmp_dbls(136)
+      id_disk_kicktheta = tmp_dbls(137)
+      id_disk_kickphi = tmp_dbls(138)
+      id_disk_GammaB = tmp_dbls(139)
+      id_disk_cB = tmp_dbls(140)
+      id_disk_lbound = tmp_dbls(141)
+      id_disk_bhmass = tmp_dbls(142)
+      nx0 = tmp_ints(44)
+      ny0 = tmp_ints(45)
+      nz0 = tmp_ints(46)
+      nt0 = tmp_ints(47)
+      h = tmp_dbls(143)
+      hx = tmp_dbls(144)
+      hy = tmp_dbls(145)
+      hz = tmp_dbls(146)
+      hxyz0 = tmp_dbls(147)
+      run_wtime = tmp_dbls(148)
+      amp = tmp_dbls(149)
+      idata = tmp_ints(48)
+      maxchi_thresh = tmp_dbls(150)
+      maxchi_minctime = tmp_dbls(151)
+      local_nx = tmp_ints(49)
+      local_ny = tmp_ints(50)
+      local_nz = tmp_ints(51)
+      global_nx = tmp_ints(52)
+      global_ny = tmp_ints(53)
+      global_nz = tmp_ints(54)
+      local_lower_bnd_x = tmp_ints(55)
+      local_lower_bnd_y = tmp_ints(56)
+      local_lower_bnd_z = tmp_ints(57)
+      bbox1 = tmp_ints(58)
+      bbox2 = tmp_ints(59)
+      bbox3 = tmp_ints(60)
+      bbox4 = tmp_ints(61)
+      bbox5 = tmp_ints(62)
+      bbox6 = tmp_ints(63)
+      nghostzones_x = tmp_ints(64)
+      nghostzones_y = tmp_ints(65)
+      nghostzones_z = tmp_ints(66)
+      dt = tmp_dbls(152)
+      dx = tmp_dbls(153)
+      dy = tmp_dbls(154)
+      dz = tmp_dbls(155)
+      local_time = tmp_dbls(156)
+      alt_coord_type = tmp_ints(67)
+      pc_coord_trans_rad = tmp_dbls(157)
+      pc_coord_trans_width = tmp_dbls(158)
+      pc_coord_scale = tmp_dbls(159)
+      bc_type = tmp_ints(68)
+      inner_bound_data = tmp_ints(69)
+      deriv_order = tmp_ints(70)
+      dissipation = tmp_ints(71)
+      sigma_diss = tmp_dbls(160)
+      extradiss = tmp_dbls(161)
+      extradissOUT = tmp_dbls(162)
+      nbholes = tmp_ints(72)
+      use_mask = tmp_ints(73)
+      mask_type = tmp_ints(74)
+      initial_analysis = tmp_ints(75)
+      bh1_mass = tmp_dbls(163)
+      bh1_spin = tmp_dbls(164)
+      bh1_spin_phi = tmp_dbls(165)
+      bh1_spin_theta = tmp_dbls(166)
+      bh1_x0 = tmp_dbls(167)
+      bh1_y0 = tmp_dbls(168)
+      bh1_z0 = tmp_dbls(169)
+      bh1_vx = tmp_dbls(170)
+      bh1_vy = tmp_dbls(171)
+      bh1_exc_rad = tmp_dbls(172)
+      bh1_velx = tmp_dbls(173)
+      bh2_mass = tmp_dbls(174)
+      bh2_spin = tmp_dbls(175)
+      bh2_spin_phi = tmp_dbls(176)
+      bh2_spin_theta = tmp_dbls(177)
+      bh2_x0 = tmp_dbls(178)
+      bh2_y0 = tmp_dbls(179)
+      bh2_z0 = tmp_dbls(180)
+      bh2_exc_rad = tmp_dbls(181)
+      bh2_velx = tmp_dbls(182)
+      boundary_conditions = tmp_ints(76)
+      penalty = tmp_dbls(183)
+      PP = tmp_ints(77)
+      QQ = tmp_ints(78)
+      t0 = tmp_dbls(184)
+      sigma_t = tmp_dbls(185)
+      amp_boundary = tmp_dbls(186)
+      amp_random_bc = tmp_dbls(187)
+      sigma_rho = tmp_dbls(188)
+      interp_id = tmp_ints(79)
+      runge_kutta_type = tmp_ints(80)
+      runge_kutta_bound = tmp_ints(81)
+      point_wise_analysis = tmp_ints(82)
+      psi4_analysis = tmp_ints(83)
+      rk_iter = tmp_ints(84)
+      asf_ntheta = tmp_ints(85)
+      asf_nphi = tmp_ints(86)
+      asf_period = tmp_ints(87)
+      asf_level = tmp_ints(88)
+      asf_rconst = tmp_dbls(189)
+      bsf_ntheta = tmp_ints(89)
+      bsf_nphi = tmp_ints(90)
+      bsf_period = tmp_ints(91)
+      bsf_level = tmp_ints(92)
+      bsf_rconst = tmp_dbls(190)
+      csf_ntheta = tmp_ints(93)
+      csf_nphi = tmp_ints(94)
+      csf_period = tmp_ints(95)
+      csf_level = tmp_ints(96)
+      csf_rconst = tmp_dbls(191)
+      lambda = tmp_dbls(192)
+      refine_factor = tmp_ints(97)
+      refine_period_ctrl = tmp_ints(98)
+      refine_period = tmp_ints(99)
+      refine_deltat = tmp_dbls(193)
+      simpleFMR = tmp_ints(100)
+      clusterDD = tmp_ints(101)
+      clusterstyle = tmp_ints(102)
+      diss_afterinj = tmp_ints(103)
+      allowedl = tmp_ints(104)
+      linearbounds = tmp_ints(105)
+      shadow = tmp_ints(106)
+      minx0 = tmp_dbls(194)
+      miny0 = tmp_dbls(195)
+      minz0 = tmp_dbls(196)
+      maxx0 = tmp_dbls(197)
+      maxy0 = tmp_dbls(198)
+      maxz0 = tmp_dbls(199)
+      trace_level = tmp_ints(107)
+      ethreshold = tmp_dbls(200)
+      buffer = tmp_ints(108)
+      mindim = tmp_ints(109)
+      window = tmp_ints(110)
+      minefficiency = tmp_dbls(201)
+      output_style = tmp_ints(111)
+      output_dim = tmp_ints(112)
+      output_f1_type = tmp_ints(113)
+      output_f1_level = tmp_ints(114)
+      output_f1_period = tmp_ints(115)
+      output_f1_lb1 = tmp_dbls(202)
+      output_f1_lb2 = tmp_dbls(203)
+      output_f1_lb3 = tmp_dbls(204)
+      output_f1_ub1 = tmp_dbls(205)
+      output_f1_ub2 = tmp_dbls(206)
+      output_f1_ub3 = tmp_dbls(207)
+      output_f2_type = tmp_ints(116)
+      output_f2_level = tmp_ints(117)
+      output_f2_period = tmp_ints(118)
+      output_f2_lb1 = tmp_dbls(208)
+      output_f2_lb2 = tmp_dbls(209)
+      output_f2_lb3 = tmp_dbls(210)
+      output_f2_ub1 = tmp_dbls(211)
+      output_f2_ub2 = tmp_dbls(212)
+      output_f2_ub3 = tmp_dbls(213)
+      output_f3_type = tmp_ints(119)
+      output_f3_level = tmp_ints(120)
+      output_f3_period = tmp_ints(121)
+      output_f3_lb1 = tmp_dbls(214)
+      output_f3_lb2 = tmp_dbls(215)
+      output_f3_lb3 = tmp_dbls(216)
+      output_f3_ub1 = tmp_dbls(217)
+      output_f3_ub2 = tmp_dbls(218)
+      output_f3_ub3 = tmp_dbls(219)
+      output_f4_type = tmp_ints(122)
+      output_f4_level = tmp_ints(123)
+      output_f4_period = tmp_ints(124)
+      output_f4_lb1 = tmp_dbls(220)
+      output_f4_lb2 = tmp_dbls(221)
+      output_f4_lb3 = tmp_dbls(222)
+      output_f4_ub1 = tmp_dbls(223)
+      output_f4_ub2 = tmp_dbls(224)
+      output_f4_ub3 = tmp_dbls(225)
+      clusterreadwrite = tmp_ints(125)
+      ghostwidth = tmp_ints(126)
+      update_scheme = tmp_ints(127)
+      amrbound_prepost = tmp_ints(128)
+      amrbound_timealign = tmp_ints(129)
+      elliptic_solve = tmp_ints(130)
+      nvcycle = tmp_ints(131)
+      preswp = tmp_ints(132)
+      pstswp = tmp_ints(133)
+      maxsweeps = tmp_ints(134)
+      ell_epsilon = tmp_dbls(226)
+      num_evol_iters = tmp_ints(135)
+      chkpt_period = tmp_ints(136)
+      chkpt_readstate = tmp_ints(137)
+      chkpt_control = tmp_ints(138)
+      bound_width = tmp_ints(139)
+      weno_interp = tmp_ints(140)
+      findhorizon = tmp_ints(141)
+      mask_period = tmp_ints(142)
+      mask_usemin = tmp_ints(143)
+      mask_minfield = tmp_ints(144)
+      horizon_ntheta = tmp_ints(145)
+      horizon_nphi = tmp_ints(146)
+      horizon_thresh = tmp_dbls(227)
+      horizon_nholes = tmp_ints(147)
+      horizon_recenterp = tmp_ints(148)
+      horizon_growth = tmp_dbls(228)
+      emulate_proc = tmp_ints(149)
+      assume_symmetry = tmp_ints(150)
+      flush_period = tmp_ints(151)
+      tracers_period = tmp_ints(152)
+      tracers_initial = tmp_ints(153)
+      tracers_scheme = tmp_ints(154)
+      variable_timestep = tmp_ints(155)
+      cfl_lambda = tmp_dbls(229)
+      periodicBC = tmp_ints(156)
+      hx = ( maxx0 - minx0 ) / (nx0-1.d0)
+      hy = ( maxy0 - miny0 ) / (ny0-1.d0)
+      hz = ( maxz0 - minz0 ) / (nz0-1.d0)
+      dt = lambda * hx
+      h = hx
+      num_anafields = 0
+      do i = 1, num_gfuncs
+         if (gfunc_ana(i) .gt. 0) then
+            num_anafields = num_anafields + 1
+         end if
+      end do
+       return
+       end 
+      subroutine params_writestate(fname)
+      implicit none
+      character(128) fname
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      include 'output.inc'
+      include 'mpif.h'
+      include 'mpi_stuff.inc'
+      integer i
+      gft_rc = mygft_write_id_int(fname,'gauge_type',gauge_type,1)
+      gft_rc = mygft_write_id_int(fname,'idtype',idtype,1)
+      gft_rc = mygft_write_id_int(fname,'evolve_geometry',evolve_geometr
+     &y,1)
+      gft_rc = mygft_write_id_int(fname,'evolve_em_field',evolve_em_fiel
+     &d,1)
+      gft_rc = mygft_write_id_int(fname,'evolve_scalar_field',evolve_sca
+     &lar_field,1)
+      gft_rc = mygft_write_id_int(fname,'temperature_type',temperature_t
+     &ype,1)
+      gft_rc = mygft_write_id_int(fname,'read_file_alp',read_file_alp,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'read_file_b',read_file_b,1)
+      gft_rc = mygft_write_id_int(fname,'read_file_g',read_file_g,1)
+      gft_rc = mygft_write_id_int(fname,'read_file_k',read_file_k,1)
+      gft_rc = mygft_write_id_int(fname,'read_file_psi',read_file_psi,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'read_file_phir',read_file_phir,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'read_file_phic',read_file_phic,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'read_file_phim',read_file_phim,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'read_data_level',read_data_leve
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'id_d_diff_order',id_d_diff_orde
+     &r,1)
+      gft_rc = mygft_write_id_float(fname,'mr_amp',mr_amp,1)
+      gft_rc = mygft_write_id_float(fname,'mr_shift',mr_shift,1)
+      gft_rc = mygft_write_id_float(fname,'bamp',bamp,1)
+      gft_rc = mygft_write_id_float(fname,'e1_amp',e1_amp,1)
+      gft_rc = mygft_write_id_float(fname,'e2_amp',e2_amp,1)
+      gft_rc = mygft_write_id_int(fname,'initial_b',initial_b,1)
+      gft_rc = mygft_write_id_float(fname,'sf_amp',sf_amp,1)
+      gft_rc = mygft_write_id_int(fname,'initial_sf',initial_sf,1)
+      gft_rc = mygft_write_id_float(fname,'sf_amp_axn',sf_amp_axn,1)
+      gft_rc = mygft_write_id_float(fname,'dil_mass',dil_mass,1)
+      gft_rc = mygft_write_id_float(fname,'dil_alpha',dil_alpha,1)
+      gft_rc = mygft_write_id_float(fname,'dil_infty',dil_infty,1)
+      gft_rc = mygft_write_id_int(fname,'emd_bh_type',emd_bh_type,1)
+      gft_rc = mygft_write_id_float(fname,'axn_mass',axn_mass,1)
+      gft_rc = mygft_write_id_float(fname,'axn_alpha',axn_alpha,1)
+      gft_rc = mygft_write_id_float(fname,'axn_infty',axn_infty,1)
+      gft_rc = mygft_write_id_float(fname,'sen_alpha',sen_alpha,1)
+      gft_rc = mygft_write_id_float(fname,'a_ang_par',a_ang_par,1)
+      gft_rc = mygft_write_id_float(fname,'q_elec',q_elec,1)
+      gft_rc = mygft_write_id_float(fname,'p_mag',p_mag,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_x0',bs_1_x0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_y0',bs_1_y0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_z0',bs_1_z0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_vx',bs_1_vx,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_vy',bs_1_vy,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_vz',bs_1_vz,1)
+      gft_rc = mygft_write_id_float(fname,'bs_1_omega',bs_1_omega,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_x0',bs_2_x0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_y0',bs_2_y0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_z0',bs_2_z0,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_vx',bs_2_vx,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_vy',bs_2_vy,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_vz',bs_2_vz,1)
+      gft_rc = mygft_write_id_float(fname,'bs_2_omega',bs_2_omega,1)
+      gft_rc = mygft_write_id_int(fname,'bh_n',bh_n,1)
+      gft_rc = mygft_write_id_int(fname,'bh_type',bh_type,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_mass',bh_1_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_mass',bh_2_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_mass',bh_3_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_mass',bh_4_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_x',bh_1_x,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_y',bh_1_y,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_z',bh_1_z,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_x',bh_2_x,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_y',bh_2_y,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_z',bh_2_z,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_x',bh_3_x,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_y',bh_3_y,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_z',bh_3_z,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_x',bh_4_x,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_y',bh_4_y,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_z',bh_4_z,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_px',bh_1_px,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_py',bh_1_py,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_pz',bh_1_pz,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_px',bh_2_px,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_py',bh_2_py,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_pz',bh_2_pz,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_px',bh_3_px,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_py',bh_3_py,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_pz',bh_3_pz,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_px',bh_4_px,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_py',bh_4_py,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_pz',bh_4_pz,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_spin',bh_1_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_sth',bh_1_sth,1)
+      gft_rc = mygft_write_id_float(fname,'bh_1_sphi',bh_1_sphi,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_spin',bh_2_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_sth',bh_2_sth,1)
+      gft_rc = mygft_write_id_float(fname,'bh_2_sphi',bh_2_sphi,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_spin',bh_3_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_sth',bh_3_sth,1)
+      gft_rc = mygft_write_id_float(fname,'bh_3_sphi',bh_3_sphi,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_spin',bh_4_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_sth',bh_4_sth,1)
+      gft_rc = mygft_write_id_float(fname,'bh_4_sphi',bh_4_sphi,1)
+      gft_rc = mygft_write_id_float(fname,'outer_boundary',outer_boundar
+     &y,1)
+      gft_rc = mygft_write_id_float(fname,'gr_bound_cond',gr_bound_cond,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'fluid_bound_cond',fluid_bound
+     &_cond,1)
+      gft_rc = mygft_write_id_int(fname,'bssn_lambda_1',bssn_lambda_1,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'bssn_lambda_2',bssn_lambda_2,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'bssn_lambda_3',bssn_lambda_3,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'bssn_lambda_4',bssn_lambda_4,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'bssn_lambda_f0',bssn_lambda_f
+     &0,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_lambda_f1',bssn_lambda_f
+     &1,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_lambda_f2',bssn_lambda_f
+     &2,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_lambda_f3',bssn_lambda_f
+     &3,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_eta_damping',bssn_eta_da
+     &mping,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_R_0',bssn_R_0,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_eta_damping_exp',bssn_et
+     &a_damping_exp,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_eta',bssn_eta,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_trk0',bssn_trk0,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_kappa1',bssn_kappa1,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_kappa2',bssn_kappa2,1)
+      gft_rc = mygft_write_id_float(fname,'bssn_chi_floor',bssn_chi_floo
+     &r,1)
+      gft_rc = mygft_write_id_int(fname,'bssn_adv_derivs',bssn_adv_deriv
+     &s,1)
+      gft_rc = mygft_write_id_int(fname,'geometry_type',geometry_type,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'gr_idtype',gr_idtype,1)
+      gft_rc = mygft_write_id_int(fname,'mhd_idtype',mhd_idtype,1)
+      gft_rc = mygft_write_id_int(fname,'detgwarn',detgwarn,1)
+      gft_rc = mygft_write_id_int(fname,'force_free',force_free,1)
+      gft_rc = mygft_write_id_float(fname,'q1',q1,1)
+      gft_rc = mygft_write_id_float(fname,'vinj',vinj,1)
+      gft_rc = mygft_write_id_float(fname,'Kappajan',Kappajan,1)
+      gft_rc = mygft_write_id_float(fname,'djump',djump,1)
+      gft_rc = mygft_write_id_float(fname,'rpeak',rpeak,1)
+      gft_rc = mygft_write_id_float(fname,'rout',rout,1)
+      gft_rc = mygft_write_id_float(fname,'stab',stab,1)
+      gft_rc = mygft_write_id_float(fname,'rho_real',rho_real,1)
+      gft_rc = mygft_write_id_float(fname,'magcase',magcase,1)
+      gft_rc = mygft_write_id_float(fname,'kappa_max',kappa_max,1)
+      gft_rc = mygft_write_id_int(fname,'calcDivB',calcDivB,1)
+      gft_rc = mygft_write_id_int(fname,'constraints_analysis',constrain
+     &ts_analysis,1)
+      gft_rc = mygft_write_id_float(fname,'G_scale_factor',G_scale_facto
+     &r,1)
+      gft_rc = mygft_write_id_float(fname,'B_scale_factor',B_scale_facto
+     &r,1)
+      gft_rc = mygft_write_id_int(fname,'anti_aligned',anti_aligned,1)
+      gft_rc = mygft_write_id_int(fname,'bfield_vacuumfreeze',bfield_vac
+     &uumfreeze,1)
+      gft_rc = mygft_write_id_float(fname,'bfield_taperrange',bfield_tap
+     &errange,1)
+      gft_rc = mygft_write_id_int(fname,'project_div_B',project_div_B,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'psi_ch',psi_ch,1)
+      gft_rc = mygft_write_id_float(fname,'psi_cr',psi_cr,1)
+      gft_rc = mygft_write_id_int(fname,'damp',damp,1)
+      gft_rc = mygft_write_id_float(fname,'id_bondi_sonic_r',id_bondi_so
+     &nic_r,1)
+      gft_rc = mygft_write_id_float(fname,'id_bondi_rhoc',id_bondi_rhoc,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_bondi_rstart',id_bondi_rst
+     &art,1)
+      gft_rc = mygft_write_id_int(fname,'id_bondi_fixedIBC',id_bondi_fix
+     &edIBC,1)
+      gft_rc = mygft_write_id_float(fname,'id_tov_depletion',id_tov_depl
+     &etion,1)
+      gft_rc = mygft_write_id_float(fname,'id_tovbh_vx',id_tovbh_vx,1)
+      gft_rc = mygft_write_id_float(fname,'id_tovbh_vy',id_tovbh_vy,1)
+      gft_rc = mygft_write_id_float(fname,'id_tovbh_vz',id_tovbh_vz,1)
+      gft_rc = mygft_write_id_int(fname,'id_tov_average',id_tov_average,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_tov_p_pres',id_tov_p_pres,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_tov_p_r',id_tov_p_r,1)
+      gft_rc = mygft_write_id_float(fname,'id_tov_p_sigma',id_tov_p_sigm
+     &a,1)
+      gft_rc = mygft_write_id_int(fname,'id_tov_magnetic',id_tov_magneti
+     &c,1)
+      gft_rc = mygft_write_id_float(fname,'id_tov_Asize',id_tov_Asize,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_drns_r_e',id_drns_r_e,1)
+      gft_rc = mygft_write_id_float(fname,'id_center_x1',id_center_x1,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_center_y1',id_center_y1,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_center_x2',id_center_x2,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_center_y2',id_center_y2,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_vx1',id_vx1,1)
+      gft_rc = mygft_write_id_float(fname,'id_vy1',id_vy1,1)
+      gft_rc = mygft_write_id_float(fname,'id_vx2',id_vx2,1)
+      gft_rc = mygft_write_id_float(fname,'id_vy2',id_vy2,1)
+      gft_rc = mygft_write_id_int(fname,'id_perturb_m',id_perturb_m,1)
+      gft_rc = mygft_write_id_float(fname,'id_perturb_p',id_perturb_p,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_perturb_rho',id_perturb_rh
+     &o,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_width',id_disk_width,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_rin',id_disk_rin,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_rout',id_disk_rout,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_disk_B',id_disk_B,1)
+      gft_rc = mygft_write_id_int(fname,'id_disk_type',id_disk_type,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_angmom',id_disk_angmo
+     &m,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_potential',id_disk_po
+     &tential,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_atmosphere',id_disk_a
+     &tmosphere,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_kappa',id_disk_kappa,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_Asize',id_disk_Asize,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_rhocut',id_disk_rhocu
+     &t,1)
+      gft_rc = mygft_write_id_int(fname,'id_disk_magnetic',id_disk_magne
+     &tic,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_rho0',id_disk_rho0,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'id_disk_decay',id_disk_decay,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_kickvel',id_disk_kick
+     &vel,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_kicktheta',id_disk_ki
+     &cktheta,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_kickphi',id_disk_kick
+     &phi,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_GammaB',id_disk_Gamma
+     &B,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_cB',id_disk_cB,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_lbound',id_disk_lboun
+     &d,1)
+      gft_rc = mygft_write_id_float(fname,'id_disk_bhmass',id_disk_bhmas
+     &s,1)
+      gft_rc = mygft_write_id_int(fname,'nx0',nx0,1)
+      gft_rc = mygft_write_id_int(fname,'ny0',ny0,1)
+      gft_rc = mygft_write_id_int(fname,'nz0',nz0,1)
+      gft_rc = mygft_write_id_int(fname,'nt0',nt0,1)
+      gft_rc = mygft_write_id_float(fname,'h',h,1)
+      gft_rc = mygft_write_id_float(fname,'hx',hx,1)
+      gft_rc = mygft_write_id_float(fname,'hy',hy,1)
+      gft_rc = mygft_write_id_float(fname,'hz',hz,1)
+      gft_rc = mygft_write_id_float(fname,'hxyz0',hxyz0,1)
+      gft_rc = mygft_write_id_float(fname,'run_wtime',run_wtime,1)
+      gft_rc = mygft_write_id_float(fname,'amp',amp,1)
+      gft_rc = mygft_write_id_int(fname,'idata',idata,1)
+      gft_rc = mygft_write_id_float(fname,'maxchi_thresh',maxchi_thresh,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'maxchi_minctime',maxchi_minct
+     &ime,1)
+      gft_rc = mygft_write_id_int(fname,'local_nx',local_nx,1)
+      gft_rc = mygft_write_id_int(fname,'local_ny',local_ny,1)
+      gft_rc = mygft_write_id_int(fname,'local_nz',local_nz,1)
+      gft_rc = mygft_write_id_int(fname,'global_nx',global_nx,1)
+      gft_rc = mygft_write_id_int(fname,'global_ny',global_ny,1)
+      gft_rc = mygft_write_id_int(fname,'global_nz',global_nz,1)
+      gft_rc = mygft_write_id_int(fname,'local_lower_bnd_x',local_lower_
+     &bnd_x,1)
+      gft_rc = mygft_write_id_int(fname,'local_lower_bnd_y',local_lower_
+     &bnd_y,1)
+      gft_rc = mygft_write_id_int(fname,'local_lower_bnd_z',local_lower_
+     &bnd_z,1)
+      gft_rc = mygft_write_id_int(fname,'bbox1',bbox1,1)
+      gft_rc = mygft_write_id_int(fname,'bbox2',bbox2,1)
+      gft_rc = mygft_write_id_int(fname,'bbox3',bbox3,1)
+      gft_rc = mygft_write_id_int(fname,'bbox4',bbox4,1)
+      gft_rc = mygft_write_id_int(fname,'bbox5',bbox5,1)
+      gft_rc = mygft_write_id_int(fname,'bbox6',bbox6,1)
+      gft_rc = mygft_write_id_int(fname,'nghostzones_x',nghostzones_x,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'nghostzones_y',nghostzones_y,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'nghostzones_z',nghostzones_z,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'dt',dt,1)
+      gft_rc = mygft_write_id_float(fname,'dx',dx,1)
+      gft_rc = mygft_write_id_float(fname,'dy',dy,1)
+      gft_rc = mygft_write_id_float(fname,'dz',dz,1)
+      gft_rc = mygft_write_id_float(fname,'local_time',local_time,1)
+      gft_rc = mygft_write_id_int(fname,'alt_coord_type',alt_coord_type,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'pc_coord_trans_rad',pc_coord_
+     &trans_rad,1)
+      gft_rc = mygft_write_id_float(fname,'pc_coord_trans_width',pc_coor
+     &d_trans_width,1)
+      gft_rc = mygft_write_id_float(fname,'pc_coord_scale',pc_coord_scal
+     &e,1)
+      gft_rc = mygft_write_id_int(fname,'bc_type',bc_type,1)
+      gft_rc = mygft_write_id_int(fname,'inner_bound_data',inner_bound_d
+     &ata,1)
+      gft_rc = mygft_write_id_int(fname,'deriv_order',deriv_order,1)
+      gft_rc = mygft_write_id_int(fname,'dissipation',dissipation,1)
+      gft_rc = mygft_write_id_float(fname,'sigma_diss',sigma_diss,1)
+      gft_rc = mygft_write_id_float(fname,'extradiss',extradiss,1)
+      gft_rc = mygft_write_id_float(fname,'extradissOUT',extradissOUT,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'nbholes',nbholes,1)
+      gft_rc = mygft_write_id_int(fname,'use_mask',use_mask,1)
+      gft_rc = mygft_write_id_int(fname,'mask_type',mask_type,1)
+      gft_rc = mygft_write_id_int(fname,'initial_analysis',initial_analy
+     &sis,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_mass',bh1_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_spin',bh1_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_spin_phi',bh1_spin_phi,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'bh1_spin_theta',bh1_spin_thet
+     &a,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_x0',bh1_x0,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_y0',bh1_y0,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_z0',bh1_z0,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_vx',bh1_vx,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_vy',bh1_vy,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_exc_rad',bh1_exc_rad,1)
+      gft_rc = mygft_write_id_float(fname,'bh1_velx',bh1_velx,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_mass',bh2_mass,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_spin',bh2_spin,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_spin_phi',bh2_spin_phi,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'bh2_spin_theta',bh2_spin_thet
+     &a,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_x0',bh2_x0,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_y0',bh2_y0,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_z0',bh2_z0,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_exc_rad',bh2_exc_rad,1)
+      gft_rc = mygft_write_id_float(fname,'bh2_velx',bh2_velx,1)
+      gft_rc = mygft_write_id_int(fname,'boundary_conditions',boundary_c
+     &onditions,1)
+      gft_rc = mygft_write_id_float(fname,'penalty',penalty,1)
+      gft_rc = mygft_write_id_int(fname,'PP',PP,1)
+      gft_rc = mygft_write_id_int(fname,'QQ',QQ,1)
+      gft_rc = mygft_write_id_float(fname,'t0',t0,1)
+      gft_rc = mygft_write_id_float(fname,'sigma_t',sigma_t,1)
+      gft_rc = mygft_write_id_float(fname,'amp_boundary',amp_boundary,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'amp_random_bc',amp_random_bc,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'sigma_rho',sigma_rho,1)
+      gft_rc = mygft_write_id_int(fname,'interp_id',interp_id,1)
+      gft_rc = mygft_write_id_int(fname,'runge_kutta_type',runge_kutta_t
+     &ype,1)
+      gft_rc = mygft_write_id_int(fname,'runge_kutta_bound',runge_kutta_
+     &bound,1)
+      gft_rc = mygft_write_id_int(fname,'point_wise_analysis',point_wise
+     &_analysis,1)
+      gft_rc = mygft_write_id_int(fname,'psi4_analysis',psi4_analysis,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'rk_iter',rk_iter,1)
+      gft_rc = mygft_write_id_int(fname,'asf_ntheta',asf_ntheta,1)
+      gft_rc = mygft_write_id_int(fname,'asf_nphi',asf_nphi,1)
+      gft_rc = mygft_write_id_int(fname,'asf_period',asf_period,1)
+      gft_rc = mygft_write_id_int(fname,'asf_level',asf_level,1)
+      gft_rc = mygft_write_id_float(fname,'asf_rconst',asf_rconst,1)
+      gft_rc = mygft_write_id_int(fname,'bsf_ntheta',bsf_ntheta,1)
+      gft_rc = mygft_write_id_int(fname,'bsf_nphi',bsf_nphi,1)
+      gft_rc = mygft_write_id_int(fname,'bsf_period',bsf_period,1)
+      gft_rc = mygft_write_id_int(fname,'bsf_level',bsf_level,1)
+      gft_rc = mygft_write_id_float(fname,'bsf_rconst',bsf_rconst,1)
+      gft_rc = mygft_write_id_int(fname,'csf_ntheta',csf_ntheta,1)
+      gft_rc = mygft_write_id_int(fname,'csf_nphi',csf_nphi,1)
+      gft_rc = mygft_write_id_int(fname,'csf_period',csf_period,1)
+      gft_rc = mygft_write_id_int(fname,'csf_level',csf_level,1)
+      gft_rc = mygft_write_id_float(fname,'csf_rconst',csf_rconst,1)
+      gft_rc = mygft_write_id_float(fname,'lambda',lambda,1)
+      gft_rc = mygft_write_id_int(fname,'refine_factor',refine_factor,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'refine_period_ctrl',refine_peri
+     &od_ctrl,1)
+      gft_rc = mygft_write_id_int(fname,'refine_period',refine_period,1)
+     &
+      gft_rc = mygft_write_id_float(fname,'refine_deltat',refine_deltat,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'simpleFMR',simpleFMR,1)
+      gft_rc = mygft_write_id_int(fname,'clusterDD',clusterDD,1)
+      gft_rc = mygft_write_id_int(fname,'clusterstyle',clusterstyle,1)
+      gft_rc = mygft_write_id_int(fname,'diss_afterinj',diss_afterinj,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'allowedl',allowedl,1)
+      gft_rc = mygft_write_id_int(fname,'linearbounds',linearbounds,1)
+      gft_rc = mygft_write_id_int(fname,'shadow',shadow,1)
+      gft_rc = mygft_write_id_float(fname,'minx0',minx0,1)
+      gft_rc = mygft_write_id_float(fname,'miny0',miny0,1)
+      gft_rc = mygft_write_id_float(fname,'minz0',minz0,1)
+      gft_rc = mygft_write_id_float(fname,'maxx0',maxx0,1)
+      gft_rc = mygft_write_id_float(fname,'maxy0',maxy0,1)
+      gft_rc = mygft_write_id_float(fname,'maxz0',maxz0,1)
+      gft_rc = mygft_write_id_int(fname,'trace_level',trace_level,1)
+      gft_rc = mygft_write_id_float(fname,'ethreshold',ethreshold,1)
+      gft_rc = mygft_write_id_int(fname,'buffer',buffer,1)
+      gft_rc = mygft_write_id_int(fname,'mindim',mindim,1)
+      gft_rc = mygft_write_id_int(fname,'window',window,1)
+      gft_rc = mygft_write_id_float(fname,'minefficiency',minefficiency,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_style',output_style,1)
+      gft_rc = mygft_write_id_int(fname,'output_dim',output_dim,1)
+      gft_rc = mygft_write_id_int(fname,'output_f1_type',output_f1_type,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f1_level',output_f1_leve
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'output_f1_period',output_f1_per
+     &iod,1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_lb1',output_f1_lb1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_lb2',output_f1_lb2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_lb3',output_f1_lb3,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_ub1',output_f1_ub1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_ub2',output_f1_ub2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f1_ub3',output_f1_ub3,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f2_type',output_f2_type,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f2_level',output_f2_leve
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'output_f2_period',output_f2_per
+     &iod,1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_lb1',output_f2_lb1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_lb2',output_f2_lb2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_lb3',output_f2_lb3,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_ub1',output_f2_ub1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_ub2',output_f2_ub2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f2_ub3',output_f2_ub3,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f3_type',output_f3_type,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f3_level',output_f3_leve
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'output_f3_period',output_f3_per
+     &iod,1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_lb1',output_f3_lb1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_lb2',output_f3_lb2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_lb3',output_f3_lb3,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_ub1',output_f3_ub1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_ub2',output_f3_ub2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f3_ub3',output_f3_ub3,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f4_type',output_f4_type,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'output_f4_level',output_f4_leve
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'output_f4_period',output_f4_per
+     &iod,1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_lb1',output_f4_lb1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_lb2',output_f4_lb2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_lb3',output_f4_lb3,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_ub1',output_f4_ub1,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_ub2',output_f4_ub2,
+     &1)
+      gft_rc = mygft_write_id_float(fname,'output_f4_ub3',output_f4_ub3,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'clusterreadwrite',clusterreadwr
+     &ite,1)
+      gft_rc = mygft_write_id_int(fname,'ghostwidth',ghostwidth,1)
+      gft_rc = mygft_write_id_int(fname,'update_scheme',update_scheme,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'amrbound_prepost',amrbound_prep
+     &ost,1)
+      gft_rc = mygft_write_id_int(fname,'amrbound_timealign',amrbound_ti
+     &mealign,1)
+      gft_rc = mygft_write_id_int(fname,'elliptic_solve',elliptic_solve,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'nvcycle',nvcycle,1)
+      gft_rc = mygft_write_id_int(fname,'preswp',preswp,1)
+      gft_rc = mygft_write_id_int(fname,'pstswp',pstswp,1)
+      gft_rc = mygft_write_id_int(fname,'maxsweeps',maxsweeps,1)
+      gft_rc = mygft_write_id_float(fname,'ell_epsilon',ell_epsilon,1)
+      gft_rc = mygft_write_id_int(fname,'num_evol_iters',num_evol_iters,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'chkpt_period',chkpt_period,1)
+      gft_rc = mygft_write_id_int(fname,'chkpt_readstate',chkpt_readstat
+     &e,1)
+      gft_rc = mygft_write_id_int(fname,'chkpt_control',chkpt_control,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'bound_width',bound_width,1)
+      gft_rc = mygft_write_id_int(fname,'weno_interp',weno_interp,1)
+      gft_rc = mygft_write_id_int(fname,'findhorizon',findhorizon,1)
+      gft_rc = mygft_write_id_int(fname,'mask_period',mask_period,1)
+      gft_rc = mygft_write_id_int(fname,'mask_usemin',mask_usemin,1)
+      gft_rc = mygft_write_id_int(fname,'mask_minfield',mask_minfield,1)
+     &
+      gft_rc = mygft_write_id_int(fname,'horizon_ntheta',horizon_ntheta,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'horizon_nphi',horizon_nphi,1)
+      gft_rc = mygft_write_id_float(fname,'horizon_thresh',horizon_thres
+     &h,1)
+      gft_rc = mygft_write_id_int(fname,'horizon_nholes',horizon_nholes,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'horizon_recenterp',horizon_rece
+     &nterp,1)
+      gft_rc = mygft_write_id_float(fname,'horizon_growth',horizon_growt
+     &h,1)
+      gft_rc = mygft_write_id_int(fname,'emulate_proc',emulate_proc,1)
+      gft_rc = mygft_write_id_int(fname,'assume_symmetry',assume_symmetr
+     &y,1)
+      gft_rc = mygft_write_id_int(fname,'flush_period',flush_period,1)
+      gft_rc = mygft_write_id_int(fname,'tracers_period',tracers_period,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'tracers_initial',tracers_initia
+     &l,1)
+      gft_rc = mygft_write_id_int(fname,'tracers_scheme',tracers_scheme,
+     &1)
+      gft_rc = mygft_write_id_int(fname,'variable_timestep',variable_tim
+     &estep,1)
+      gft_rc = mygft_write_id_float(fname,'cfl_lambda',cfl_lambda,1)
+      gft_rc = mygft_write_id_int(fname,'periodicBC',periodicBC,1)
+      return
+      end 
+      subroutine params_readstate(fname)
+      implicit none
+      character(128) fname
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      include 'output.inc'
+      include 'mpif.h'
+      include 'mpi_stuff.inc'
+      integer i
+      gft_rc = mygft_read_id_int(fname,'gauge_type',gauge_type,1)
+      gft_rc = mygft_read_id_int(fname,'idtype',idtype,1)
+      gft_rc = mygft_read_id_int(fname,'evolve_geometry',evolve_geometry
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'evolve_em_field',evolve_em_field
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'evolve_scalar_field',evolve_scal
+     &ar_field,1)
+      gft_rc = mygft_read_id_int(fname,'temperature_type',temperature_ty
+     &pe,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_alp',read_file_alp,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_b',read_file_b,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_g',read_file_g,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_k',read_file_k,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_psi',read_file_psi,1)
+      gft_rc = mygft_read_id_int(fname,'read_file_phir',read_file_phir,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'read_file_phic',read_file_phic,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'read_file_phim',read_file_phim,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'read_data_level',read_data_level
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'id_d_diff_order',id_d_diff_order
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'mr_amp',mr_amp,1)
+      gft_rc = mygft_read_id_float(fname,'mr_shift',mr_shift,1)
+      gft_rc = mygft_read_id_float(fname,'bamp',bamp,1)
+      gft_rc = mygft_read_id_float(fname,'e1_amp',e1_amp,1)
+      gft_rc = mygft_read_id_float(fname,'e2_amp',e2_amp,1)
+      gft_rc = mygft_read_id_int(fname,'initial_b',initial_b,1)
+      gft_rc = mygft_read_id_float(fname,'sf_amp',sf_amp,1)
+      gft_rc = mygft_read_id_int(fname,'initial_sf',initial_sf,1)
+      gft_rc = mygft_read_id_float(fname,'sf_amp_axn',sf_amp_axn,1)
+      gft_rc = mygft_read_id_float(fname,'dil_mass',dil_mass,1)
+      gft_rc = mygft_read_id_float(fname,'dil_alpha',dil_alpha,1)
+      gft_rc = mygft_read_id_float(fname,'dil_infty',dil_infty,1)
+      gft_rc = mygft_read_id_int(fname,'emd_bh_type',emd_bh_type,1)
+      gft_rc = mygft_read_id_float(fname,'axn_mass',axn_mass,1)
+      gft_rc = mygft_read_id_float(fname,'axn_alpha',axn_alpha,1)
+      gft_rc = mygft_read_id_float(fname,'axn_infty',axn_infty,1)
+      gft_rc = mygft_read_id_float(fname,'sen_alpha',sen_alpha,1)
+      gft_rc = mygft_read_id_float(fname,'a_ang_par',a_ang_par,1)
+      gft_rc = mygft_read_id_float(fname,'q_elec',q_elec,1)
+      gft_rc = mygft_read_id_float(fname,'p_mag',p_mag,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_x0',bs_1_x0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_y0',bs_1_y0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_z0',bs_1_z0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_vx',bs_1_vx,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_vy',bs_1_vy,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_vz',bs_1_vz,1)
+      gft_rc = mygft_read_id_float(fname,'bs_1_omega',bs_1_omega,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_x0',bs_2_x0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_y0',bs_2_y0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_z0',bs_2_z0,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_vx',bs_2_vx,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_vy',bs_2_vy,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_vz',bs_2_vz,1)
+      gft_rc = mygft_read_id_float(fname,'bs_2_omega',bs_2_omega,1)
+      gft_rc = mygft_read_id_int(fname,'bh_n',bh_n,1)
+      gft_rc = mygft_read_id_int(fname,'bh_type',bh_type,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_mass',bh_1_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_mass',bh_2_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_mass',bh_3_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_mass',bh_4_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_x',bh_1_x,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_y',bh_1_y,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_z',bh_1_z,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_x',bh_2_x,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_y',bh_2_y,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_z',bh_2_z,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_x',bh_3_x,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_y',bh_3_y,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_z',bh_3_z,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_x',bh_4_x,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_y',bh_4_y,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_z',bh_4_z,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_px',bh_1_px,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_py',bh_1_py,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_pz',bh_1_pz,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_px',bh_2_px,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_py',bh_2_py,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_pz',bh_2_pz,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_px',bh_3_px,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_py',bh_3_py,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_pz',bh_3_pz,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_px',bh_4_px,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_py',bh_4_py,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_pz',bh_4_pz,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_spin',bh_1_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_sth',bh_1_sth,1)
+      gft_rc = mygft_read_id_float(fname,'bh_1_sphi',bh_1_sphi,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_spin',bh_2_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_sth',bh_2_sth,1)
+      gft_rc = mygft_read_id_float(fname,'bh_2_sphi',bh_2_sphi,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_spin',bh_3_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_sth',bh_3_sth,1)
+      gft_rc = mygft_read_id_float(fname,'bh_3_sphi',bh_3_sphi,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_spin',bh_4_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_sth',bh_4_sth,1)
+      gft_rc = mygft_read_id_float(fname,'bh_4_sphi',bh_4_sphi,1)
+      gft_rc = mygft_read_id_float(fname,'outer_boundary',outer_boundary
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'gr_bound_cond',gr_bound_cond,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'fluid_bound_cond',fluid_bound_
+     &cond,1)
+      gft_rc = mygft_read_id_int(fname,'bssn_lambda_1',bssn_lambda_1,1)
+      gft_rc = mygft_read_id_int(fname,'bssn_lambda_2',bssn_lambda_2,1)
+      gft_rc = mygft_read_id_int(fname,'bssn_lambda_3',bssn_lambda_3,1)
+      gft_rc = mygft_read_id_int(fname,'bssn_lambda_4',bssn_lambda_4,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_lambda_f0',bssn_lambda_f0
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_lambda_f1',bssn_lambda_f1
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_lambda_f2',bssn_lambda_f2
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_lambda_f3',bssn_lambda_f3
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_eta_damping',bssn_eta_dam
+     &ping,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_R_0',bssn_R_0,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_eta_damping_exp',bssn_eta
+     &_damping_exp,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_eta',bssn_eta,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_trk0',bssn_trk0,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_kappa1',bssn_kappa1,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_kappa2',bssn_kappa2,1)
+      gft_rc = mygft_read_id_float(fname,'bssn_chi_floor',bssn_chi_floor
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'bssn_adv_derivs',bssn_adv_derivs
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'geometry_type',geometry_type,1)
+      gft_rc = mygft_read_id_int(fname,'gr_idtype',gr_idtype,1)
+      gft_rc = mygft_read_id_int(fname,'mhd_idtype',mhd_idtype,1)
+      gft_rc = mygft_read_id_int(fname,'detgwarn',detgwarn,1)
+      gft_rc = mygft_read_id_int(fname,'force_free',force_free,1)
+      gft_rc = mygft_read_id_float(fname,'q1',q1,1)
+      gft_rc = mygft_read_id_float(fname,'vinj',vinj,1)
+      gft_rc = mygft_read_id_float(fname,'Kappajan',Kappajan,1)
+      gft_rc = mygft_read_id_float(fname,'djump',djump,1)
+      gft_rc = mygft_read_id_float(fname,'rpeak',rpeak,1)
+      gft_rc = mygft_read_id_float(fname,'rout',rout,1)
+      gft_rc = mygft_read_id_float(fname,'stab',stab,1)
+      gft_rc = mygft_read_id_float(fname,'rho_real',rho_real,1)
+      gft_rc = mygft_read_id_float(fname,'magcase',magcase,1)
+      gft_rc = mygft_read_id_float(fname,'kappa_max',kappa_max,1)
+      gft_rc = mygft_read_id_int(fname,'calcDivB',calcDivB,1)
+      gft_rc = mygft_read_id_int(fname,'constraints_analysis',constraint
+     &s_analysis,1)
+      gft_rc = mygft_read_id_float(fname,'G_scale_factor',G_scale_factor
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'B_scale_factor',B_scale_factor
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'anti_aligned',anti_aligned,1)
+      gft_rc = mygft_read_id_int(fname,'bfield_vacuumfreeze',bfield_vacu
+     &umfreeze,1)
+      gft_rc = mygft_read_id_float(fname,'bfield_taperrange',bfield_tape
+     &rrange,1)
+      gft_rc = mygft_read_id_int(fname,'project_div_B',project_div_B,1)
+      gft_rc = mygft_read_id_float(fname,'psi_ch',psi_ch,1)
+      gft_rc = mygft_read_id_float(fname,'psi_cr',psi_cr,1)
+      gft_rc = mygft_read_id_int(fname,'damp',damp,1)
+      gft_rc = mygft_read_id_float(fname,'id_bondi_sonic_r',id_bondi_son
+     &ic_r,1)
+      gft_rc = mygft_read_id_float(fname,'id_bondi_rhoc',id_bondi_rhoc,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_bondi_rstart',id_bondi_rsta
+     &rt,1)
+      gft_rc = mygft_read_id_int(fname,'id_bondi_fixedIBC',id_bondi_fixe
+     &dIBC,1)
+      gft_rc = mygft_read_id_float(fname,'id_tov_depletion',id_tov_deple
+     &tion,1)
+      gft_rc = mygft_read_id_float(fname,'id_tovbh_vx',id_tovbh_vx,1)
+      gft_rc = mygft_read_id_float(fname,'id_tovbh_vy',id_tovbh_vy,1)
+      gft_rc = mygft_read_id_float(fname,'id_tovbh_vz',id_tovbh_vz,1)
+      gft_rc = mygft_read_id_int(fname,'id_tov_average',id_tov_average,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_tov_p_pres',id_tov_p_pres,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_tov_p_r',id_tov_p_r,1)
+      gft_rc = mygft_read_id_float(fname,'id_tov_p_sigma',id_tov_p_sigma
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'id_tov_magnetic',id_tov_magnetic
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'id_tov_Asize',id_tov_Asize,1)
+      gft_rc = mygft_read_id_float(fname,'id_drns_r_e',id_drns_r_e,1)
+      gft_rc = mygft_read_id_float(fname,'id_center_x1',id_center_x1,1)
+      gft_rc = mygft_read_id_float(fname,'id_center_y1',id_center_y1,1)
+      gft_rc = mygft_read_id_float(fname,'id_center_x2',id_center_x2,1)
+      gft_rc = mygft_read_id_float(fname,'id_center_y2',id_center_y2,1)
+      gft_rc = mygft_read_id_float(fname,'id_vx1',id_vx1,1)
+      gft_rc = mygft_read_id_float(fname,'id_vy1',id_vy1,1)
+      gft_rc = mygft_read_id_float(fname,'id_vx2',id_vx2,1)
+      gft_rc = mygft_read_id_float(fname,'id_vy2',id_vy2,1)
+      gft_rc = mygft_read_id_int(fname,'id_perturb_m',id_perturb_m,1)
+      gft_rc = mygft_read_id_float(fname,'id_perturb_p',id_perturb_p,1)
+      gft_rc = mygft_read_id_float(fname,'id_perturb_rho',id_perturb_rho
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_width',id_disk_width,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_disk_rin',id_disk_rin,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_rout',id_disk_rout,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_B',id_disk_B,1)
+      gft_rc = mygft_read_id_int(fname,'id_disk_type',id_disk_type,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_angmom',id_disk_angmom
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_potential',id_disk_pot
+     &ential,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_atmosphere',id_disk_at
+     &mosphere,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_kappa',id_disk_kappa,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_disk_Asize',id_disk_Asize,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_disk_rhocut',id_disk_rhocut
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'id_disk_magnetic',id_disk_magnet
+     &ic,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_rho0',id_disk_rho0,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_decay',id_disk_decay,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'id_disk_kickvel',id_disk_kickv
+     &el,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_kicktheta',id_disk_kic
+     &ktheta,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_kickphi',id_disk_kickp
+     &hi,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_GammaB',id_disk_GammaB
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_cB',id_disk_cB,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_lbound',id_disk_lbound
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'id_disk_bhmass',id_disk_bhmass
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'nx0',nx0,1)
+      gft_rc = mygft_read_id_int(fname,'ny0',ny0,1)
+      gft_rc = mygft_read_id_int(fname,'nz0',nz0,1)
+      gft_rc = mygft_read_id_int(fname,'nt0',nt0,1)
+      gft_rc = mygft_read_id_float(fname,'h',h,1)
+      gft_rc = mygft_read_id_float(fname,'hx',hx,1)
+      gft_rc = mygft_read_id_float(fname,'hy',hy,1)
+      gft_rc = mygft_read_id_float(fname,'hz',hz,1)
+      gft_rc = mygft_read_id_float(fname,'hxyz0',hxyz0,1)
+      gft_rc = mygft_read_id_float(fname,'run_wtime',run_wtime,1)
+      gft_rc = mygft_read_id_float(fname,'amp',amp,1)
+      gft_rc = mygft_read_id_int(fname,'idata',idata,1)
+      gft_rc = mygft_read_id_float(fname,'maxchi_thresh',maxchi_thresh,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'maxchi_minctime',maxchi_mincti
+     &me,1)
+      gft_rc = mygft_read_id_int(fname,'local_nx',local_nx,1)
+      gft_rc = mygft_read_id_int(fname,'local_ny',local_ny,1)
+      gft_rc = mygft_read_id_int(fname,'local_nz',local_nz,1)
+      gft_rc = mygft_read_id_int(fname,'global_nx',global_nx,1)
+      gft_rc = mygft_read_id_int(fname,'global_ny',global_ny,1)
+      gft_rc = mygft_read_id_int(fname,'global_nz',global_nz,1)
+      gft_rc = mygft_read_id_int(fname,'local_lower_bnd_x',local_lower_b
+     &nd_x,1)
+      gft_rc = mygft_read_id_int(fname,'local_lower_bnd_y',local_lower_b
+     &nd_y,1)
+      gft_rc = mygft_read_id_int(fname,'local_lower_bnd_z',local_lower_b
+     &nd_z,1)
+      gft_rc = mygft_read_id_int(fname,'bbox1',bbox1,1)
+      gft_rc = mygft_read_id_int(fname,'bbox2',bbox2,1)
+      gft_rc = mygft_read_id_int(fname,'bbox3',bbox3,1)
+      gft_rc = mygft_read_id_int(fname,'bbox4',bbox4,1)
+      gft_rc = mygft_read_id_int(fname,'bbox5',bbox5,1)
+      gft_rc = mygft_read_id_int(fname,'bbox6',bbox6,1)
+      gft_rc = mygft_read_id_int(fname,'nghostzones_x',nghostzones_x,1)
+      gft_rc = mygft_read_id_int(fname,'nghostzones_y',nghostzones_y,1)
+      gft_rc = mygft_read_id_int(fname,'nghostzones_z',nghostzones_z,1)
+      gft_rc = mygft_read_id_float(fname,'dt',dt,1)
+      gft_rc = mygft_read_id_float(fname,'dx',dx,1)
+      gft_rc = mygft_read_id_float(fname,'dy',dy,1)
+      gft_rc = mygft_read_id_float(fname,'dz',dz,1)
+      gft_rc = mygft_read_id_float(fname,'local_time',local_time,1)
+      gft_rc = mygft_read_id_int(fname,'alt_coord_type',alt_coord_type,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'pc_coord_trans_rad',pc_coord_t
+     &rans_rad,1)
+      gft_rc = mygft_read_id_float(fname,'pc_coord_trans_width',pc_coord
+     &_trans_width,1)
+      gft_rc = mygft_read_id_float(fname,'pc_coord_scale',pc_coord_scale
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'bc_type',bc_type,1)
+      gft_rc = mygft_read_id_int(fname,'inner_bound_data',inner_bound_da
+     &ta,1)
+      gft_rc = mygft_read_id_int(fname,'deriv_order',deriv_order,1)
+      gft_rc = mygft_read_id_int(fname,'dissipation',dissipation,1)
+      gft_rc = mygft_read_id_float(fname,'sigma_diss',sigma_diss,1)
+      gft_rc = mygft_read_id_float(fname,'extradiss',extradiss,1)
+      gft_rc = mygft_read_id_float(fname,'extradissOUT',extradissOUT,1)
+      gft_rc = mygft_read_id_int(fname,'nbholes',nbholes,1)
+      gft_rc = mygft_read_id_int(fname,'use_mask',use_mask,1)
+      gft_rc = mygft_read_id_int(fname,'mask_type',mask_type,1)
+      gft_rc = mygft_read_id_int(fname,'initial_analysis',initial_analys
+     &is,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_mass',bh1_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_spin',bh1_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_spin_phi',bh1_spin_phi,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_spin_theta',bh1_spin_theta
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_x0',bh1_x0,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_y0',bh1_y0,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_z0',bh1_z0,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_vx',bh1_vx,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_vy',bh1_vy,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_exc_rad',bh1_exc_rad,1)
+      gft_rc = mygft_read_id_float(fname,'bh1_velx',bh1_velx,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_mass',bh2_mass,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_spin',bh2_spin,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_spin_phi',bh2_spin_phi,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_spin_theta',bh2_spin_theta
+     &,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_x0',bh2_x0,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_y0',bh2_y0,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_z0',bh2_z0,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_exc_rad',bh2_exc_rad,1)
+      gft_rc = mygft_read_id_float(fname,'bh2_velx',bh2_velx,1)
+      gft_rc = mygft_read_id_int(fname,'boundary_conditions',boundary_co
+     &nditions,1)
+      gft_rc = mygft_read_id_float(fname,'penalty',penalty,1)
+      gft_rc = mygft_read_id_int(fname,'PP',PP,1)
+      gft_rc = mygft_read_id_int(fname,'QQ',QQ,1)
+      gft_rc = mygft_read_id_float(fname,'t0',t0,1)
+      gft_rc = mygft_read_id_float(fname,'sigma_t',sigma_t,1)
+      gft_rc = mygft_read_id_float(fname,'amp_boundary',amp_boundary,1)
+      gft_rc = mygft_read_id_float(fname,'amp_random_bc',amp_random_bc,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'sigma_rho',sigma_rho,1)
+      gft_rc = mygft_read_id_int(fname,'interp_id',interp_id,1)
+      gft_rc = mygft_read_id_int(fname,'runge_kutta_type',runge_kutta_ty
+     &pe,1)
+      gft_rc = mygft_read_id_int(fname,'runge_kutta_bound',runge_kutta_b
+     &ound,1)
+      gft_rc = mygft_read_id_int(fname,'point_wise_analysis',point_wise_
+     &analysis,1)
+      gft_rc = mygft_read_id_int(fname,'psi4_analysis',psi4_analysis,1)
+      gft_rc = mygft_read_id_int(fname,'rk_iter',rk_iter,1)
+      gft_rc = mygft_read_id_int(fname,'asf_ntheta',asf_ntheta,1)
+      gft_rc = mygft_read_id_int(fname,'asf_nphi',asf_nphi,1)
+      gft_rc = mygft_read_id_int(fname,'asf_period',asf_period,1)
+      gft_rc = mygft_read_id_int(fname,'asf_level',asf_level,1)
+      gft_rc = mygft_read_id_float(fname,'asf_rconst',asf_rconst,1)
+      gft_rc = mygft_read_id_int(fname,'bsf_ntheta',bsf_ntheta,1)
+      gft_rc = mygft_read_id_int(fname,'bsf_nphi',bsf_nphi,1)
+      gft_rc = mygft_read_id_int(fname,'bsf_period',bsf_period,1)
+      gft_rc = mygft_read_id_int(fname,'bsf_level',bsf_level,1)
+      gft_rc = mygft_read_id_float(fname,'bsf_rconst',bsf_rconst,1)
+      gft_rc = mygft_read_id_int(fname,'csf_ntheta',csf_ntheta,1)
+      gft_rc = mygft_read_id_int(fname,'csf_nphi',csf_nphi,1)
+      gft_rc = mygft_read_id_int(fname,'csf_period',csf_period,1)
+      gft_rc = mygft_read_id_int(fname,'csf_level',csf_level,1)
+      gft_rc = mygft_read_id_float(fname,'csf_rconst',csf_rconst,1)
+      gft_rc = mygft_read_id_float(fname,'lambda',lambda,1)
+      gft_rc = mygft_read_id_int(fname,'refine_factor',refine_factor,1)
+      gft_rc = mygft_read_id_int(fname,'refine_period_ctrl',refine_perio
+     &d_ctrl,1)
+      gft_rc = mygft_read_id_int(fname,'refine_period',refine_period,1)
+      gft_rc = mygft_read_id_float(fname,'refine_deltat',refine_deltat,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'simpleFMR',simpleFMR,1)
+      gft_rc = mygft_read_id_int(fname,'clusterDD',clusterDD,1)
+      gft_rc = mygft_read_id_int(fname,'clusterstyle',clusterstyle,1)
+      gft_rc = mygft_read_id_int(fname,'diss_afterinj',diss_afterinj,1)
+      gft_rc = mygft_read_id_int(fname,'allowedl',allowedl,1)
+      gft_rc = mygft_read_id_int(fname,'linearbounds',linearbounds,1)
+      gft_rc = mygft_read_id_int(fname,'shadow',shadow,1)
+      gft_rc = mygft_read_id_float(fname,'minx0',minx0,1)
+      gft_rc = mygft_read_id_float(fname,'miny0',miny0,1)
+      gft_rc = mygft_read_id_float(fname,'minz0',minz0,1)
+      gft_rc = mygft_read_id_float(fname,'maxx0',maxx0,1)
+      gft_rc = mygft_read_id_float(fname,'maxy0',maxy0,1)
+      gft_rc = mygft_read_id_float(fname,'maxz0',maxz0,1)
+      gft_rc = mygft_read_id_int(fname,'trace_level',trace_level,1)
+      gft_rc = mygft_read_id_float(fname,'ethreshold',ethreshold,1)
+      gft_rc = mygft_read_id_int(fname,'buffer',buffer,1)
+      gft_rc = mygft_read_id_int(fname,'mindim',mindim,1)
+      gft_rc = mygft_read_id_int(fname,'window',window,1)
+      gft_rc = mygft_read_id_float(fname,'minefficiency',minefficiency,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_style',output_style,1)
+      gft_rc = mygft_read_id_int(fname,'output_dim',output_dim,1)
+      gft_rc = mygft_read_id_int(fname,'output_f1_type',output_f1_type,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f1_level',output_f1_level
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'output_f1_period',output_f1_peri
+     &od,1)
+      gft_rc = mygft_read_id_float(fname,'output_f1_lb1',output_f1_lb1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f1_lb2',output_f1_lb2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f1_lb3',output_f1_lb3,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f1_ub1',output_f1_ub1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f1_ub2',output_f1_ub2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f1_ub3',output_f1_ub3,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f2_type',output_f2_type,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f2_level',output_f2_level
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'output_f2_period',output_f2_peri
+     &od,1)
+      gft_rc = mygft_read_id_float(fname,'output_f2_lb1',output_f2_lb1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f2_lb2',output_f2_lb2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f2_lb3',output_f2_lb3,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f2_ub1',output_f2_ub1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f2_ub2',output_f2_ub2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f2_ub3',output_f2_ub3,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f3_type',output_f3_type,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f3_level',output_f3_level
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'output_f3_period',output_f3_peri
+     &od,1)
+      gft_rc = mygft_read_id_float(fname,'output_f3_lb1',output_f3_lb1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f3_lb2',output_f3_lb2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f3_lb3',output_f3_lb3,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f3_ub1',output_f3_ub1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f3_ub2',output_f3_ub2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f3_ub3',output_f3_ub3,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f4_type',output_f4_type,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'output_f4_level',output_f4_level
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'output_f4_period',output_f4_peri
+     &od,1)
+      gft_rc = mygft_read_id_float(fname,'output_f4_lb1',output_f4_lb1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f4_lb2',output_f4_lb2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f4_lb3',output_f4_lb3,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f4_ub1',output_f4_ub1,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f4_ub2',output_f4_ub2,1
+     &)
+      gft_rc = mygft_read_id_float(fname,'output_f4_ub3',output_f4_ub3,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'clusterreadwrite',clusterreadwri
+     &te,1)
+      gft_rc = mygft_read_id_int(fname,'ghostwidth',ghostwidth,1)
+      gft_rc = mygft_read_id_int(fname,'update_scheme',update_scheme,1)
+      gft_rc = mygft_read_id_int(fname,'amrbound_prepost',amrbound_prepo
+     &st,1)
+      gft_rc = mygft_read_id_int(fname,'amrbound_timealign',amrbound_tim
+     &ealign,1)
+      gft_rc = mygft_read_id_int(fname,'elliptic_solve',elliptic_solve,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'nvcycle',nvcycle,1)
+      gft_rc = mygft_read_id_int(fname,'preswp',preswp,1)
+      gft_rc = mygft_read_id_int(fname,'pstswp',pstswp,1)
+      gft_rc = mygft_read_id_int(fname,'maxsweeps',maxsweeps,1)
+      gft_rc = mygft_read_id_float(fname,'ell_epsilon',ell_epsilon,1)
+      gft_rc = mygft_read_id_int(fname,'num_evol_iters',num_evol_iters,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'chkpt_period',chkpt_period,1)
+      gft_rc = mygft_read_id_int(fname,'chkpt_readstate',chkpt_readstate
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'chkpt_control',chkpt_control,1)
+      gft_rc = mygft_read_id_int(fname,'bound_width',bound_width,1)
+      gft_rc = mygft_read_id_int(fname,'weno_interp',weno_interp,1)
+      gft_rc = mygft_read_id_int(fname,'findhorizon',findhorizon,1)
+      gft_rc = mygft_read_id_int(fname,'mask_period',mask_period,1)
+      gft_rc = mygft_read_id_int(fname,'mask_usemin',mask_usemin,1)
+      gft_rc = mygft_read_id_int(fname,'mask_minfield',mask_minfield,1)
+      gft_rc = mygft_read_id_int(fname,'horizon_ntheta',horizon_ntheta,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'horizon_nphi',horizon_nphi,1)
+      gft_rc = mygft_read_id_float(fname,'horizon_thresh',horizon_thresh
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'horizon_nholes',horizon_nholes,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'horizon_recenterp',horizon_recen
+     &terp,1)
+      gft_rc = mygft_read_id_float(fname,'horizon_growth',horizon_growth
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'emulate_proc',emulate_proc,1)
+      gft_rc = mygft_read_id_int(fname,'assume_symmetry',assume_symmetry
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'flush_period',flush_period,1)
+      gft_rc = mygft_read_id_int(fname,'tracers_period',tracers_period,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'tracers_initial',tracers_initial
+     &,1)
+      gft_rc = mygft_read_id_int(fname,'tracers_scheme',tracers_scheme,1
+     &)
+      gft_rc = mygft_read_id_int(fname,'variable_timestep',variable_time
+     &step,1)
+      gft_rc = mygft_read_id_float(fname,'cfl_lambda',cfl_lambda,1)
+      gft_rc = mygft_read_id_int(fname,'periodicBC',periodicBC,1)
+      return
+      end 
+      subroutine grid_iter( gridnum )
+      use params
+      use GF
+      use utileqs
+      use hypercoords
+      implicit none
+      integer gridnum
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      include 'chr.inc'
+      integer nx, ny, nz, i
+      real(kind=8) minx, miny, minz, maxx, maxy, maxz
+      real(kind=8) hg, dtg, factor, time
+      logical ltrace
+      parameter ( ltrace = .false. )
+      integer myid, proc_return_myid
+      external proc_return_myid
+      type(gridfunction), dimension(NU):: u0,u2,dxu,dyu,dzu
+      type(gridfunction), dimension(NU) :: urk1
+      type(gridfunction), dimension(NV):: v, dxv, dyv, dzv
+      type(gridfunction), dimension(NW):: w
+      real(kind=8), dimension(NPAR) :: par
+      call load_pointers(gridnum)
+      myid = proc_return_myid()
+      hg = gr_h(gridnum)
+      dtg = lambda*hg
+      local_nx = gr_nx(gridnum)
+      local_ny = gr_ny(gridnum)
+      local_nz = gr_nz(gridnum)
+      minx = gr_minx(gridnum)
+      miny = gr_miny(gridnum)
+      minz = gr_minz(gridnum)
+      maxx = gr_maxx(gridnum)
+      maxy = gr_maxy(gridnum)
+      maxz = gr_maxz(gridnum)
+      time = gr_t(gridnum)
+      gr_iter(gridnum) = gr_iter(gridnum) + 1
+      rk_iter = gr_iter(gridnum)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling mapCoords1dTo3d.'
+      call mapCoords1dTo3d(q(gr_cctk_x), q(gr_cctk_y), q(gr_cctk_z), q(g
+     &r_x(gridnum)), q(gr_y(gridnum)), q(gr_z(gridnum)), local_nx, local
+     &_ny, local_nz)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling assign_ptrs_fields.
+     &'
+      call assign_ptrs_fields(q(gr_gt11), q(gr_gt11_np1),q(gr_gt12), q(g
+     &r_gt12_np1),q(gr_gt13), q(gr_gt13_np1),q(gr_gt22), q(gr_gt22_np1),
+     &q(gr_gt23), q(gr_gt23_np1),q(gr_gt33), q(gr_gt33_np1),q(gr_A11), q
+     &(gr_A11_np1),q(gr_A12), q(gr_A12_np1),q(gr_A13), q(gr_A13_np1),q(g
+     &r_A22), q(gr_A22_np1),q(gr_A23), q(gr_A23_np1),q(gr_A33), q(gr_A33
+     &_np1),q(gr_chi), q(gr_chi_np1),q(gr_trK), q(gr_trK_np1),q(gr_Gam1)
+     &, q(gr_Gam1_np1),q(gr_Gam2), q(gr_Gam2_np1),q(gr_Gam3), q(gr_Gam3_
+     &np1),q(gr_alpha), q(gr_alpha_np1),q(gr_shift1), q(gr_shift1_np1),q
+     &(gr_shift2), q(gr_shift2_np1),q(gr_shift3), q(gr_shift3_np1),q(gr_
+     &gb1), q(gr_gb1_np1),q(gr_gb2), q(gr_gb2_np1),q(gr_gb3), q(gr_gb3_n
+     &p1),q(gr_Ex), q(gr_Ex_np1),q(gr_Ey), q(gr_Ey_np1),q(gr_Ez), q(gr_E
+     &z_np1),q(gr_Bx), q(gr_Bx_np1),q(gr_By), q(gr_By_np1),q(gr_Bz), q(g
+     &r_Bz_np1),q(gr_Phi_em), q(gr_Phi_em_np1),q(gr_Psi_em), q(gr_Psi_em
+     &_np1),q(gr_phiR), q(gr_phiR_np1),q(gr_phiI), q(gr_phiI_np1),q(gr_p
+     &iR), q(gr_piR_np1),q(gr_piI), q(gr_piI_np1),q(gr_g11),q(gr_g12),q(
+     &gr_g13),q(gr_g22),q(gr_g23),q(gr_g33),q(gr_sdetg),q(gr_rad_exp),q(
+     &gr_psi4R),q(gr_psi4I),q(gr_massADM),q(gr_massBONDI),q(gr_curvature
+     &),q(gr_phi2R),q(gr_phi2I),q(gr_phi0R),q(gr_phi0I),q(gr_vbr_omega),
+     &q(gr_vbth_omega),q(gr_charge),q(gr_J1),q(gr_J2),q(gr_J3),q(gr_poyn
+     &tingx_dens),q(gr_poyntingy_dens),q(gr_poyntingz_dens),q(gr_uell),q
+     &(gr_ham),q(gr_momx),q(gr_momy),q(gr_momz),q(gr_div_B),q(gr_div_E),
+     &q(gr_tr_A),q(gr_detgt_m1),q(gr_gamtx_con),q(gr_gamty_con),q(gr_gam
+     &tz_con),q(gr_calgamtx_con),q(gr_calgamty_con),q(gr_calgamtz_con),q
+     &(gr_cctk_x),q(gr_cctk_y),q(gr_cctk_z),q(gr_r),q(gr_xphys),q(gr_yph
+     &ys),q(gr_zphys),q(gr_mask),q(gr_wdiss),q(gr_chr),q(gr_error),q(gr_
+     &flag),u2, u0, v, w, local_nx, local_ny, local_nz)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling assign_ptrs_rks.'
+      call assign_ptrs_rks(q(gr_gt11_rk1),q(gr_gt12_rk1),q(gr_gt13_rk1),
+     &q(gr_gt22_rk1),q(gr_gt23_rk1),q(gr_gt33_rk1),q(gr_A11_rk1),q(gr_A1
+     &2_rk1),q(gr_A13_rk1),q(gr_A22_rk1),q(gr_A23_rk1),q(gr_A33_rk1),q(g
+     &r_chi_rk1),q(gr_trK_rk1),q(gr_Gam1_rk1),q(gr_Gam2_rk1),q(gr_Gam3_r
+     &k1),q(gr_alpha_rk1),q(gr_shift1_rk1),q(gr_shift2_rk1),q(gr_shift3_
+     &rk1),q(gr_gb1_rk1),q(gr_gb2_rk1),q(gr_gb3_rk1),q(gr_Ex_rk1),q(gr_E
+     &y_rk1),q(gr_Ez_rk1),q(gr_Bx_rk1),q(gr_By_rk1),q(gr_Bz_rk1),q(gr_Ph
+     &i_em_rk1),q(gr_Psi_em_rk1),q(gr_phiR_rk1),q(gr_phiI_rk1),q(gr_piR_
+     &rk1),q(gr_piI_rk1),urk1, local_nx, local_ny, local_nz)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling assign_ptrs_derivs.
+     &'
+      call assign_ptrs_derivs(dxu, dyu, dzu, dxv, dyv, dzv, local_nx, lo
+     &cal_ny, local_nz)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling set_bbox.'
+      call set_bbox(bbox1, bbox2, bbox3, bbox4, bbox5, bbox6, q(gr_chr),
+     & local_nx, local_ny, local_nz)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling assign_params.'
+      call assign_params(gauge_type,idtype,evolve_geometry,evolve_em_fie
+     &ld,evolve_scalar_field,temperature_type,read_file_alp,read_file_b,
+     &read_file_g,read_file_k,read_file_psi,read_file_phir,read_file_phi
+     &c,read_file_phim,read_data_level,id_d_diff_order,mr_amp,mr_shift,b
+     &amp,e1_amp,e2_amp,initial_b,sf_amp,initial_sf,sf_amp_axn,dil_mass,
+     &dil_alpha,dil_infty,emd_bh_type,axn_mass,axn_alpha,axn_infty,sen_a
+     &lpha,a_ang_par,q_elec,p_mag,bs_1_x0,bs_1_y0,bs_1_z0,bs_1_vx,bs_1_v
+     &y,bs_1_vz,bs_1_omega,bs_2_x0,bs_2_y0,bs_2_z0,bs_2_vx,bs_2_vy,bs_2_
+     &vz,bs_2_omega,bh_n,bh_type,bh_1_mass,bh_2_mass,bh_3_mass,bh_4_mass
+     &,bh_1_x,bh_1_y,bh_1_z,bh_2_x,bh_2_y,bh_2_z,bh_3_x,bh_3_y,bh_3_z,bh
+     &_4_x,bh_4_y,bh_4_z,bh_1_px,bh_1_py,bh_1_pz,bh_2_px,bh_2_py,bh_2_pz
+     &,bh_3_px,bh_3_py,bh_3_pz,bh_4_px,bh_4_py,bh_4_pz,bh_1_spin,bh_1_st
+     &h,bh_1_sphi,bh_2_spin,bh_2_sth,bh_2_sphi,bh_3_spin,bh_3_sth,bh_3_s
+     &phi,bh_4_spin,bh_4_sth,bh_4_sphi,outer_boundary,gr_bound_cond,flui
+     &d_bound_cond,bssn_lambda_1,bssn_lambda_2,bssn_lambda_3,bssn_lambda
+     &_4,bssn_lambda_f0,bssn_lambda_f1,bssn_lambda_f2,bssn_lambda_f3,bss
+     &n_eta_damping,bssn_R_0,bssn_eta_damping_exp,bssn_eta,bssn_trk0,bss
+     &n_kappa1,bssn_kappa2,bssn_chi_floor,bssn_adv_derivs,geometry_type,
+     &gr_idtype,mhd_idtype,detgwarn,force_free,q1,vinj,Kappajan,djump,rp
+     &eak,rout,stab,rho_real,magcase,kappa_max,calcDivB,constraints_anal
+     &ysis,G_scale_factor,B_scale_factor,anti_aligned,bfield_vacuumfreez
+     &e,bfield_taperrange,project_div_B,psi_ch,psi_cr,damp,id_bondi_soni
+     &c_r,id_bondi_rhoc,id_bondi_rstart,id_bondi_fixedIBC,id_tov_depleti
+     &on,id_tovbh_vx,id_tovbh_vy,id_tovbh_vz,id_tov_average,id_tov_p_pre
+     &s,id_tov_p_r,id_tov_p_sigma,id_tov_magnetic,id_tov_Asize,id_drns_r
+     &_e,id_center_x1,id_center_y1,id_center_x2,id_center_y2,id_vx1,id_v
+     &y1,id_vx2,id_vy2,id_perturb_m,id_perturb_p,id_perturb_rho,id_disk_
+     &width,id_disk_rin,id_disk_rout,id_disk_B,id_disk_type,id_disk_angm
+     &om,id_disk_potential,id_disk_atmosphere,id_disk_kappa,id_disk_Asiz
+     &e,id_disk_rhocut,id_disk_magnetic,id_disk_rho0,id_disk_decay,id_di
+     &sk_kickvel,id_disk_kicktheta,id_disk_kickphi,id_disk_GammaB,id_dis
+     &k_cB,id_disk_lbound,id_disk_bhmass,nx0,ny0,nz0,nt0,h,hx,hy,hz,hxyz
+     &0,run_wtime,amp,idata,maxchi_thresh,maxchi_minctime,local_nx,local
+     &_ny,local_nz,global_nx,global_ny,global_nz,local_lower_bnd_x,local
+     &_lower_bnd_y,local_lower_bnd_z,bbox1,bbox2,bbox3,bbox4,bbox5,bbox6
+     &,nghostzones_x,nghostzones_y,nghostzones_z,dt,dx,dy,dz,local_time,
+     &alt_coord_type,pc_coord_trans_rad,pc_coord_trans_width,pc_coord_sc
+     &ale,bc_type,inner_bound_data,deriv_order,dissipation,sigma_diss,ex
+     &tradiss,extradissOUT,nbholes,use_mask,mask_type,initial_analysis,b
+     &h1_mass,bh1_spin,bh1_spin_phi,bh1_spin_theta,bh1_x0,bh1_y0,bh1_z0,
+     &bh1_vx,bh1_vy,bh1_exc_rad,bh1_velx,bh2_mass,bh2_spin,bh2_spin_phi,
+     &bh2_spin_theta,bh2_x0,bh2_y0,bh2_z0,bh2_exc_rad,bh2_velx,boundary_
+     &conditions,penalty,PP,QQ,t0,sigma_t,amp_boundary,amp_random_bc,sig
+     &ma_rho,interp_id,runge_kutta_type,runge_kutta_bound,point_wise_ana
+     &lysis,psi4_analysis,rk_iter,asf_ntheta,asf_nphi,asf_period,asf_lev
+     &el,asf_rconst,bsf_ntheta,bsf_nphi,bsf_period,bsf_level,bsf_rconst,
+     &csf_ntheta,csf_nphi,csf_period,csf_level,csf_rconst,lambda,refine_
+     &factor,refine_period_ctrl,refine_period,refine_deltat,simpleFMR,cl
+     &usterDD,clusterstyle,diss_afterinj,allowedl,linearbounds,shadow,mi
+     &nx0,miny0,minz0,maxx0,maxy0,maxz0,trace_level,ethreshold,buffer,mi
+     &ndim,window,minefficiency,output_style,output_dim,output_f1_type,o
+     &utput_f1_level,output_f1_period,output_f1_lb1,output_f1_lb2,output
+     &_f1_lb3,output_f1_ub1,output_f1_ub2,output_f1_ub3,output_f2_type,o
+     &utput_f2_level,output_f2_period,output_f2_lb1,output_f2_lb2,output
+     &_f2_lb3,output_f2_ub1,output_f2_ub2,output_f2_ub3,output_f3_type,o
+     &utput_f3_level,output_f3_period,output_f3_lb1,output_f3_lb2,output
+     &_f3_lb3,output_f3_ub1,output_f3_ub2,output_f3_ub3,output_f4_type,o
+     &utput_f4_level,output_f4_period,output_f4_lb1,output_f4_lb2,output
+     &_f4_lb3,output_f4_ub1,output_f4_ub2,output_f4_ub3,clusterreadwrite
+     &,ghostwidth,update_scheme,amrbound_prepost,amrbound_timealign,elli
+     &ptic_solve,nvcycle,preswp,pstswp,maxsweeps,ell_epsilon,num_evol_it
+     &ers,chkpt_period,chkpt_readstate,chkpt_control,bound_width,weno_in
+     &terp,findhorizon,mask_period,mask_usemin,mask_minfield,horizon_nth
+     &eta,horizon_nphi,horizon_thresh,horizon_nholes,horizon_recenterp,h
+     &orizon_growth,emulate_proc,assume_symmetry,flush_period,tracers_pe
+     &riod,tracers_initial,tracers_scheme,variable_timestep,cfl_lambda,p
+     &eriodicBC,hg,dtg,minx,miny,minz,maxx,maxy,maxz,time,par)
+      if(ltrace)write(*,*)myid,'] grid_iter: calling HyperEvolveRK.'
+      call HyperEvolveRK(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv,urk1,p
+     &ar)
+      if (gr_iter(gridnum).eq.3) then
+         if(ltrace)write(*,*)myid,'] grid_iter: calling HyperAnalysis.'
+         call HyperAnalysis(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv, pa
+     &r)
+         gr_iter(gridnum) = 0
+      end if
+      if(ltrace)write(*,*)myid,'] grid_iter: Done.'
+      return
+      end
+      subroutine grid_init_t0( gridnum )
+      use params
+      use GF
+      use utileqs
+      use hypercoords
+      implicit none
+      integer gridnum
+      include 'grid.inc'
+      include 'glob.inc'
+      include 'param.inc'
+      include 'tracers.inc'
+      include 'chr.inc'
+      integer nx, ny, nz, i
+      real(kind=8) minx, miny, minz, maxx, maxy, maxz
+      real(kind=8) hg, dtg, factor, time
+      logical ltrace
+      parameter ( ltrace = .false. )
+      type(gridfunction), dimension(NU):: u0,u2,dxu,dyu,dzu
+      type(gridfunction), dimension(NU):: urk1
+      type(gridfunction), dimension(NV):: v, dxv, dyv, dzv
+      type(gridfunction), dimension(NW):: w
+      real(kind=8), dimension(NPAR) :: par
+      call load_pointers(gridnum)
+      hg = gr_h(gridnum)
+      dtg = lambda*hg
+      local_nx = gr_nx(gridnum)
+      local_ny = gr_ny(gridnum)
+      local_nz = gr_nz(gridnum)
+      minx = gr_minx(gridnum)
+      miny = gr_miny(gridnum)
+      minz = gr_minz(gridnum)
+      maxx = gr_maxx(gridnum)
+      maxy = gr_maxy(gridnum)
+      maxz = gr_maxz(gridnum)
+      time = gr_t(gridnum)
+      call mapCoords1dTo3d(q(gr_cctk_x), q(gr_cctk_y), q(gr_cctk_z), q(g
+     &r_x(gridnum)), q(gr_y(gridnum)), q(gr_z(gridnum)), local_nx, local
+     &_ny, local_nz)
+      rk_iter = 0
+      call set_bbox(bbox1, bbox2, bbox3, bbox4, bbox5, bbox6, q(gr_chr),
+     & local_nx, local_ny, local_nz)
+      call assign_params(gauge_type,idtype,evolve_geometry,evolve_em_fie
+     &ld,evolve_scalar_field,temperature_type,read_file_alp,read_file_b,
+     &read_file_g,read_file_k,read_file_psi,read_file_phir,read_file_phi
+     &c,read_file_phim,read_data_level,id_d_diff_order,mr_amp,mr_shift,b
+     &amp,e1_amp,e2_amp,initial_b,sf_amp,initial_sf,sf_amp_axn,dil_mass,
+     &dil_alpha,dil_infty,emd_bh_type,axn_mass,axn_alpha,axn_infty,sen_a
+     &lpha,a_ang_par,q_elec,p_mag,bs_1_x0,bs_1_y0,bs_1_z0,bs_1_vx,bs_1_v
+     &y,bs_1_vz,bs_1_omega,bs_2_x0,bs_2_y0,bs_2_z0,bs_2_vx,bs_2_vy,bs_2_
+     &vz,bs_2_omega,bh_n,bh_type,bh_1_mass,bh_2_mass,bh_3_mass,bh_4_mass
+     &,bh_1_x,bh_1_y,bh_1_z,bh_2_x,bh_2_y,bh_2_z,bh_3_x,bh_3_y,bh_3_z,bh
+     &_4_x,bh_4_y,bh_4_z,bh_1_px,bh_1_py,bh_1_pz,bh_2_px,bh_2_py,bh_2_pz
+     &,bh_3_px,bh_3_py,bh_3_pz,bh_4_px,bh_4_py,bh_4_pz,bh_1_spin,bh_1_st
+     &h,bh_1_sphi,bh_2_spin,bh_2_sth,bh_2_sphi,bh_3_spin,bh_3_sth,bh_3_s
+     &phi,bh_4_spin,bh_4_sth,bh_4_sphi,outer_boundary,gr_bound_cond,flui
+     &d_bound_cond,bssn_lambda_1,bssn_lambda_2,bssn_lambda_3,bssn_lambda
+     &_4,bssn_lambda_f0,bssn_lambda_f1,bssn_lambda_f2,bssn_lambda_f3,bss
+     &n_eta_damping,bssn_R_0,bssn_eta_damping_exp,bssn_eta,bssn_trk0,bss
+     &n_kappa1,bssn_kappa2,bssn_chi_floor,bssn_adv_derivs,geometry_type,
+     &gr_idtype,mhd_idtype,detgwarn,force_free,q1,vinj,Kappajan,djump,rp
+     &eak,rout,stab,rho_real,magcase,kappa_max,calcDivB,constraints_anal
+     &ysis,G_scale_factor,B_scale_factor,anti_aligned,bfield_vacuumfreez
+     &e,bfield_taperrange,project_div_B,psi_ch,psi_cr,damp,id_bondi_soni
+     &c_r,id_bondi_rhoc,id_bondi_rstart,id_bondi_fixedIBC,id_tov_depleti
+     &on,id_tovbh_vx,id_tovbh_vy,id_tovbh_vz,id_tov_average,id_tov_p_pre
+     &s,id_tov_p_r,id_tov_p_sigma,id_tov_magnetic,id_tov_Asize,id_drns_r
+     &_e,id_center_x1,id_center_y1,id_center_x2,id_center_y2,id_vx1,id_v
+     &y1,id_vx2,id_vy2,id_perturb_m,id_perturb_p,id_perturb_rho,id_disk_
+     &width,id_disk_rin,id_disk_rout,id_disk_B,id_disk_type,id_disk_angm
+     &om,id_disk_potential,id_disk_atmosphere,id_disk_kappa,id_disk_Asiz
+     &e,id_disk_rhocut,id_disk_magnetic,id_disk_rho0,id_disk_decay,id_di
+     &sk_kickvel,id_disk_kicktheta,id_disk_kickphi,id_disk_GammaB,id_dis
+     &k_cB,id_disk_lbound,id_disk_bhmass,nx0,ny0,nz0,nt0,h,hx,hy,hz,hxyz
+     &0,run_wtime,amp,idata,maxchi_thresh,maxchi_minctime,local_nx,local
+     &_ny,local_nz,global_nx,global_ny,global_nz,local_lower_bnd_x,local
+     &_lower_bnd_y,local_lower_bnd_z,bbox1,bbox2,bbox3,bbox4,bbox5,bbox6
+     &,nghostzones_x,nghostzones_y,nghostzones_z,dt,dx,dy,dz,local_time,
+     &alt_coord_type,pc_coord_trans_rad,pc_coord_trans_width,pc_coord_sc
+     &ale,bc_type,inner_bound_data,deriv_order,dissipation,sigma_diss,ex
+     &tradiss,extradissOUT,nbholes,use_mask,mask_type,initial_analysis,b
+     &h1_mass,bh1_spin,bh1_spin_phi,bh1_spin_theta,bh1_x0,bh1_y0,bh1_z0,
+     &bh1_vx,bh1_vy,bh1_exc_rad,bh1_velx,bh2_mass,bh2_spin,bh2_spin_phi,
+     &bh2_spin_theta,bh2_x0,bh2_y0,bh2_z0,bh2_exc_rad,bh2_velx,boundary_
+     &conditions,penalty,PP,QQ,t0,sigma_t,amp_boundary,amp_random_bc,sig
+     &ma_rho,interp_id,runge_kutta_type,runge_kutta_bound,point_wise_ana
+     &lysis,psi4_analysis,rk_iter,asf_ntheta,asf_nphi,asf_period,asf_lev
+     &el,asf_rconst,bsf_ntheta,bsf_nphi,bsf_period,bsf_level,bsf_rconst,
+     &csf_ntheta,csf_nphi,csf_period,csf_level,csf_rconst,lambda,refine_
+     &factor,refine_period_ctrl,refine_period,refine_deltat,simpleFMR,cl
+     &usterDD,clusterstyle,diss_afterinj,allowedl,linearbounds,shadow,mi
+     &nx0,miny0,minz0,maxx0,maxy0,maxz0,trace_level,ethreshold,buffer,mi
+     &ndim,window,minefficiency,output_style,output_dim,output_f1_type,o
+     &utput_f1_level,output_f1_period,output_f1_lb1,output_f1_lb2,output
+     &_f1_lb3,output_f1_ub1,output_f1_ub2,output_f1_ub3,output_f2_type,o
+     &utput_f2_level,output_f2_period,output_f2_lb1,output_f2_lb2,output
+     &_f2_lb3,output_f2_ub1,output_f2_ub2,output_f2_ub3,output_f3_type,o
+     &utput_f3_level,output_f3_period,output_f3_lb1,output_f3_lb2,output
+     &_f3_lb3,output_f3_ub1,output_f3_ub2,output_f3_ub3,output_f4_type,o
+     &utput_f4_level,output_f4_period,output_f4_lb1,output_f4_lb2,output
+     &_f4_lb3,output_f4_ub1,output_f4_ub2,output_f4_ub3,clusterreadwrite
+     &,ghostwidth,update_scheme,amrbound_prepost,amrbound_timealign,elli
+     &ptic_solve,nvcycle,preswp,pstswp,maxsweeps,ell_epsilon,num_evol_it
+     &ers,chkpt_period,chkpt_readstate,chkpt_control,bound_width,weno_in
+     &terp,findhorizon,mask_period,mask_usemin,mask_minfield,horizon_nth
+     &eta,horizon_nphi,horizon_thresh,horizon_nholes,horizon_recenterp,h
+     &orizon_growth,emulate_proc,assume_symmetry,flush_period,tracers_pe
+     &riod,tracers_initial,tracers_scheme,variable_timestep,cfl_lambda,p
+     &eriodicBC,hg,dtg,minx,miny,minz,maxx,maxy,maxz,time,par)
+      call assign_ptrs_fields(q(gr_gt11), q(gr_gt11_np1),q(gr_gt12), q(g
+     &r_gt12_np1),q(gr_gt13), q(gr_gt13_np1),q(gr_gt22), q(gr_gt22_np1),
+     &q(gr_gt23), q(gr_gt23_np1),q(gr_gt33), q(gr_gt33_np1),q(gr_A11), q
+     &(gr_A11_np1),q(gr_A12), q(gr_A12_np1),q(gr_A13), q(gr_A13_np1),q(g
+     &r_A22), q(gr_A22_np1),q(gr_A23), q(gr_A23_np1),q(gr_A33), q(gr_A33
+     &_np1),q(gr_chi), q(gr_chi_np1),q(gr_trK), q(gr_trK_np1),q(gr_Gam1)
+     &, q(gr_Gam1_np1),q(gr_Gam2), q(gr_Gam2_np1),q(gr_Gam3), q(gr_Gam3_
+     &np1),q(gr_alpha), q(gr_alpha_np1),q(gr_shift1), q(gr_shift1_np1),q
+     &(gr_shift2), q(gr_shift2_np1),q(gr_shift3), q(gr_shift3_np1),q(gr_
+     &gb1), q(gr_gb1_np1),q(gr_gb2), q(gr_gb2_np1),q(gr_gb3), q(gr_gb3_n
+     &p1),q(gr_Ex), q(gr_Ex_np1),q(gr_Ey), q(gr_Ey_np1),q(gr_Ez), q(gr_E
+     &z_np1),q(gr_Bx), q(gr_Bx_np1),q(gr_By), q(gr_By_np1),q(gr_Bz), q(g
+     &r_Bz_np1),q(gr_Phi_em), q(gr_Phi_em_np1),q(gr_Psi_em), q(gr_Psi_em
+     &_np1),q(gr_phiR), q(gr_phiR_np1),q(gr_phiI), q(gr_phiI_np1),q(gr_p
+     &iR), q(gr_piR_np1),q(gr_piI), q(gr_piI_np1),q(gr_g11),q(gr_g12),q(
+     &gr_g13),q(gr_g22),q(gr_g23),q(gr_g33),q(gr_sdetg),q(gr_rad_exp),q(
+     &gr_psi4R),q(gr_psi4I),q(gr_massADM),q(gr_massBONDI),q(gr_curvature
+     &),q(gr_phi2R),q(gr_phi2I),q(gr_phi0R),q(gr_phi0I),q(gr_vbr_omega),
+     &q(gr_vbth_omega),q(gr_charge),q(gr_J1),q(gr_J2),q(gr_J3),q(gr_poyn
+     &tingx_dens),q(gr_poyntingy_dens),q(gr_poyntingz_dens),q(gr_uell),q
+     &(gr_ham),q(gr_momx),q(gr_momy),q(gr_momz),q(gr_div_B),q(gr_div_E),
+     &q(gr_tr_A),q(gr_detgt_m1),q(gr_gamtx_con),q(gr_gamty_con),q(gr_gam
+     &tz_con),q(gr_calgamtx_con),q(gr_calgamty_con),q(gr_calgamtz_con),q
+     &(gr_cctk_x),q(gr_cctk_y),q(gr_cctk_z),q(gr_r),q(gr_xphys),q(gr_yph
+     &ys),q(gr_zphys),q(gr_mask),q(gr_wdiss),q(gr_chr),q(gr_error),q(gr_
+     &flag),u2, u0, v, w, local_nx, local_ny, local_nz)
+      call assign_ptrs_derivs(dxu, dyu, dzu, dxv, dyv, dzv, local_nx, lo
+     &cal_ny, local_nz)
+      call assign_ptrs_rks(q(gr_gt11_rk1),q(gr_gt12_rk1),q(gr_gt13_rk1),
+     &q(gr_gt22_rk1),q(gr_gt23_rk1),q(gr_gt33_rk1),q(gr_A11_rk1),q(gr_A1
+     &2_rk1),q(gr_A13_rk1),q(gr_A22_rk1),q(gr_A23_rk1),q(gr_A33_rk1),q(g
+     &r_chi_rk1),q(gr_trK_rk1),q(gr_Gam1_rk1),q(gr_Gam2_rk1),q(gr_Gam3_r
+     &k1),q(gr_alpha_rk1),q(gr_shift1_rk1),q(gr_shift2_rk1),q(gr_shift3_
+     &rk1),q(gr_gb1_rk1),q(gr_gb2_rk1),q(gr_gb3_rk1),q(gr_Ex_rk1),q(gr_E
+     &y_rk1),q(gr_Ez_rk1),q(gr_Bx_rk1),q(gr_By_rk1),q(gr_Bz_rk1),q(gr_Ph
+     &i_em_rk1),q(gr_Psi_em_rk1),q(gr_phiR_rk1),q(gr_phiI_rk1),q(gr_piR_
+     &rk1),q(gr_piI_rk1),urk1,local_nx, local_ny, local_nz)
+      call HyperInit(u0, u2, v, w, dxu, dyu, dzu, dxv, dyv, dzv, par)
+      return
+      end

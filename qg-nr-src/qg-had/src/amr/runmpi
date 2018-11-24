@@ -1,0 +1,23 @@
+#!/bin/sh
+
+
+CODE=nlsm
+ID=id
+#NUMPROCS=5
+NUMPROCS=1
+
+Usage() {
+cat<<END
+usage: runmpi <amplitude value>
+END
+exit 1
+}
+
+case $# in 
+1) amp=$1;;
+*) Usage;;
+esac
+
+setparid $ID amp $amp
+
+mpirun -np $NUMPROCS $CODE $ID

@@ -1,0 +1,170 @@
+10/11/04 --
+
+Currently a grid must have a unique parent. That is, it must be completely
+contained within the domain of its parent. This has simplified a variety
+of things in the code, but it presents a couple of problems with respect
+to clustering and load balancing. The time has come to allow for multiple
+parents, and here's the general strategy for doing so:
+
+   --- remove use of gr_parent() which each grid currently uses to
+       keep track of its parent
+   --- in keeping with above, when a grid gets its boundary info
+       from its parent, we'll now have to loop over all grids at
+       the appropriate level
+   --- when grids go to inject their values into their parents, we'll
+       now have to loop over all grids in the appropriate level
+   --- currently, the "location" of a given grid is specified with
+       respect to an anchor point in its parent. With non-unique
+       parents, something has to be changed. We could still specify
+       an anchor point simply with respect to *a* parent, but perhaps
+       it's better to specify an anchor point with respect to a virtual
+       parent, one that represents a grid at some resolution that would
+       cover the entire coarse grid.
+   --- perhaps the most involved change will come with respect to
+       the refinement process. Currently, each grid simply refines
+       where/when necessary with its domain. Now however, the responsibility
+       for refinement shifts to the appropriate level. That is, on
+       a given level, we'll have to gather all the flagging info from
+       each grid in the level, and then determine new grids from there.
+
+10/12/04
+
+Injection:  --- in level_apply(), need to loop over all grids
+                on the next-coarser level which have non-zero
+                intersection with the given grid.
+            --- Also, need to change the injection routines
+                (grid_inject, grid_inject_master, grid_inject_slave)
+                so that they take as an argument for the coarser grid/parent
+                so that they take as an argument for the coarser grid/parent
+
+10/13/04
+
+Not only do we need to move away from using gr_parent (which I've done
+now with the injection only), but we have to re-think the whole anchor.
+We can do a virtual anchor with respect to a virtual parent, but I think
+what's better is a virtual anchor with respect to a virtual grid at
+the same level of the grid to be considered. However, the way things
+are setup, and the way the clustering will work, it might be more
+natural to do anchor points with respect to a virtual parent.
+
+Well, I've got injection working without any anchor points,
+and which should conceivably work for multiple parents. It likely
+will present some bugs on being presented with complicated grid clusters,
+but for now it duplicates the results we got before these changes.
+In other words, it should work for unique parents, which is what we have,
+but as soon as we change the refinement to allow for non-unique
+parents, we'll probably have to sort through some bugs, but that shouldn't
+be too difficult.
+
+What remains to be done is to tackle the interpolated bounds whereby
+the subgrids get info from their parent(s). Once that is done, I'll
+change the refinement at the initial time so that non-unique parents
+happen, and we'll see what happens. If that goes smoothly, then
+dynamical refinement. If that happens, then we'll probably fix up
+the clusterer and then get better load balancing. By then, hopefully
+we'll have some good physics in had: gravity, fluids, etc.
+
+10/19/04
+
+So the injection and boundary interpolation routines have been
+updated and they duplicate some previous results. What will happen
+when grids are no longer completely contained within a parent grid,
+I don't know. Presumably, some debugging will have to happen, but 
+there shouldn't be any fundamental problems.
+
+I've begun to change the refinement procedure. This is by far the
+most complicated part of the whole code. Instead of refining each
+and every grid, an entire level is refined at one go. It looks like
+this should actually simplify the refinement process a bit, but
+we'll see. I've gotten a little bit to work but still have much
+to get working:
+       1) dynamical refinement
+       2) grid initialization from all parents
+       3) enable parallel running (for now I'm just working on one processor)
+
+10/20/04
+
+The new refinement, where it is done level by level, not grid by grid,
+really seems to simplify things quite a bit. In particular, the grid
+order within the level on the hierarchy should not matter anymore, making
+all the effort to keep them in order from before moot. Plus, the fact 
+that only the master process does the refinement considerably simplifies
+the refinement process.
+
+To get the parallel working a number of things need be done:
+    1) write grid_init_parent() and grid_init_child()
+       to do parent/child initialization in parallel
+    2) write code to get error from nonlocal grids in level_refine()
+    3) allow for grid creation on remote machines
+    4) update level_freeall_dead() to tell remote procs to free grids
+
+I also need to fix up the clusterer, and debug all the grid operations.
+
+10/25/04
+
+Just some random notes:
+    1) When we transition to refining by level, a lot of things can be cleaned up:
+       a) no need for gr_sigi(), etc, and gr_flag() arrays and memory storage
+       b) lots of routines get be removed from had
+    2) We could think about simplifying listen_for_actions, in particular, 
+       shortening the grid creation process by keeping grid initialization 
+       dictated by the master.
+
+Currently, refining by level still has a few bugs. I also have to fix up:
+    --- the call to proc_add_work in grid_new(). With the new refining
+        process, it's less clear how to do this best
+    --- the clusterer is what I'm working on now. 
+    --- it'd be nice to be able to output the flag storage from level_refine().
+        This can be done but not within grid_output_sdf().
+
+10/27/04
+
+Things seem to be mostly in place and working. One problem is how to
+set the mask and how to deal boundary intersections of subgrids. In other
+words, after each step two things happen. Grids (on the same level) are
+syncronized so that points near the boundary on a given grid that happen
+to  be in the interior of another grid are set to each other. But also,
+each grid gets its boundary information from any parents. Right now,
+the boundary width for syncing the grids on a level is 3 and the width
+for getting boundary data from parents is 6. So it's not perfectly clear
+how to do this consistently.
+
+It seems likely that being able to domain decompose every grid of sufficient
+size is going to be necessary to achieve any signficant speed up with
+multiple processors. At least for the simple problems I'm looking at,
+one tends to get very few grids on any given level, which hurts performance
+scaling. One can crank up the efficiency threshold to the clusterer, but then
+gets a big mess of fairly redundant (because of the overlaps) grids which
+are hard to keep track of. Clustering whereby you simply chop up a more
+regular grid would make that job easier.
+
+11/02/04
+
+The basic infrastructure is now in place for refining by level. Once, I switch
+over to it from refining by grid for good, the code will in fact be simply in
+many respects. The issues that remain are basically ones of refining (no pun),
+rather than anything major. That is, the code can easily handle what the refine
+by grid could do. The problems crop up in the following situations:
+    --- if one cranks up the efficiency requested of the clusterer, it
+        dutifully gives you lots of boxes, but it can produce clusters which
+        will produce subgrids which overlap by a few grid points, but not by
+        6 grid points which is necessary to sync the bounds of the grids (3 each
+        for each grid). The solution is either to increase the overlap to six,
+        decrease the overlap to zero if possible, or simply have grid_syncbnd()
+        ignore the overlap when it isn't sufficient to work properly.
+    --- all grids  have a mask or characteristic function, gr_chr, which associates
+        a type to each point in its domain. When a grid is newly created,
+        this mask is set...interior points are so "masked" and boundary points
+        are labeled as amr boundary points. However, when two grids overlap,
+        points of one that lie in the interior of the other, are set to a type
+        called "domain decomposition" points, meaning their values will be gotten
+        from another grid.
+           What gets tricky, is that some points that would otherwise be so
+        labeled, instead need to get their values from the parent level.
+        Right now, I'm having a tough time figuring out how best to implement
+        this. If I do it by changing the mask, it's not clear how since I set
+        the mask as an operation local to any two overlapping grids and the
+        determination that a point should instead look to its parent is
+        basically a global (w/r/t the cluster of subgrids for that level) decision.
+        Alternatively, perhaps I could do it without use of the mask.
+        I need to fix this. For simple clusters, there's no problem.

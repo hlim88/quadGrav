@@ -1,0 +1,88 @@
+
+par
+{
+
+#--------------------------- hyper variables ------------------------------
+#
+#  Eventually these variables should be in another file that the user does
+#  not see.  These are general variables that all hyper equations need to have.
+
+###############################################################################
+#
+#   Name             :  type     :  size  :   min     :  max    : default val
+#
+###############################################################################
+local_nx             :  int      :   1    :     1     :    *    :    10
+local_ny             :  int      :   1    :     1     :    *    :    10
+local_nz             :  int      :   1    :     1     :    *    :    10
+global_nx            :  int      :   1    :     1     :    *    :    10
+global_ny            :  int      :   1    :     1     :    *    :    10
+global_nz            :  int      :   1    :     1     :    *    :    10
+local_lower_bnd_x    :  int      :   1    :     1     :    *    :    1
+local_lower_bnd_y    :  int      :   1    :     1     :    *    :    1
+local_lower_bnd_z    :  int      :   1    :     1     :    *    :    1
+bbox1                :  int      :   1    :     *     :    *    :    1
+bbox2                :  int      :   1    :     *     :    *    :    1
+bbox3                :  int      :   1    :     *     :    *    :    1
+bbox4                :  int      :   1    :     *     :    *    :    1
+bbox5                :  int      :   1    :     *     :    *    :    1
+bbox6                :  int      :   1    :     *     :    *    :    1
+nghostzones_x        :  int      :   1    :     0     :    *    :    0
+nghostzones_y        :  int      :   1    :     0     :    *    :    0
+nghostzones_z        :  int      :   1    :     0     :    *    :    0
+dt                   :  double   :   1    :     *     :    *    :    1.0
+dx                   :  double   :   1    :     *     :    *    :    1.0
+dy                   :  double   :   1    :     *     :    *    :    1.0
+dz                   :  double   :   1    :     *     :    *    :    1.0
+local_time           :  double   :   1    :     *     :    *    :    0.0
+alt_coord_type       :  int      :   1    :     0     :    1    :    0
+pc_coord_trans_rad   :  double   :   1    :     0.0   :    *    :    0.0
+pc_coord_trans_width :  double   :   1    :     0.0   :    *    :    1.0
+pc_coord_scale       :  double   :   1    :   1.0e-11 :    *    :    1.0
+bc_type              :  int      :   1    :     0     :    4    :    0
+inner_bound_data     :  int      :   1    :     0     :    1    :    0
+deriv_order          :  int      :   1    :     1     :    *    :    2
+dissipation          :  int      :   1    :     0     :    *    :    0
+sigma_diss           :  double   :   1    :     0.0   :    *    :    0.0
+extradiss	     :  double   :   1    :     0.0   :    *    :    0.0
+extradissOUT         :  double   :   1    :   -1.0    :    10.0 :    0.0
+nbholes              :  int      :   1    :     0     :    2    :    0
+use_mask             :  int      :   1    :     0     :    1    :    0
+mask_type            :  int      :   1    :     0     :    1    :    1
+initial_analysis     :  int      :   1    :     0     :    1    :    1
+bh1_mass             :  double   :   1    :   -10.0   :    *    :    0.0
+bh1_spin             :  double   :   1    :     0.0   :    1.0  :    0.0
+bh1_spin_phi         :  double   :   1    :     0.0   :    *    :    0.0
+bh1_spin_theta       :  double   :   1    :     0.0   :    *    :    0.0
+bh1_x0               :  double   :   1    :     *     :    *    :    0.0
+bh1_y0               :  double   :   1    :     *     :    *    :    0.0
+bh1_z0               :  double   :   1    :     *     :    *    :    0.0
+bh1_vx               :  double   :   1    :     *     :    *    :    0.0
+bh1_vy               :  double   :   1    :     *     :    *    :    0.0
+bh1_exc_rad          :  double   :   1    :     0.0   :    *    :    0.0
+bh1_velx             :  double   :   1    :     *     :    *    :    0.0
+bh2_mass             :  double   :   1    :     0.0   :    *    :    0.0
+bh2_spin             :  double   :   1    :     0.0   :    1.0  :    0.0
+bh2_spin_phi         :  double   :   1    :     0.0   :    *    :    0.0
+bh2_spin_theta       :  double   :   1    :     0.0   :    *    :    0.0
+bh2_x0               :  double   :   1    :     *     :    *    :    0.0
+bh2_y0               :  double   :   1    :     *     :    *    :    0.0
+bh2_z0               :  double   :   1    :     *     :    *    :    0.0
+bh2_exc_rad          :  double   :   1    :     0.0   :    *    :    0.0
+bh2_velx             :  double   :   1    :     *     :    *    :    0.0
+boundary_conditions  :  int      :   1    :     -1    :    15   :    1
+penalty              :  double   :   1    :     *     :    *    :    0.0
+PP                   :  int      :   1    :     0     :    7    :    7
+QQ                   :  int      :   1    :    -1     :    1    :    0
+t0                   :  double   :   1    :     0.0   :    *    :    5.0
+sigma_t              :  double   :   1    :     0.01  :    *    :    0.5
+amp_boundary         :  double   :   1    :     0.0   :    *    :    0.0
+amp_random_bc        :  double   :   1    :     *     :    *    :    0.0
+sigma_rho            :  double   :   1    :     0.01  :    *    :    0.05
+interp_id            :  int      :   1    :     0     :    1    :    1
+runge_kutta_type     :  int      :   1    :     1     :    13   :    1
+runge_kutta_bound    :  int      :   1    :     1     :    2    :    1
+point_wise_analysis  :  int      :   1    :     0     :    1    :    0
+psi4_analysis        :  int      :   1    :     0     :    4    :    0
+rk_iter              :  int      :   1    :     0     :    0    :    0
+}

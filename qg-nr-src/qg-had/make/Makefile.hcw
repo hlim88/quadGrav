@@ -1,0 +1,130 @@
+############################################################################
+#
+#   $Id: Makefile.hcw,v 1.1.1.1 2004-02-10 19:12:04 steve Exp $
+#
+#   Master Makefile
+#
+#   David Neilsen, Louisiana State University
+#
+#   To compile:
+#     (1) The following environment variables must be externall defined:
+#         LSV       = -lsv   (if installed, else blank)
+#         IMPI      = -I/usr/local/vmi/mpich/include   (on titan.ncsa.)
+#                     -I/usr/local/include  (on most systems)
+#         LMPI      = -lmpich (Mac,Linux) or -lmpi (sgi)
+#         MPIF90    = mpif90  (Linux)
+#                     or /usr/local/mpich/bin/mpif90 (Mac)
+#                     or f90 (sgi)
+#         LOCALIB   = -L/usr/local/lib  or -L/usr/local/lib32
+#         F90FLAGS  =
+#         CCFLAGS   =
+#
+#     (2) The following variables inside this makefile must be defined:
+#         EQS       = name of directory in ./src that contains the equations,
+#                     e.g., hyperCurvedWave.
+#         EXECNAME  = name for the executable, e.g., hcwad
+#         all       = define what should be compiled on typing 'make',
+#                     e.g., all: dirs hcw
+#   
+#
+#
+############################################################################
+
+SHELL = /bin/sh
+
+#
+#  Equation directory
+#
+EQS = hyperCurvedWave
+EXECNAME = hcwad
+all: dirs hcw
+
+export EQS EXECNAME
+
+#
+#  Directory definitions
+#
+HEADDIR   = $(PWD)
+AMRDIR    = $(PWD)/src/amr
+HYPERDIR  = $(PWD)/src/hyper
+LIBDIR    = $(PWD)/lib
+BINDIR    = $(PWD)/bin
+export HEADDIR HYPERDIR AMRDIR LIBDIR BINDIR
+
+#
+#  Tools
+#
+AR        = ar r
+RANLIB    = ranlib
+SETUPSCRIPT = $(HEADDIR)/sbin/hypersetup
+export AR RANLIB SETUPSCRIPT
+
+#
+#  Libraries and includes
+#
+#
+# Environment variables (define in .cshrc):
+#
+#     LSV       = -lsv   (if installed, else blank)
+#     IMPI      = -I/usr/local/vmi/mpich/include   (on titan.ncsa.)
+#                 -I/usr/local/include  (on most systems)
+#     LMPI      = -lmpich (Mac,Linux) or -lmpi (sgi)
+#     MPIF90    = mpif90  (Linux)
+#                 or /usr/local/mpich/bin/mpif90 (Mac) 
+#                 or f90 (sgi)
+#     LOCALIB   = -L/usr/local/lib  or -L/usr/local/lib32
+#     F90FLAGS  =
+#     CCFLAGS   =
+#
+
+MPIOPTIONS =
+#MPIOPTIONS = -mpilog
+#MPIOPTIONS = -mpitrace
+
+EQLIB     = -l$(EQS)
+HYPERLIB = -L/$(LIBDIR) -lHyper $(EQLIB)
+INCFLAGS = -I/usr/local/include $(IMPI) -I$(HEADDIR)/include -module $(HEADDIR)/include
+ALLFLAGS = $(F90FLAGS) $(INCFLAGS)
+
+FLIBS     = $(HYPERLIBS) $(LMPI) -lbbhutil $(LSV) 
+CC_       = $(CC)  $(CCFLAGS)
+F90_      = $(MPIF90) -fpp $(ALLFLAGS)
+F90_LOAD  = $(MPIF90) $(MPIOPTIONS) $(ALLFLAGS)  $(HYPERLIB) $(LOCALIB)
+
+export FLIBS CC_ F90_ F90_LOAD
+
+
+
+
+#
+#  Compiling
+#
+
+dirs: $(LIBDIR) $(BINDIR)
+$(LIBDIR):
+	if test ! -d $(LIBDIR); then\
+		mkdir $(LIBDIR);\
+	fi
+$(BINDIR):
+	if test ! -d $(BINDIR); then\
+		mkdir $(BINDIR);\
+	fi
+
+EQDIR=$(HEADDIR)/src/$(EQS)
+export EQDIR
+
+hcw:
+	cd $(EQDIR) && $(MAKE)
+	cd $(HYPERDIR) && $(MAKE)
+	cd $(AMRDIR) && $(MAKE)
+
+clean:
+	cd $(EQDIR) && make clean
+	cd $(HYPERDIR) && make clean
+	cd $(AMRDIR) && make clean
+	cd $(HEADDIR)/include && make clean
+	cd $(BINDIR) && rm -f $(EXECNAME)
+
+realclean:
+	make clean
+	rmdir $(LIBDIR) $(BINDIR)

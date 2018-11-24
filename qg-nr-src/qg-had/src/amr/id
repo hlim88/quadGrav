@@ -1,0 +1,94 @@
+6         idata  ([0,4]--Self-similar;5--static;6--Gauss;7--Toroid;8--antisym)
+1.00       amp 
+5.00      R0
+1.5       delta
+0.0       xc
+0.0       yc
+0.0       zc
+1.0       ex 
+1.0       ey 
++0.0      velx
+0.3       omegaz
+0.0       signum  ( -1--outgoing; 0--t.symm; +1--ingoing)
+0.0       amp2 
+1.0       R02
+0.3       delta2
+-7.0      xc2
+ 5.0      yc2
+0.0       zc2
+1.0       ex2
+1.0       ey2
+-0.5      velx2
+-0.0      omegaz2
+0.0       signum2 ( -1--outgoing; 0--t.symm; +1--ingoing)
+33        nx0
+33        ny0
+33        nz0
+100       nt0
+0.30      lambda
+1.0       potent
+0 0.5       epsdis
+0.00      maxchi_thresh  >0 (or off if <=0)
+0.0       maxchi_minctime
+2         refine_factor
+4999     refine_period
+0         diss_afterinj
+0 24        allowedl     [0...maxlev-1]
+15 6      maxx0
+15 6      maxy0
+15 6      maxz0
+-15 -6    minx0
+-15 -6    miny0
+-15 -6    minz0
+3         trace_level in range [0,100]
+7.d-2     ethreshold
+2         buffer
+4         mindim [6]
+3         window
+0.70      minefficiency
+4         output_style   {1-separate,2-together,3-both,4-,5-1D,6-both}
+''        tag
+0         out_gfunc(1)     ! output "error"?
+0         out_gfunc(2)     ! output "flag"?
+0         out_gfunc(3)     ! output "r"?
+0         out_gfunc(4)     ! output "chr"?
+0         out_gfunc(5)     ! output "edens"?
+0         out_gfunc(6)     ! output "mxdens"?
+0         out_gfunc(7)     ! output "mydens"?
+0         out_gfunc(8)     ! output "mzdens"?
+1         out_gfunc(9)     ! output "chi_n"?
+0         out_gfunc(10)    ! output "chi_np1"?
+0         out_gfunc(11)    ! output "chirk1"
+0         out_gfunc(12)    ! output "chirk2"
+0         out_gfunc(13)    ! output "chirk3"
+0         out_gfunc(14)    ! output "chit_n"
+0         out_gfunc(15)    ! output "chit_np1"
+0         out_gfunc(16)    ! output "chitrk1"
+0         out_gfunc(17)    ! output "chitrk2"
+0         out_gfunc(18)    ! output "chitrk3"
+0         out_gfunc(19)    ! output "gr_tmp"
+1         out_period(0)
+1         out_period(1)
+1         out_period(2)
+0         out_period(3)
+0         out_period(4)
+0         out_period(5)
+0         out_period(6)
+0         out_period(7)
+0         out_period(8)
+0         out_period(9)
+0         out_period(10)
+0         out_period(11)
+0         out_period(12)
+0         out_period(13)
+0         out_period(14)
+0         out_period(15)
+0         out_period(16)
+0         out_period(17)
+0         out_period(18)
+0         out_period(19)
+0         out_period(20)
+0         out_period(21)
+0         out_period(22)
+0         out_period(23)
+0         out_period(24)
