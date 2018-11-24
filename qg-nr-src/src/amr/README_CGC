@@ -1,0 +1,390 @@
+--------------------------------------------------------------------------------
+1/10/06
+--------------------------------------------------------------------------------
+
+Looking at Tanvir's code for the advection equation with 
+coarse grid correction (CGC) to see why it's not conservative.
+
+
+Using "had2D my" where "my" is my version of his initial data file.
+In my version, I output just a 2D slice, and just the field to
+be advected "u". I also separate the level 0 and level 1 outputs
+by changing the "output_style."
+
+If I run unigrid, and integrate via "intsdf 0u2D0.sdf ." then
+I get an integral of "u" over the coarse grid. It's not clear this
+is the same integral that should be conserved in a conservative
+scheme, but a quick test of a unigrid yields:
+
+  0.00000000000000D+000   3.53845115446933D-002
+   1.25000000000000D-002   3.53845115446933D-002
+   2.50000000000000D-002   3.53845115446933D-002
+   3.75000000000000D-002   3.53845115446892D-002
+   5.00000000000000D-002   3.53845115447030D-002
+   6.25000000000000D-002   3.53845115448251D-002
+   7.50000000000000D-002   3.53845115446376D-002
+   8.75000000000000D-002   3.53845115430729D-002
+   1.00000000000000D-001   3.53845115411870D-002
+  0.112500000000000        3.53845115458992D-002
+  0.125000000000000        3.53845115657539D-002
+  0.137500000000000        3.53845115929122D-002
+  0.150000000000000        3.53845115850009D-002
+  0.162500000000000        3.53845114801792D-002
+  0.175000000000000        3.53845112680760D-002
+  0.187500000000000        3.53845110843818D-002
+  0.200000000000000        3.53845112305597D-002
+  0.212500000000000        3.53845120136711D-002
+  0.225000000000000        3.53845134093451D-002
+  0.237500000000000        3.53845147434560D-002
+  0.250000000000000        3.53845147304663D-002
+  0.262500000000000        3.53845121285834D-002
+
+which looks good enough for our purposes...meaning that 
+when we allow for another level, we should be able to get
+conservation to about the same level.
+
+To show that we're not getting conservation, we run again
+with 1 level of FMR and get:
+
+   0.00000000000000D+000   3.53845115446933D-002
+   1.25000000000000D-002   3.53845195348281D-002
+   2.50000000000000D-002   3.53845225584316D-002
+   3.75000000000000D-002   3.53845221542859D-002
+   5.00000000000000D-002   3.53845153897082D-002
+   6.25000000000000D-002   3.53852021172053D-002
+   7.50000000000000D-002   3.53886932769874D-002
+   8.75000000000000D-002   3.53970451371530D-002
+   1.00000000000000D-001   3.54124552434820D-002
+  0.112500000000000        3.54366340521178D-002
+  0.125000000000000        3.54712376782828D-002
+  0.137500000000000        3.55186668774924D-002
+  0.150000000000000        3.55818229780558D-002
+  0.162500000000000        3.56636535614352D-002
+  0.175000000000000        3.57666606647462D-002
+
+So this matches what Tanvir was saying, and now we've
+got to figure out if there's a bug in what he's
+implemented or a problem with the principle here.
+
+Commenting is pretty minimal, but my intention
+is basically to:
+1) Turn off his CGC, and see what we get then.
+   In particular, test his injection
+2) Have his CGC simply put -1.d0 where it gets
+   applied to make sure it's applied to the
+   correct cells.
+3) Figure out if the correct values are getting placed
+   in the corrected cells.
+
+--------------------------------------------------------------------------------
+1/11/06
+--------------------------------------------------------------------------------
+Testing injection. 
+
+First thing is to change the SDF output routine grid_output_sdf() so that
+the SDF files reflect the fact the point values stored for a field 
+represent values at the center of cells.
+As far as I can tell, the changes for *any* grid boil down to the two
+modifications:
+   (1) For each finite volume field (as opposed to the vertex
+       centered fields), the coordinates have to be shifted
+       by adding half the grid spacing. This puts the points
+       at the center of each cell for that grid.
+   (2) Each FV field only "uses" nx-1, ny-1, nz-1 points,
+       so we should only be outputting those points. Such
+       a change requires some finesse with the memory
+       so for now, I'm not changing this.
+
+A problem presented by this, is that now, looking with DV at the
+SDFs, data on one level *nowhere* matches up with its parent level!
+This is both a real pain, but also a huge impediment to debugging.
+
+However, since we're supposedly working in 2D where there's no
+dependence on z, we should presumably be okay looking at 2D
+slices...that is the fact that things don't line up in z
+shouldn't matter.
+
+It's strange that in a 2D slice one gets a pattern which less
+symmetry than that for vertex centered data. Doing some drawings,
+it seems that this indeed what one expects. Not sure why it is, but
+if one looks at the fine grid superimposed on the coarse grid, you
+get a pattern with a big square, surrounded by smaller squares
+on the corners, and rectangles on the sides. Strange.
+
+It appears that the initial data is flawed. A pulse is initalized
+as if one had vertex centered data. Instead, the coordinates of
+points are those of the cell, and so I'm fairly confident that
+the initial data is inconsistent.
+
+I've changed the initial data routine (just for idtype==4), and things
+look much better. However, a big question is even this correct, or
+instead should the fine grid be initialized with the averages from
+the parent grid, even a the initial time?
+
+Now, looking at the injection, it does seem to work. That is, the
+grids seem to stay in sync. I turned off injection, to see if things
+got noticeably worse. It does seem like things got a bit worse, but
+not that noticeably so I'll still maintain some skepticism about
+the injection.
+
+Moving on to the CGC, the first thing I do is edit util.f
+and for the points on the parent replaced by injection, 
+I set them to +2.d0, and for the points on the parent
+which get corrected, I replace them by -1.d0. I run the
+code taking one step, and look at the output for the advanced
+time of the parent. What I see is a bunch of +2 points
+(almost) surrounded by -1 points. That suggests that perhaps
+the CGC is being applied in the right places, no matter
+if the points are getting the correct values. However,
+there's a problem. The -1 points don't go around the entire
+boundary of the injected region. That's a problem and
+needs to be fixed. Perhaps it's the only problem, but
+I suspect not.
+
+It occurs to me that another thing that's going on is the 
+resetting of boundary conditions on the advanced step.
+I need to turn this off, and then look and see what's going on.
+
+--------------------------------------------------------------------------------
+1/24/06
+--------------------------------------------------------------------------------
+
+Things aren't strictly conservative on the fine grid. The reason is the boundary.
+Even if one turns off updating of the boundary by the parent, then you have
+messed up boundary data which won't be conservative. If you then turn on the
+boundary update from the parent, this is not conservative yet...in fact it probably
+isn't even correct for FV, let alone conservative.
+
+So here's a list of what needs to be done for FV fields:
+
+1) Allow the user to select FV fields in the setup file
+2) Modify grid_output() so that FV fields are output with (nx-1)(ny-1)(nz-1)
+   points with coordinates offset by (1/2)h from the vertex centered values
+3) Initial data for t=0 will need to be injected back from fine to coarse
+   of FV fields for consistency
+4) At the time of creation of a new grid (for any time), initialization of
+   FV fields will have to be different.
+5) Need to include code for CGC.
+6) A new boundary treatment of FV fields on AMR grids needs to be written.
+
+Some changes:
+---putting volume calculation at the end of grid_inject, and only for the parent
+---in that calculation, I think the bounds are wrong anyway
+---doing the injection on the initial data as per Patrick's suggestion
+
+It still seems that the injection is not conservative. I start with initial data (idtype=6)
+which is very centrally located so boundaries don't play a role. I turn off the CGC. 
+If I turn *off* injection, things are       conservative for a step:
+
+   0.00000000000000D+000  0.115451388888889
+   4.16666666666667D-003  0.115451388888889
+
+If I turn *on*  injection, things are *not* conservative for a step:
+
+   0.00000000000000D+000  0.115451388888889
+   4.16666666666667D-003  0.115451395507428
+
+
+--------------------------------------------------------------------------------
+1/25/06
+--------------------------------------------------------------------------------
+
+It looks like in packing the data into tmp, nx/y/zs is used despite Tanvir's claim
+to the contrary.
+
+If I set the temp array to +10, then a bunch of 10s should show up in the parent
+after injection...afterall, the average of 10s is still 10. That's not at all what
+I see. I see a bunch of 5s!
+
+I think it's time to trash what's there and just do it over.
+I don't see any evidence that Tanvir's routines were actually averaging the
+child cells, but instead just copying...actually he pointed me to where it does so.
+
+Regardless of the evolution, for a very localized initial data, one can tell
+whether the injection is conservative or not by injecting from fine to
+coarse at the initial time, and testing whether integrals on each grid gives
+the same value. As it stands, my rewrite doesn't do this.
+
+As things stand now, I do get conservative injection at the initial time. For
+subsequent steps I lose conservation. However, for multiple steps, the resetting
+of the fine boundary is expected to mess things up (we haven't changed that for
+FV fields yet), so that things lose conservation isn't that bad. However, for
+the first few steps, one expects the boundary to remain at zero, so then one
+would expect conservation. It's hard to judge though these small effects:
+the near-roundoff boundary problems versus possible near-roundoff nonconservation
+of injection.
+
+In any case, for 10 steps of the coarse grid when the pulse isn't near the fine
+boundary, we have conservation to a few parts in 10^{12} which seems pretty good
+and is quite possibly due to the boundary treatment not being appropriate to
+FV fields.
+
+Because of this confusion, I think we need to get the boundary working, and then
+reevaluate whether the new injection is conservative.
+
+Also, I'm revising this list from before.
+
+1) Allow the user to select FV fields in the setup file
+2) Modify grid_output() so that FV fields are output with (nx-1)(ny-1)(nz-1)
+   points with coordinates offset by (1/2)h from the vertex centered values
+3) Initial data for t=0 will need to be injected back from fine to coarse
+   of FV fields for consistency
+4) At the time of creation of a new grid (for any time), initialization of
+   FV fields will have to be different.
+5) Need to include code for CGC.
+6) A new boundary treatment of FV fields on AMR grids needs to be written.
+7) Get all this working in parallel with correct calls in the parallel routines.
+
+So I'm now working on getting the boundary update working. To do so, I first
+work on grid initialization (at any time t) because the routines for that
+can be used for the boundary. Therefore, I turned off injection at the
+initial time and also turned off analytic initial data for any but the
+coarse grid at the initial time. This force the generic grid_init()
+routine to be called and I can test it. On the first try, it seems to 
+work. That is the integrals at the initial time on coarse and fine are
+the same:
+
+intsdf 0u2D1.sdf . ; intsdf 0u2D0.sdf .
+   0.00000000000000D+000   85.0694444444445
+   0.00000000000000D+000   85.0694444444445
+
+--------------------------------------------------------------------------------
+1/27/06
+--------------------------------------------------------------------------------
+
+I might have fixed the boundary issue.
+
+I still find it hard to understand the output completely. So I changed grid_output_sdf()
+along the lines of (2) above so that only the *relevant* cells are output. It's not
+clear that the 2D output is correct, so we'll have to see if that needs fixing. But,
+now I don't see "extra" points that are irrelevant and are often never explicitly set.
+
+Conservation still isn't machine precision. But it's darn good up until the pulse
+starts to get near the refinement boundary at which point one would expect the CGC
+to play an important role.
+
+It does seem that the boundary is being set correctly based on just following an evolution.
+
+There's a strange oscillation on the fine grid in the region where the pulse leaves the
+grid. Despite the oscillation, it still seems that the boundary matches the coarse grid
+when time aligned. I think the problem is that the fine grid then takes a step whose
+boundary is not set by the coarse grid and therefore the boundary points are free to
+move to some other value which won't then match the coarse grid when time aligned.
+The idea is then to use AMR and not FMR if you want to avoid this problem, but that
+it doesn't represent a bug in the code.
+
+I've gotta run, but at higher resolutions things look much better. I just doubled
+the resolution, and I get machine-level conservation so far for many iterations
+(not as much time since we're at higher iterations), but it's still running.
+
+Here's the integral for data output on the coarse grid every 10 time steps:
+
+head 109% intsdf 0u0.sdf .
+   0.00000000000000D+000   5.36288088642659     
+   2.08333333333333D-002   5.36288088642659     
+   4.16666666666667D-002   5.36288088642659     
+   6.25000000000000D-002   5.36288088642659     
+   8.33333333333334D-002   5.36288088642659     
+  0.104166666666667        5.36288088642660     
+  0.125000000000000        5.36288088642665     
+  0.145833333333333        5.36288088642580     
+  0.166666666666667        5.36288088643714     
+
+It looks remarkably good. At some point (near 0.2) the pulse approaches the
+fine grid boundary and one presumably needs the CGC to maintain machine level
+conservation. This is for idtype==6, which is a square pulse inside the fine grid.
+
+The Guassian (idtype==4) doesn't do as well, but this is very likely because
+it's not as localized and hence needs the CGC:
+
+   0.00000000000000D+000   3.20807964081416     
+   2.08333333333333D-002   3.20807965469168     
+   4.16666666666667D-002   3.20807971296809     
+   6.25000000000000D-002   3.20807981380418     
+   8.33333333333334D-002   3.20808003638463     
+  0.104166666666667        3.20808098023919     
+  0.125000000000000        3.20808429803330     
+  0.145833333333333        3.20809408885615     
+  0.166666666666667        3.20811984477532     
+  0.187500000000000        3.20818160777160     
+  0.208333333333333        3.20831820068306     
+  0.229166666666666        3.20859634344977     
+  0.250000000000000        3.20909718616319 
+
+--------------------------------------------------------------------------------
+1/30/06
+--------------------------------------------------------------------------------
+Bringing FV stuff into the distribution hopefully in a manner that
+doesn't bother any other projects.
+
+Editting had/sbin/hsetup2 so that the generated fields.inc file reflects
+the new types of fields. I assume the old hypersetup is no longer used
+and hence I'm not editting that. Tested that the SemiLinear project compiles
+okay with changes.
+
+Adding this file to the distribution in the had/src/amr directory.
+
+Bringing new version of grid_output_sdf() into the dist. Adding new function
+field_is_FV() to test if the field type is any of the FV types as defined
+in the (machine-generated) fields.inc file.
+
+Added call to inject at the initial time. Shouldn't have any effect (greater
+than roundoff) for FD fields and is necessary for FV fields.
+
+Here's the status of the list I had made before:
+
+                           * * *
+
+   1) Allow the user to select FV fields in the setup file
+
+Done. It's not particularly elegant, and is restricted to "u" fields but
+it should do for now.
+
+   2) Modify grid_output() so that FV fields are output with (nx-1)(ny-1)(nz-1)
+      points with coordinates offset by (1/2)h from the vertex centered values
+
+Done.
+
+   3) Initial data for t=0 will need to be injected back from fine to coarse
+      of FV fields for consistency
+
+Done.
+
+   4) At the time of creation of a new grid (for any time), initialization of
+      FV fields will have to be different.
+
+Done.
+
+   5) Need to include code for CGC.
+
+To be done and tested.
+
+   6) A new boundary treatment of FV fields on AMR grids needs to be written.
+
+Done.
+
+   7) Get all this working in parallel with correct calls in the parallel routines.
+
+Code stuck in place and compiled, but not tested.
+                           * * *
+
+--------------------------------------------------------------------------------
+2/01/06
+--------------------------------------------------------------------------------
+
+Brought over Tanvir's project from oak. Used my initial data file. Had to replace
+his define_auxvars.f90 and analysis.f90 (just dummy routines for this project)
+with the same from hyperSemiL.
+
+Running into a problem when running. There are no dynamics. I suspect the
+problem is with pointer swapping now that the u fields are of type
+GFUNC_INTEGRALFV instead of GFUNC_INTEGRAL. Made the change (by
+just adding an .or. clause) and the dynamics are there. Need to keep
+a look out in case there's something else I forgot or didn't think
+to change.
+
+There were a couple bugs in grid_output_sdf() for the FV fields.
+The significant one was that the upper bound was wrong...one needs
+to subtract half the grid spacing, not increase (as for the lower
+bound). There was a strange spacing issue showing up in DV and
+it took a while to figure this out.

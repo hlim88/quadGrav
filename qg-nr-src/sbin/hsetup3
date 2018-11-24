@@ -1,0 +1,3671 @@
+#!/usr/bin/perl
+
+######################################################################
+#
+# Tue Jan 27 13:47:38 CST 2004
+#
+# hypersetup
+#        
+#     by David Neilsen
+#     input:   hyper function information from standard input
+#     output:  
+#
+# Thu Jan 10 10:04:40 PST 2008 Dave.  Some changes to make the number of RK
+#      work arrays arbitrary.  The number of required work arrays is set
+#      in the environment variable HAD_NUM_RK_ARRAYS.  Currently the default
+#      is set to 3, which the code now requires. In the future this will be
+#      changed to reflect the updated RK routines.  The flexibility to set
+#      HAD_NUM_RK_ARRAYS will allow us to use higher-order schemes in the
+#      future, such as RK4.  However, the code is not perfectly general, 
+#      it only allows for a maximum of 3 work arrays.  This is because
+#      usuf, usuf2, uclass, etc., only list up to rk3.  I didn't change this
+#      because I don't know about changes required for uclass.
+#
+# 03.12.2006 Steve Liebling, allows for definition of EL fields via "(EL)" in u
+# 02.01.2006 Steve Liebling, allows for definition of FV fields via "(FV)" in v
+# 02.10.2004 Steve Liebling, hack to have grid specific dx/dt in assign_params
+# 30.09.2004 Nina Jansen, seperating amr/hyper pars from local pars
+######################################################################
+
+use Cwd; 
+
+######################################################################
+#
+#  If $debug=1 then the script generates some output to indicate status.
+#  $debug2=1 gives more extensive messages.
+#  To generate Fortran-style array indexing (begin with 1) set begidx=1;
+#  C-style array indexing is given with begidx=0.
+#
+######################################################################
+$debug = 1;
+$debug2 = 1;
+$debug3 = 0;
+$begidx = 1;
+
+$MAXLEVELS = 25;
+
+$pwd = cwd(); 
+
+######################################################################
+#
+#  Read from STDIN.  Comments and whitespace are removed.
+#
+######################################################################
+
+@lines=();
+while (<STDIN>) {
+  chop;
+  s/\#.*//;  # get rid of comments
+  s/\s//g;   # get rid of whitespace
+
+  if ($_ ne "") {    # Get rid of blank lines
+    push(@lines,$_);
+  }
+}
+
+######################################################################
+#
+#  Read from had/src/amr/setup.  Comments and whitespace are removed.
+#
+######################################################################
+$amrsetupfile = "$pwd/../src/amr/setup";
+
+open(AMR,$amrsetupfile);
+
+while (<AMR>) {
+  chop;
+  s/\#.*//;  # get rid of comments
+  s/\s//g;   # get rid of whitespace
+
+  if ($_ ne "") {    # Get rid of blank lines
+    push(@lines,$_);
+  }
+}
+
+close(AMR);
+
+######################################################################
+#
+#  Read from had/src/hyper/setup.  Comments and whitespace are removed.
+#
+######################################################################
+$hypersetupfile = "$pwd/../src/hyper/setup";
+
+open(HYPER,$hypersetupfile);
+
+while (<HYPER>) {
+  chop;
+  s/\#.*//;  # get rid of comments
+  s/\s//g;   # get rid of whitespace
+
+  if ($_ ne "") {    # Get rid of blank lines
+    push(@lines,$_);
+  }
+}
+
+close(HYPER);
+
+######################################################################
+#
+#  Now parse the data in @lines.  Sort the variables into arrays: 
+#  u, v, w, du, dv and par.
+#
+######################################################################
+@u   = ();
+@du  = ();
+@v   = ();
+@dv  = ();
+@w   = ();
+@derivs = ();
+
+@ueq_type=();
+@veq_type=();
+
+@params  =();
+@params_type = ();
+@params_size = ();
+@params_val  = ();
+@params_vmin = ();
+@params_vmax = ();
+
+@par  =();
+@par_type=();
+@par_size=();
+@par_val=();
+@par_vmin=();
+@par_vmax=();
+
+@apar  =();
+@apar_type=();
+@apar_size=();
+@apar_val=();
+@apar_vmin=();
+@apar_vmax=();
+
+
+
+$read_A = 0;
+$read_u = 0;
+$read_v = 0;
+$read_w = 0;
+$read_du = 0;
+$read_dv = 0;
+$read_par = 0;
+$read_derivs = 0;
+$xptderivs = 1;
+$hyper_rhs1 = 1;
+$hyper_rhs2 = 1;
+$hyper_derivs = 1;
+$need_c_files = 0;
+
+print "@lines\n" if ($debug3); 
+
+$i = 0;
+while ($i <= $#lines) {
+  $_ = $lines[$i];
+
+  if (/^asurface/) {
+    /\[(\w+)\]/;   #keep this on a separate line as [tokens] may not be there.
+    $read_A = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@A, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading A.  Expect line with {\n";
+    }
+  }
+
+  if (/^bsurface/) {
+    /\[(\w+)\]/;   #keep this on a separate line as [tokens] may not be there.
+    $read_B = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@B, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading B.  Expect line with {\n";
+    }
+  }
+
+
+  if (/^csurface/) {
+    /\[(\w+)\]/;   #keep this on a separate line as [tokens] may not be there.
+    $read_C = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@C, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading C.  Expect line with {\n";
+    }
+  }
+
+  if (/^ufuncs/) {
+    /\[(\w+)\]/;   #keep this on a separate line as [tokens] may not be there.
+    $eq_token=$1;
+    $eq_token = "H" if ($eq_token eq "");
+    print "the header is: token=$eq_token\n";
+    $eqtype{$eq_token} = 0;
+    $read_u = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@u, @local);
+        # add an element to the type array for every variable
+        foreach $e (@local) {
+          push(@ueq_type, $eq_token);
+        }
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading u.  Expect line with {\n";
+    }
+  }
+
+  if (/^dufuncs/) {
+    print "READING DUFUNCS\n";
+    $read_du = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@du, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading du.  Expect line with {\n";
+    }
+  }
+
+
+  if (/^vfuncs/) {
+    /\[(\w+)\]/;   #keep this on a separate line as [tokens] may not be there.
+    $eq_token=$1;
+    $eq_token = "H" if ($eq_token eq "");
+    print "the header is: token=$eq_token\n";
+    $eqtype{$eq_token} = 0;
+    $read_v = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@v, @local);
+        # add an element to the type array for every variable
+        foreach $e (@local) {
+          push(@veq_type, $eq_token);
+        }
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading v.  Expect line with {\n";
+    }
+  }
+
+  if (/^dvfuncs/) {
+    $read_dv = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@dv, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading dv.  Expect line with {\n";
+    }
+  }
+
+  if (/^wfuncs/) {
+    $read_w = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        @local = split(",",$_);
+        push(@w, @local);
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading w.  Expect line with {\n";
+    }
+  }
+
+  if (/^par/) {
+    $read_par = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        ($nn, $tt, $ss, $vn, $vx, $vv) = split(/:/, $_, 6);
+        if ($debug2) {
+          print "$nn, $tt, $ss, $vn, $vx, $vv\n";
+        }
+
+        push (@par, $nn);
+        push (@par_type, $tt);
+        push (@par_size, $ss);
+        push (@par_val,  $vv);
+        push (@par_vmin, $vn);
+        push (@par_vmax, $vx);
+
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading par.  Expect line with {\n";
+    }
+  }
+
+
+  if (/^amr_par/) {
+
+    $read_par = 1;
+    $_ = $lines[++$i];
+    if (m:^\{:) {
+      $_ = $lines[++$i];
+      while (!(m:^\}:)) {
+        ($nn, $tt, $ss, $vn, $vx, $vv) = split(/:/, $_, 6);
+        if ($debug2) {
+          print "$nn, $tt, $ss, $vn, $vx, $vv\n";
+        }
+
+        push (@apar, $nn);
+        push (@apar_type, $tt);
+        push (@apar_size, $ss);
+        push (@apar_val,  $vv);
+        push (@apar_vmin, $vn);
+        push (@apar_vmax, $vx);
+
+        $_ = $lines[++$i];
+      }
+    }
+    else {
+      die "parse error reading amr_par.  Expect line with {\n";
+    }
+  }
+
+  if (/^Point-wiseDerivatives/) {
+    $xptderivs = 0;
+    print STDERR "Point-wise Derivatives\n" if ($debug2);
+  }
+
+  if (/^EnableAlternativeCoordinates/) {
+    $usealtcoords = 1;
+    print STDERR "Enable Alternative Coordinates\n" if ($debug2);
+  }
+
+  if (/^NoHyperRHS1/) {
+    $hyper_rhs1 = 0;
+    print STDERR "No HyperRHS1\n" if ($debug2);
+  }
+
+  if (/^NoHyperRHS2/) {
+    $hyper_rhs2 = 0;
+    print STDERR "No HyperRHS2\n" if ($debug2);
+  }
+
+  if (/^NoHyperDerivs/) {
+    $hyper_derivs = 0;
+    print STDERR "No HyperDerivs\n" if ($debug2);
+  }
+
+  if (/^NeedCFiles/) {
+    $need_c_files = 1;
+    print STDERR "Creating C files\n" if ($debug2);
+  }
+
+
+  $i++;
+}
+
+#
+# Add parameters relevant to the surfaces
+#
+push (@par,      'asf_ntheta');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'asf_nphi');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'asf_period');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '1');
+        push (@par_vmin, '0');
+        push (@par_vmax, '*');
+push (@par,      'asf_rconst');
+        push (@par_type, 'double');
+        push (@par_size, '1');
+        push (@par_val,  '1.d0');
+        push (@par_vmin, '0.d0');
+        push (@par_vmax, '*');
+# Surface B:
+push (@par,      'bsf_ntheta');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'bsf_nphi');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'bsf_period');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '1');
+        push (@par_vmin, '0');
+        push (@par_vmax, '*');
+push (@par,      'bsf_rconst');
+        push (@par_type, 'double');
+        push (@par_size, '1');
+        push (@par_val,  '1.d0');
+        push (@par_vmin, '0.d0');
+        push (@par_vmax, '*');
+# Surface C:
+push (@par,      'csf_ntheta');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'csf_nphi');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '33');
+        push (@par_vmin, '1');
+        push (@par_vmax, '*');
+push (@par,      'csf_period');
+        push (@par_type, 'int');
+        push (@par_size, '1');
+        push (@par_val,  '1');
+        push (@par_vmin, '0');
+        push (@par_vmax, '*');
+push (@par,      'csf_rconst');
+        push (@par_type, 'double');
+        push (@par_size, '1');
+        push (@par_val,  '1.d0');
+        push (@par_vmin, '0.d0');
+        push (@par_vmax, '*');
+
+# Require these fields last for each surface:
+push(@A, 'chr_tmp');
+push(@B, 'chr_tmp');
+push(@C, 'chr_tmp');
+
+@keys = sort keys (%eqtype);
+print "eq types = @keys\n";
+
+
+if ($debug2) {
+ #print STDERR "lines:@lines\n";
+  print STDERR "After parsing the input\n";
+  print STDERR "xptderivs $xptderivs\n";
+  print STDERR "u:    @u\n";
+  print STDERR "du:   @du\n";
+  print STDERR "v:    @v\n";
+  print STDERR "dv:   @dv\n";
+  print STDERR "w:    @w\n";
+  print STDERR "par ($#params):  @par\n";
+  print STDERR "apar ($#params):  @apar\n";
+}
+
+######################################################################
+######################################################################
+######################################################################
+#
+# Now process the information from STDIN.  
+#
+######################################################################
+######################################################################
+######################################################################
+
+
+######################################################################
+#
+#  Check to see if excision values have been included in the u array.
+#  Load this info into u_exc_val, and then strip it from the names in @u.
+#  The default excise_val is zero.
+#
+######################################################################
+
+#
+#  Check to see if tags are attached to the function name
+#
+
+#  Set default values for tags
+@u_exc_val = ();
+@u_apply_diss = ();
+@u_zsym = ();
+@u_ysym = ();
+@u_xsym = ();
+@u_apply_SH   = ();
+@u_FV = ();
+
+for($i=0; $i<=$#u; $i++) {
+  push(@u_exc_val, 0.0);
+  push(@u_apply_diss, 1);
+  push(@u_zsym, 1);
+  push(@u_ysym, 1);
+  push(@u_xsym, 1);
+  push(@u_apply_SH, 1.0);
+  push(@u_FV, 0);
+}
+ 
+for($i=0; $i<=$#u; $i++) {
+  $e = $u[$i];
+  if ($e =~ /\[(.*)\]/ ) {      # extract the list of tags
+    print STDERR "pulling argument $1\n";
+    @u_tags = split(/:/,$1);     # put the tags in an array and loop over them
+    print STDERR "u_tags = @u_tags\n";
+    foreach $etag (@u_tags) {
+      # check for excision value
+      if ($etag =~ /exc/) {
+        @vvv = split(/=/,$etag);
+        $u_exc_val[$i] = $vvv[1];
+        print STDERR "....exc val = $u_exc_val[$i]\n" if ($debug2);
+      }
+
+      # check to see what symmetry about the z-axis is specified
+      if ($etag =~ /zsym/) {
+        @vvv = split(/=/,$etag);
+        $u_zsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $u_zsym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the y-axis is specified
+      if ($etag =~ /ysym/) {
+        @vvv = split(/=/,$etag);
+        $u_ysym[$i] = $vvv[1];
+        print STDERR "....assuming y-symmetry = $u_ysym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the x-axis is specified
+      if ($etag =~ /xsym/) {
+        @vvv = split(/=/,$etag);
+        $u_xsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $u_xsym[$i]\n" if ($debug2);
+      }
+
+      # check to see if dissipation should be applied
+      if ($etag =~ /diss/) {
+        @vvv = split(/=/,$etag);
+        $u_apply_diss[$i] = $vvv[1];
+        print STDERR "....apply diss = $u_apply_diss[$i]\n";
+      }
+
+      # check to see if the discrete function is finite volume 
+      if ($etag =~ /FV/) {
+        $u_FV[$i] = 1;
+        print STDERR "....finite volume function\n";
+      }
+
+      # check to see if weight value given for Shadow hierarchy
+      if ($etag =~ /SH/) {
+        @vvv = split(/=/,$etag);
+        $u_apply_SH[$i] = $vvv[1];
+        print STDERR "....non-shadow function\n";
+      }
+
+    }
+    $e =~ s/\[.*\]//;    # remove the tags from the function name
+    $u[$i] = $e;
+  }
+}
+
+
+#
+# Check the vfuncs:
+#
+#  Set default values for tags
+@v_zsym = ();
+@v_ysym = ();
+@v_xsym = ();
+for($i=0; $i<=$#v; $i++) {
+  push(@v_zsym, 1);
+  push(@v_ysym, 1);
+  push(@v_xsym, 1);
+}
+for($i=0; $i<=$#v; $i++) {
+  $e = $v[$i];
+  if ($e =~ /\[(.*)\]/ ) {      # extract the list of tags
+    print STDERR "pulling argument $1\n" if ($debug2);
+    @v_tags = split(/:/,$1);     # put the tags in an array and loop over them
+    print STDERR "v_tags = @v_tags for i=$i \n";
+    foreach $etag (@v_tags) {
+      # check to see what symmetry about the z-axis is specified
+      if ($etag =~ /zsym/) {
+        @vvv = split(/=/,$etag);
+        $v_zsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $v_zsym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the y-axis is specified
+      if ($etag =~ /ysym/) {
+        @vvv = split(/=/,$etag);
+        $v_ysym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $v_ysym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the x-axis is specified
+      if ($etag =~ /xsym/) {
+        @vvv = split(/=/,$etag);
+        $v_xsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $v_xsym[$i]\n" if ($debug2);
+      }
+      #
+    }
+    $e =~ s/\[.*\]//;    # remove the tags from the function name
+    $v[$i] = $e;
+  }
+}
+
+#
+# Check the wfuncs:
+#
+#  Set default values for tags
+@w_zsym = ();
+@w_ysym = ();
+@w_xsym = ();
+for($i=0; $i<=$#w; $i++) {
+  push(@w_zsym, 1);
+  push(@w_ysym, 1);
+  push(@w_xsym, 1);
+}
+for($i=0; $i<=$#v; $i++) {
+  $e = $w[$i];
+  if ($e =~ /\[(.*)\]/ ) {      # extract the list of tags
+    print STDERR "pulling argument $1\n" if ($debug2);
+    @w_tags = split(/:/,$1);     # put the tags in an array and loop over them
+    print STDERR "w_tags = @w_tags for i=$i \n";
+    foreach $etag (@w_tags) {
+      # check to see what symmetry about the z-axis is specified
+      if ($etag =~ /zsym/) {
+        @vvv = split(/=/,$etag);
+        $w_zsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $w_zsym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the y-axis is specified
+      if ($etag =~ /ysym/) {
+        @vvv = split(/=/,$etag);
+        $w_ysym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $w_ysym[$i]\n" if ($debug2);
+      }
+      # check to see what symmetry about the x-axis is specified
+      if ($etag =~ /xsym/) {
+        @vvv = split(/=/,$etag);
+        $w_xsym[$i] = $vvv[1];
+        print STDERR "....assuming z-symmetry = $w_xsym[$i]\n" if ($debug2);
+      }
+      #
+    }
+    $e =~ s/\[.*\]//;    # remove the tags from the function name
+    $w[$i] = $e;
+  }
+}
+
+#
+# SLL: Check if this is an EL field for an elliptic field:
+#      Designated by a "(EL)" after it in the
+#      setup file.
+#
+$numEL = 0;
+@v_EL = ();
+for($i=0; $i<=$#v; $i++) {
+  $e = $v[$i];
+  if ($e =~ /\((.*?)\)/ ) {
+    print STDERR "$e is of type: $1\n";
+    push(@v_EL, 1);
+    $numEL++;
+  }
+  else {
+    push(@v_EL, 0);
+  }
+  # Remove the parenthetical notation:
+  $e =~ s/\(.*?\)//;
+  $v[$i] = $e;
+}
+
+######################################################################
+#
+# Generate names for du and dv if they are not explicitly given in the file.
+#
+######################################################################
+
+# Generate all possible derivative names, and store in du_all, dv_all
+foreach $e (@u) {
+  $dxf = "dx_" . "$e";
+  $dyf = "dy_" . "$e";
+  $dzf = "dz_" . "$e";
+  push(@du_all,$dxf,$dyf,$dzf);
+}
+foreach $e (@v) {
+  $dxf = "dx_" . "$e";
+  $dyf = "dy_" . "$e";
+  $dzf = "dz_" . "$e";
+  push(@dv_all,$dxf,$dyf,$dzf);
+}
+
+# If du_derivs and/or dv_derivs not defined in file, set them to d(u||v)_all
+if (!($read_du)) {
+  @du = @du_all;
+}
+if (!($read_dv)) {
+  @dv = @dv_all;
+}
+
+
+
+@derivprefix = ("dx_","dy_","dz_");
+
+# Determine zsymmetry of derivatives in terms of ufuncs:
+@du_zsym = ();
+@du_ysym = ();
+@du_xsym = ();
+for($i=0; $i<=$#du; $i++) {
+  push(@du_zsym, 1);
+  push(@du_ysym, 1);
+  push(@du_xsym, 1);
+}
+
+@n_dxu = ();
+@n_dyu = ();
+@n_dzu = ();
+for($i=0; $i<=$#u; $i++) {
+  $n_dxu[$i]=0;
+  $n_dyu[$i]=0;
+  $n_dzu[$i]=0;
+}
+for($i=0; $i<=$#u; $i++) {
+  $ee = $u[$i];
+  foreach $prefix (@derivprefix) {
+    $e = $prefix . $ee;
+    $found = 0;
+    $mycount = 0;
+    foreach $e2 (@du) {
+      $mycount++;
+      if ($e eq $e2) {
+        $found = 1;
+        $savecount = $mycount;
+      }
+    }
+    if ($found) {
+      if ($prefix eq "dx_") {
+        $n_dxu[$i] = 1;
+        $du_zsym[$savecount-1] =  $u_zsym[$i];
+        $du_ysym[$savecount-1] =  $u_ysym[$i];
+        $du_xsym[$savecount-1] = -$u_xsym[$i];
+      }
+      elsif ($prefix eq "dy_") {
+        $n_dyu[$i] = 1;
+        $du_zsym[$savecount-1] =  $u_zsym[$i];
+        $du_ysym[$savecount-1] = -$u_ysym[$i];
+        $du_xsym[$savecount-1] =  $u_xsym[$i];
+      }
+      elsif ($prefix eq "dz_") {
+        $n_dzu[$i] = 1;
+        $du_zsym[$savecount-1] = -$u_zsym[$i];
+        $du_ysym[$savecount-1] =  $u_ysym[$i];
+        $du_xsym[$savecount-1] =  $u_xsym[$i];
+      }
+      print STDERR "$e has sym dependent on: $u[$i] \n" if ($debug2);
+      print STDERR "$du_zsym[$savecount-1] versus $u_zsym[$i] \n" if ($debug2);
+      print STDERR "$du_ysym[$savecount-1] versus $u_ysym[$i] \n" if ($debug2);
+      print STDERR "$du_xsym[$savecount-1] versus $u_xsym[$i] \n" if ($debug2);
+      print STDERR "Field number: $savecount \n" if ($debug2);
+    }
+  }
+}
+
+# Determine zsymmetry of derivatives in terms of vfuncs:
+@dv_zsym = ();
+@dv_ysym = ();
+@dv_xsym = ();
+for($i=0; $i<=$#dv; $i++) {
+  push(@dv_zsym, 1);
+  push(@dv_ysym, 1);
+  push(@dv_xsym, 1);
+}
+
+@n_dxv = ();
+@n_dyv = ();
+@n_dzv = ();
+for($i=0; $i<=$#v; $i++) {
+  $n_dxv[$i]=0;
+  $n_dyv[$i]=0;
+  $n_dzv[$i]=0;
+}
+for($i=0; $i<=$#v; $i++) {
+  $ee = $v[$i];
+  foreach $prefix (@derivprefix) {
+    $e = $prefix . $ee;
+    $found = 0;
+    $mycount = 0;
+    foreach $e2 (@dv) {
+      $mycount++;
+      #print STDERR " $mycount $e2 \n";
+      if ($e eq $e2) {
+        $found = 1;
+        $savecount = $mycount;
+      }
+    }
+    if ($found) {
+      if ($prefix eq "dx_") {
+        $n_dxv[$i] = 1;
+        $dv_zsym[$savecount-1] =  $v_zsym[$i];
+        $dv_ysym[$savecount-1] =  $v_ysym[$i];
+        $dv_xsym[$savecount-1] = -$v_xsym[$i];
+      }
+      elsif ($prefix eq "dy_") {
+        $n_dyv[$i] = 1;
+        $dv_zsym[$savecount-1] =  $v_zsym[$i];
+        $dv_ysym[$savecount-1] = -$v_ysym[$i];
+        $dv_xsym[$savecount-1] =  $v_xsym[$i];
+      }
+      elsif ($prefix eq "dz_") {
+        $n_dzv[$i] = 1;
+        $dv_zsym[$savecount-1] = -$v_zsym[$i];
+        $dv_ysym[$savecount-1] =  $v_ysym[$i];
+        $dv_xsym[$savecount-1] =  $v_xsym[$i];
+      }
+      print STDERR "$e has sym dependent on: $v[$i] \n" if ($debug2);
+      print STDERR "$dv_zsym[$savecount-1] versus $v_zsym[$i] \n" if ($debug2);
+      print STDERR "$dv_ysym[$savecount-1] versus $v_ysym[$i] \n" if ($debug2);
+      print STDERR "$dv_xsym[$savecount-1] versus $v_xsym[$i] \n" if ($debug2);
+      print STDERR "Field number: $savecount \n" if ($debug2);
+    }
+  }
+}
+
+if ($debug2) {
+  print STDERR "ndu = @ndu\n";
+  print STDERR "ndv = @ndv\n";
+}
+
+######################################################################
+######################################################################
+#
+# Hyper vars.  These are hyper variables and functions are always 
+# needed.  They don't need to be included in the hyperfcn file.
+#
+######################################################################
+######################################################################
+@hyperw = ( "cctk_x", "cctk_y", "cctk_z", "r", 
+            "xphys", "yphys", "zphys", "mask", "wdiss",
+	    "chr", "error", "flag" );
+
+@params = (@par, @apar);
+@params_type = (@par_type, @apar_type);
+@params_size = (@par_size, @apar_size);
+@params_val = (@par_val, @apar_val);
+@params_vmin = (@par_vmin, @apar_vmin);
+@params_vmax = (@par_vmax, @apar_vmax);
+
+
+# Put them onto the end:
+push(@w,@hyperw);
+#unshift(@w,@hyperw);
+# and assign them even parity in z:
+foreach $e (@hyperw) {
+   push(@w_zsym, 1);
+   push(@w_ysym, 1);
+   push(@w_xsym, 1);
+}
+
+if ($debug2) {
+  print STDERR "After adding the hyper functions\n";
+  print STDERR "u:    @u\n";
+  print STDERR "du:   @du\n";
+  print STDERR "v:    @v\n";
+  print STDERR "dv:   @dv\n";
+  print STDERR "w:    @w\n";
+  print STDERR "par:  @params\n";
+}
+
+######################################################################
+#
+#  Determine how many work arrays are required for Runge-Kutta
+#
+######################################################################
+$nrka = $ENV{'HAD_HIMEM'};
+$nrk = 1;
+$nrk = 3 if exists $ENV{HAD_HIMEM};
+
+print "Number of RK work arrays: nrk = $nrk\n";
+
+######################################################################
+#
+#  Prepare to write the Fortran paramter file
+#
+######################################################################
+$paramfile = "params.x";
+$nsets = $#keys + 1;
+$ndim = 3;
+$nbholes = 2;
+$nu = $#u + 1;
+$nv = $#v + 1;
+$nw = $#w + 1;
+$ndu = $#du + 1;
+$ndv = $#dv + 1;
+$npar = $#params  + 1;
+
+if ($#keys > 0) {
+  $multiple_eqs = 1;
+}
+else {
+  $multiple_eqs = 0;
+}
+
+@nua = ();
+@nva = ();
+@us=();
+@vs=();
+
+$c = 0;
+foreach $e (@keys) {
+  @subset = ();
+  for ($i = 0; $i <= $#u; $i++) {
+    if ($ueq_type[$i] eq $e) {
+      push(@subset, $u[$i]);
+    }
+  }
+  $us[$c] = [ @subset ];
+
+  push (@nua, ($#subset + 1));
+  $c++;
+}
+print "@nua\n";
+
+$c = 0;
+@vs=();
+foreach $e (@keys) {
+  @subset = ();
+  for ($i = 0; $i <= $#v; $i++) {
+    if ($veq_type[$i] eq $e) {
+      push(@subset, $v[$i]);
+    }
+  }
+  $vs[$c] = [ @subset ];
+  push (@nva, ($#subset + 1));
+  $c++;
+}
+print "@nva\n";
+
+#
+# Make sure that all arrays have at least one element to prevent problems
+# with Fortran compilers when attempting to define zero size arrays.
+#
+$nu = 1 if ($nu < 1);
+$nvsize = $nv;
+if ($nv < 1) {
+  $nv = 1;
+  $nvsize = 0;
+}
+$nw = 1 if ($nw < 1);
+$npar = 1 if ($npar < 1);
+
+open(PARFILE,">$paramfile");
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! This is a machine-generated file.  Do not edit this file\n";
+print PARFILE "! directly.  Rather edit the hypersetup script.\n!\n";
+print PARFILE "! This module defines function names and code parameters \n";
+print PARFILE "! as Fortran parameters.\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "      MODULE PARAMS\n";
+
+print PARFILE "      integer, parameter:: NDIM = $ndim\n";
+print PARFILE "      integer, parameter:: NU = $nu\n";
+print PARFILE "      integer, parameter:: NV = $nv\n";
+print PARFILE "      integer, parameter:: NW = $nw\n";
+print PARFILE "      integer, parameter:: NPAR = $npar\n";
+for ($i = 0; $i < $nsets; $i++) {
+  print PARFILE "      integer, parameter:: NU_$keys[$i] = $nua[$i]\n";
+}
+for ($i = 0; $i < $nsets; $i++) {
+  $c = $nv;
+  for ($j = 0; $j < $nsets; $j++) {
+    if ($i != $j) {
+      $c += $nua[$j];
+    }
+  }
+  print PARFILE "      integer, parameter:: NV_$keys[$i] = $c\n";
+}
+
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! The u functions\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+$i = $begidx;
+foreach $e (@u) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print PARFILE "      integer, parameter:: H_$e1 = $i\n";
+  $i++;
+}
+
+for ($j = 0; $j <= $#keys; $j++) {
+  if ($keys[$j] ne "H") {
+    $i = $begidx;
+    for $k (0 .. $#{$us[$j]}) {
+      $e1 = $us[$j][$k];
+      $e1 =~ tr/a-z/A-Z/;
+      print PARFILE "      integer, parameter:: $keys[$j]_$e1 = $i\n";
+      $i++;
+    }
+  }
+}
+
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! The v functions\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+$i = $begidx;
+foreach $e (@v) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print PARFILE "      integer, parameter:: H_$e1 = $i\n";
+  $i++;
+}
+
+for ($j = 0; $j <= $#keys; $j++) {
+  print "... $keys[$j]\n";
+  # First make a copy of the integer parameters with the new name
+  if ($keys[$j] ne "H") {
+      print "... inner $keys[$j], $#v\n";
+    for $k (0 .. $#v) {
+      #print "... $keys[$j], $k\n";
+      $e1 = $v[$k];
+      $e1 =~ tr/a-z/A-Z/;
+      print PARFILE "      integer, parameter:: $keys[$j]_$e1 = H_$e1\n";
+    }
+  }
+  # Now copy the u functions from other equation sets onto v
+  $c = $nv+1;
+  for ($m = 0; $m <= $#keys; $m++) {
+    if ($m ne $j) {
+      for $k (0 .. $#{$us[$m]} ) {
+        $e1 = $us[$m][$k];
+        $e1 =~ tr/a-z/A-Z/;
+        print PARFILE "      integer, parameter:: $keys[$j]_$e1 = $c\n";
+        $c++;
+      }
+    }
+  }
+}
+
+
+
+
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! The w functions\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+$i = $begidx;
+foreach $e (@w) {
+  $e1 = $e;
+  $e1 =~ s/cctk_//g;
+  $e1 =~ tr/a-z/A-Z/;
+  print PARFILE "      integer, parameter:: H_$e1 = $i\n";
+  $i++;
+}
+
+for ($j = 0; $j <= $#keys; $j++) {
+  if ($keys[$j] ne "H") {
+    $i = $begidx;
+    for $e (@w) {
+      $e1 = $e;
+      $e1 =~ s/cctk_//g;
+      $e1 =~ tr/a-z/A-Z/;
+      print PARFILE "      integer, parameter:: $keys[$j]_$e1 = $i\n";
+      $i++;
+    }
+  }
+}
+
+
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! The parameters\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+$i = $begidx;
+foreach $e (@params) {
+  $e1 = $e;
+  $e1 =~ s/local_//;
+  $e1 =~ tr/a-z/A-Z/;
+  print PARFILE "      integer, parameter:: P_$e1 = $i\n";
+  $i++;
+}
+
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "! Additional hyper variables for the mask and derivatives.\n";
+print PARFILE "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+print PARFILE "      integer, parameter:: P_MASK_SPHERE = 0\n";
+print PARFILE "      integer, parameter:: P_MASK_CUBE = 1\n";
+print PARFILE "      integer, parameter:: P_NV_REAL_SIZE = $nvsize\n";
+if ($xptderivs) {
+  print PARFILE "      integer, parameter:: P_POINT_WISE_DERIVATIVES = 0\n";
+}
+else {
+  print PARFILE "      integer, parameter:: P_POINT_WISE_DERIVATIVES = 1\n";
+}
+if ($usealtcoords) {
+  print PARFILE "      integer, parameter:: P_ENABLE_ALT_COORDS = 1\n";
+}
+else {
+  print PARFILE "      integer, parameter:: P_ENABLE_ALT_COORDS = 0\n";
+}
+if ($hyper_derivs) {
+  print PARFILE "      integer, parameter:: P_HYPER_DERIVS = 1\n";
+}
+else {
+  print PARFILE "      integer, parameter:: P_HYPER_DERIVS = 0\n";
+}
+if ($hyper_rhs1) {
+  print PARFILE "      integer, parameter:: P_HYPER_RHS1 = 1\n";
+}
+else {
+  print PARFILE "      integer, parameter:: P_HYPER_RHS1 = 0\n";
+}
+if ($hyper_rhs2) {
+  print PARFILE "      integer, parameter:: P_HYPER_RHS2 = 1\n";
+}
+else {
+  print PARFILE "      integer, parameter:: P_HYPER_RHS2 = 0\n";
+}
+
+
+
+
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER       = 0\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_LEFT         = 10000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_LEFT  = 20000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_LEFT1 = 210000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_LEFT2 = 220000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_RIGHT = 30000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_RIGHT1 = 310000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_CENTER_RIGHT2 = 320000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_RIGHT        = 40000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_EDGE_P       = 50000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_EDGE_M       = 60000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_VERTEX_P     = 70000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_VERTEX_M     = 80000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_MASK         = 90000\n";
+print PARFILE "      integer, parameter:: P_STENCIL_X_UNDEF        = 100000\n";
+
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER       = 0\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_LEFT         = 100\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_LEFT  = 200\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_LEFT1  = 2100\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_LEFT2  = 2200\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_RIGHT = 300\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_RIGHT1 = 3100\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_CENTER_RIGHT2 = 3200\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_RIGHT        = 400\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_EDGE_P       = 500\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_EDGE_M       = 600\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_VERTEX_P     = 700\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_VERTEX_M     = 800\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_MASK         = 900\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Y_UNDEF        = 1000\n";
+
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER       = 0\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_LEFT         = 1\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_LEFT  = 2\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_LEFT1  = 21\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_LEFT2  = 22\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_RIGHT = 3\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_RIGHT1 = 31\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_CENTER_RIGHT2 = 32\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_RIGHT        = 4\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_EDGE_P       = 5\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_EDGE_M       = 6\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_VERTEX_P     = 7\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_VERTEX_M     = 8\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_MASK         = 9\n";
+print PARFILE "      integer, parameter:: P_STENCIL_Z_UNDEF        = 10\n";
+
+
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER       = 0\n";
+print PARFILE "      integer, parameter:: P_STENCIL_LEFT         = 1\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_LEFT  = 2\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_LEFT1 = 21\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_LEFT2 = 22\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_RIGHT = 3\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_RIGHT1 = 31\n";
+print PARFILE "      integer, parameter:: P_STENCIL_CENTER_RIGHT2 = 32\n";
+print PARFILE "      integer, parameter:: P_STENCIL_RIGHT        = 4\n";
+print PARFILE "      integer, parameter:: P_STENCIL_EDGE_P       = 5\n";
+print PARFILE "      integer, parameter:: P_STENCIL_EDGE_M       = 6\n";
+print PARFILE "      integer, parameter:: P_STENCIL_VERTEX_P     = 7\n";
+print PARFILE "      integer, parameter:: P_STENCIL_VERTEX_M     = 8\n";
+print PARFILE "      integer, parameter:: P_STENCIL_MASK         = 9\n";
+print PARFILE "      integer, parameter:: P_STENCIL_UNDEF        = 10\n";
+
+print PARFILE "      END MODULE PARAMS\n";
+close(PARFILE);
+
+
+if ($debug2) {
+  print STDERR "After writing parameter file\n";
+  print STDERR "u:    @u\n";
+  print STDERR "du:   @du\n";
+  print STDERR "v:    @v\n";
+  print STDERR "dv:   @dv\n";
+  print STDERR "w:    @w\n";
+  print STDERR "par:  @params\n";
+}
+
+
+
+
+
+######################################################################
+#
+# Create the utility file
+#
+######################################################################
+
+$utilfile = "util.x";
+open(UFILE, ">$utilfile");
+
+print UFILE<<EOF;
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hypersetup file.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include "cctk.h"
+
+      MODULE UTILEQS
+      use params
+      implicit none
+
+      CONTAINS
+EOF
+
+print UFILE "      subroutine assign_ptrs_init(";
+
+for ($i=0; $i<=$#u; $i++) {
+  print UFILE "$u[$i],";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print UFILE "$v[$i],";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print UFILE "$w[$i],";
+}
+print UFILE "u0, v, w,nx,ny,nz)\n";
+
+print UFILE<<EOF;
+      use GF
+      implicit none
+      integer :: nx,ny,nz
+      type(gridfunction), dimension(NU) :: u0
+      type(gridfunction), dimension(NV) :: v
+      type(gridfunction), dimension(NW) :: w
+
+EOF
+
+for ($i=0; $i<=$#u; $i++) {
+  print UFILE "      CCTK_REAL $u[$i](nx,ny,nz)\n";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print UFILE "      CCTK_REAL $v[$i](nx,ny,nz)\n";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print UFILE "      CCTK_REAL $w[$i](nx,ny,nz)\n";
+}
+
+
+
+foreach $e (@u) {
+  print UFILE "      target :: $e\n";
+}
+foreach $e (@v) {
+  print UFILE "      target :: $e\n";
+}
+foreach $e (@w) {
+  if (!($usealtcoords ==0 && $e =~ /[xyz]phys/)) {
+    print UFILE "      target :: $e\n";
+  }
+}
+
+foreach $e (@u) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print UFILE "      u0(H_$e1)%d => $e\n";
+}
+
+for($i = 0; $i <= $#u; $i++) {
+  $e = $u[$i];
+  $e =~ tr/a-z/A-Z/;
+  print UFILE "      u0(H_$e)%excise_val = $u_exc_val[$i]\n";
+  print UFILE "      u0(H_$e)%dissipation = $u_apply_diss[$i]\n";
+  print UFILE "      u0(H_$e)%zsym = $u_zsym[$i]\n";
+  print UFILE "      u0(H_$e)%ysym = $u_ysym[$i]\n";
+  print UFILE "      u0(H_$e)%xsym = $u_xsym[$i]\n";
+  if ($n_dxu[$i]) {
+    print UFILE "      u0(H_$e)%take_dx = 1\n";
+  }
+  else {
+    print UFILE "      u0(H_$e)%take_dx = 0\n";
+  }
+  if ($n_dyu[$i]) {
+    print UFILE "      u0(H_$e)%take_dy = 1\n";
+  }
+  else {
+    print UFILE "      u0(H_$e)%take_dy = 0\n";
+  }
+  if ($n_dzu[$i]) {
+    print UFILE "      u0(H_$e)%take_dz = 1\n";
+  }
+  else {
+    print UFILE "      u0(H_$e)%take_dz = 0\n";
+  }
+}
+
+foreach $e (@v) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print UFILE "      v(H_$e1)%d => $e\n";
+}
+# The code assumes that there is always at least one element in u, v, and w.
+# If any list is empty, the pointer for element one must be nullified
+# to avoid segmentation faults in various parts of the code.  (Practically
+# u is never empty (what point in running code then?) and w is never empty
+# (it contains the coordinates), so we only check v.
+if ($#v < 0) {
+  print UFILE "      nullify(v(1)%d)\n";
+}
+
+
+foreach $e (@w) {
+  $e1 = $e;
+  $e1 =~ s/cctk_//;
+  $e1 =~ tr/a-z/A-Z/;
+  if ($e1 =~ /[XYZ]PHYS/ && $usealtcoords==0) {
+    $e2 = $e;
+    $e2 =~ s/phys//;
+    print UFILE "      w(H_$e1)%d => cctk_$e2\n";
+  }
+  else {
+    print UFILE "      w(H_$e1)%d => $e\n";
+  }
+}
+
+print UFILE<<EOF;
+      return
+      end subroutine assign_ptrs_init
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! Assign_ptrs_fields
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+EOF
+print UFILE "      subroutine assign_ptrs_fields(";
+for ($i=0; $i<=$#u; $i++) {
+  $n1 = $u[$i];
+  $n2 = $n1 . "_np1";
+  print UFILE "$n1, $n2,";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print UFILE "$v[$i],";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print UFILE "$w[$i],";
+}
+print UFILE "u2, u0, v, w, nx, ny, nz)\n";
+print UFILE<<EOF;
+      use GF
+      implicit none
+
+      integer :: nx, ny, nz
+      type(gridfunction), dimension(NU) :: u2, u0
+      type(gridfunction), dimension(NW) :: w
+      type(gridfunction), dimension(NV) :: v
+EOF
+
+for ($i=0; $i<=$#u; $i++) {
+  $n1 = $u[$i];
+  $n2 = $n1 . "_np1";
+  print UFILE "      CCTK_REAL $n1(nx,ny,nz),$n2(nx,ny,nz)\n";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print UFILE "      CCTK_REAL $v[$i](nx,ny,nz)\n";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print UFILE "      CCTK_REAL $w[$i](nx,ny,nz)\n";
+}
+
+
+foreach $e (@u) {
+  $ee = $e . "_np1";
+  print UFILE "      target :: $e, $ee\n";
+}
+foreach $e (@w) {
+  if (!($usealtcoords ==0 && $e =~ /[xyz]phys/)) {
+    print UFILE "      target :: $e\n";
+  }
+}
+foreach $e (@v) {
+  print UFILE "      target :: $e\n";
+}
+
+print UFILE "\n\n";
+foreach $e (@u) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print UFILE "      u0(H_$e1)%d => $e\n";
+  print UFILE "      u2(H_$e1)%d => $e";
+  print UFILE "_np1\n";
+}
+
+foreach $e (@v) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  print UFILE "      v(H_$e1)%d => $e\n";
+}
+# The code assumes that there is always at least one element in u, v, and w.
+# If any list is empty, the pointer for element one must be nullified
+# to avoid segmentation faults in various parts of the code.  (Practically
+# u is never empty (what point in running code then?) and w is never empty
+# (it contains the coordinates), so we only check v.
+if ($#v < 0) {
+  print UFILE "      nullify(v(1)%d)\n";
+}
+
+foreach $e (@w) {
+  $e1 = $e;
+  $e1 =~ s/cctk_//;
+  $e1 =~ tr/a-z/A-Z/;
+  if ($e1 =~ /[XYZ]PHYS/ && $usealtcoords==0) {
+    $e2 = $e;
+    $e2 =~ s/phys//;
+    print UFILE "      w(H_$e1)%d => cctk_$e2\n";
+  }
+  else {
+    print UFILE "      w(H_$e1)%d => $e\n";
+  }
+}
+
+
+
+for($i = 0; $i <= $#u; $i++) {
+  $e = $u[$i];
+  $e =~ tr/a-z/A-Z/;
+  print UFILE "      u0(H_$e)%excise_val = $u_exc_val[$i]\n";
+  print UFILE "      u2(H_$e)%excise_val = $u_exc_val[$i]\n";
+  print UFILE "      u0(H_$e)%dissipation = $u_apply_diss[$i]\n";
+  print UFILE "      u2(H_$e)%dissipation = $u_apply_diss[$i]\n";
+  print UFILE "      u0(H_$e)%zsym = $u_zsym[$i]\n";
+  print UFILE "      u0(H_$e)%ysym = $u_ysym[$i]\n";
+  print UFILE "      u0(H_$e)%xsym = $u_xsym[$i]\n";
+  print UFILE "      u2(H_$e)%zsym = $u_zsym[$i]\n";
+  print UFILE "      u2(H_$e)%ysym = $u_ysym[$i]\n";
+  print UFILE "      u2(H_$e)%xsym = $u_xsym[$i]\n";
+
+  if ($n_dxu[$i]) {
+    print UFILE "      u2(H_$e)%take_dx = 1\n";
+    print UFILE "      u0(H_$e)%take_dx = 1\n";
+  }
+  else {
+    print UFILE "      u2(H_$e)%take_dx = 0\n";
+    print UFILE "      u0(H_$e)%take_dx = 0\n";
+  }
+  if ($n_dyu[$i]) {
+    print UFILE "      u2(H_$e)%take_dy = 1\n";
+    print UFILE "      u0(H_$e)%take_dy = 1\n";
+  }
+  else {
+    print UFILE "      u2(H_$e)%take_dy = 0\n";
+    print UFILE "      u0(H_$e)%take_dy = 0\n";
+  }
+  if ($n_dzu[$i]) {
+    print UFILE "      u2(H_$e)%take_dz = 1\n";
+    print UFILE "      u0(H_$e)%take_dz = 1\n";
+  }
+  else {
+    print UFILE "      u2(H_$e)%take_dz = 0\n";
+    print UFILE "      u0(H_$e)%take_dz = 0\n";
+  }
+}
+
+for($i = 0; $i <= $#v; $i++) {
+  $e = $v[$i];
+  $e =~ tr/a-z/A-Z/;
+  if ($n_dxv[$i]) {
+    print UFILE "      v(H_$e)%take_dx = 1\n";
+  }
+  else {
+    print UFILE "      v(H_$e)%take_dx = 0\n";
+  }
+  if ($n_dyv[$i]) {
+    print UFILE "      v(H_$e)%take_dy = 1\n";
+  }
+  else {
+    print UFILE "      v(H_$e)%take_dy = 0\n";
+  }
+  if ($n_dzv[$i]) {
+    print UFILE "      v(H_$e)%take_dz = 1\n";
+  }
+  else {
+    print UFILE "      v(H_$e)%take_dz = 0\n";
+  }
+}
+if ($#v < 0) {
+    print UFILE "      v(1)%take_dx = 0\n";
+    print UFILE "      v(1)%take_dy = 0\n";
+    print UFILE "      v(1)%take_dz = 0\n";
+}
+
+print UFILE<<EOF;
+      return
+      end subroutine assign_ptrs_fields
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! Assign_ptrs_rks
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+EOF
+print UFILE "      subroutine assign_ptrs_rks(";
+for ($i=0; $i<=$#u; $i++) {
+  $n = $u[$i];
+  for ($ii = 1; $ii <= $nrk; $ii++) {
+  $n1 = $n . "_rk" . $ii;
+  print UFILE "$n1,";
+  print STDERR "$n1," if ($debug2);
+ }
+}
+print STDERR "\n" if ($debug2);
+
+for ($ii=1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print UFILE "$e,";
+  print STDERR "$e," if ($debug2);
+}
+print STDERR "\n" if ($debug2);
+print UFILE "nx,ny,nz)\n";
+
+print UFILE "      use GF\n";
+print UFILE "      implicit none\n";
+print UFILE "      integer nx, ny, nz\n";
+for ($ii=1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print UFILE "      type(gridfunction), dimension(NU) :: $e\n";
+}
+
+for ($i=0; $i<=$#u; $i++) {
+  $n = $u[$i];
+  for ($ii = 1; $ii <= $nrk; $ii++) {
+    $e = $n . "_rk" . $ii;
+    print UFILE "      CCTK_REAL $e(nx,ny,nz)\n";
+  }
+}
+
+
+foreach $e (@u) {
+  for ($ii = 1; $ii <= $nrk; $ii++) {
+    $n = $e . "_rk" . $ii;
+    print UFILE "        target :: $n\n";
+  }
+}
+
+foreach $e (@u) {
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  for ($ii = 1; $ii <= $nrk; $ii++) {
+    $e2 = $e . "_rk" . $ii;
+    print UFILE "        urk$ii(H_$e1)%d => $e2\n";
+  }
+}
+
+print UFILE<<EOF;
+      return
+      end subroutine assign_ptrs_rks
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! Assign_ptrs_derivs
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+EOF
+print UFILE "      subroutine assign_ptrs_derivs(";
+foreach $e (@du) {
+  print UFILE "$e,";
+}
+foreach $e (@dv) {
+  print UFILE "$e,";
+}
+print UFILE "dxu, dyu, dzu, dxv, dyv, dzv, nx, ny, nz)\n";
+print UFILE<<EOF;
+      use GF
+      implicit none
+    
+      integer :: nx, ny, nz
+      type(gridfunction), dimension(NU) :: dxu, dyu, dzu
+      type(gridfunction), dimension(NV) :: dxv, dyv, dzv
+
+EOF
+
+foreach $e (@du) {
+  print UFILE "      CCTK_REAL $e(nx,ny,nz)\n";
+}
+foreach $e (@dv) {
+  print UFILE "      CCTK_REAL $e(nx,ny,nz)\n";
+}
+
+
+if ($xptderivs) {
+  foreach $e (@du) {
+    print UFILE "      target :: $e\n";
+  }
+  foreach $e (@dv) {
+    print UFILE "      target :: $e\n";
+  }
+}
+
+for($i = 0; $i <= $#u; $i++) {
+  $e = $u[$i];
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  if ($n_dxu[$i] && $xptderivs) {
+    print UFILE "      dxu(H_$e1)%d => dx_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dxu(H_$e1)%d)\n";
+  }
+  if ($n_dyu[$i] && $xptderivs) {
+    print UFILE "      dyu(H_$e1)%d => dy_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dyu(H_$e1)%d)\n";
+  }
+  if ($n_dzu[$i] && $xptderivs) {
+    print UFILE "      dzu(H_$e1)%d => dz_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dzu(H_$e1)%d)\n";
+  }
+}
+
+for($i = 0; $i <= $#v; $i++) {
+  $e = $v[$i];
+  $e1 = $e;
+  $e1 =~ tr/a-z/A-Z/;
+  if ($n_dxv[$i] && $xptderivs) {
+    print UFILE "      dxv(H_$e1)%d => dx_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dxv(H_$e1)%d)\n";
+  }
+  if ($n_dyv[$i] && $xptderivs) {
+    print UFILE "      dyv(H_$e1)%d => dy_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dyv(H_$e1)%d)\n";
+  }
+  if ($n_dzv[$i] && $xptderivs) {
+    print UFILE "      dzv(H_$e1)%d => dz_$e\n";
+  }
+  else {
+    print UFILE "      nullify(dzv(H_$e1)%d)\n";
+  }
+}
+if ($#v < 0) {
+    print UFILE "      nullify(dxv(1)%d)\n";
+    print UFILE "      nullify(dyv(1)%d)\n";
+    print UFILE "      nullify(dzv(1)%d)\n";
+}
+
+
+
+
+print UFILE<<EOF;
+      return
+      end subroutine assign_ptrs_derivs
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! Assign_params
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+EOF
+print UFILE "      subroutine assign_params(";
+foreach $e (@params) {
+  print UFILE "$e,";
+}
+print UFILE "hg,dtg,minx,miny,minz,maxx,maxy,maxz,time,par)\n";
+print UFILE<<EOF;
+      implicit none
+
+
+      CCTK_REAL, dimension(NPAR) :: par
+      CCTK_REAL  hg,dtg,minx,miny,minz,maxx,maxy,maxz,time
+
+
+EOF
+
+for ($i = 0; $i <= $#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    print UFILE "       CCTK_INT $params[$i]\n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    print UFILE "       CCTK_REAL $params[$i]\n";
+  }
+}
+print UFILE<<EOF;
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !
+      ! Equation thorn parameters
+      !
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+      global_nx = nx0
+      global_ny = ny0
+      global_nz = nz0
+      !if (minx .gt. minx0) then
+      !  bbox1 = 0
+      !else
+      !  bbox1 = 1
+      !end if
+      !if (maxx .lt. maxx0) then
+      !  bbox2 = 0
+      !else
+      !  bbox2 = 1
+      !end if
+      !if (miny .gt. miny0) then
+      !  bbox3 = 0
+      !else
+      !  bbox3 = 1
+      !end if
+      !if (maxy .lt. maxy0) then
+      !  bbox4 = 0
+      !else
+      !  bbox4 = 1
+      !end if
+      !if (minz .gt. minz0) then
+      !  bbox5 = 0
+      !else
+      !  bbox5 = 1
+      !end if
+      !if (maxz .lt. maxz0) then
+      !  bbox6 = 0
+      !else
+      !  bbox6 = 1
+      !end if
+    
+    
+
+
+      dt = dt
+      dx = h
+      dy = h
+      dz = h
+      nghostzones_x = bound_width
+      nghostzones_y = bound_width
+      nghostzones_z = bound_width
+      local_time = time
+
+EOF
+
+foreach $e (@params) {
+  $e1 = $e;
+  $e1 =~ s/local_//;
+  $e1 =~ tr/a-z/A-Z/;
+  print UFILE "      par(P_$e1) = $e\n";
+}
+
+
+#
+# SLL 10/2/04: HACK: certain parameters
+#              are specific to the grid
+#              I'm not sure the best way
+#              to put these in
+#
+print UFILE<<EOF;
+
+      par(P_H) = hg
+      par(P_DX) = hg
+      par(P_DY) = hg
+      par(P_DZ) = hg
+      par(P_DT) = dtg
+
+
+      return
+      end subroutine assign_params
+
+      !-------------------------------------------------------------------
+      !
+      !   check each face of the cubical grid to see if it is a physical
+      !   boundary
+      !
+      !-------------------------------------------------------------------
+      subroutine set_bbox(bbox1, bbox2, bbox3, bbox4, bbox5, bbox6,
+     &                    chr, nx, ny, nz)
+      implicit none
+
+      integer bbox1, bbox2, bbox3, bbox4, bbox5, bbox6
+      integer  nx, ny, nz
+      CCTK_REAL  chr(nx,ny,nz)
+
+      ! local vars
+      integer   nxm, nym, nzm
+
+      nxm = nx/2
+      nym = ny/2
+      nzm = nz/2
+
+      ! check xmin face
+      if (nint(chr(1, nym, nzm)) .eq. 2) then
+         bbox1 = 1
+      else
+         bbox1 = 0
+      end if
+
+      ! check xmax face
+      if (nint(chr(nx, nym, nzm)) .eq. 3) then
+         bbox2 = 1
+      else
+         bbox2 = 0
+      end if
+
+      ! check ymin face
+      if (nint(chr(nxm, 1, nzm)) .eq. 4) then
+         bbox3 = 1
+      else
+         bbox3 = 0
+      end if
+
+      ! check ymax face
+      if (nint(chr(nxm, ny, nzm)) .eq. 5) then
+         bbox4 = 1
+      else
+         bbox4 = 0
+      end if
+
+      ! check zmin face
+      if (nint(chr(nxm, nym, 1)) .eq. 6) then
+         bbox5 = 1
+      else
+         bbox5 = 0
+      end if
+
+      ! check zmax face
+      if (nint(chr(nxm, nym, nz)) .eq. 7) then
+         bbox6 = 1
+      else
+         bbox6 = 0
+      end if
+
+      return
+      end subroutine set_bbox
+
+      END MODULE UTILEQS
+EOF
+
+
+
+close(UFILE);
+
+########################################################################
+#
+# Create the type.x file
+#
+########################################################################
+
+$typefile = "type.x";
+open(TFILE, ">$typefile");
+
+print TFILE<<EOF;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hyperfcn file or the hypersetup script.
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include "cctk.h"
+
+
+        MODULE GF
+        implicit none
+
+        type gridfunction
+        CCTK_REAL, dimension(:,:,:), pointer :: d
+        CCTK_INT     :: take_dx, take_dy, take_dz
+        CCTK_INT     :: dissipation, zsym, ysym, xsym
+        CCTK_REAL    :: excise_val
+        end type gridfunction
+
+        end MODULE GF
+EOF
+
+close(TFILE);
+
+
+########################################################################
+#
+# Create the func.inc file
+#
+########################################################################
+
+#
+#  The total number of fields is the sum of nv, nu, and nw PLUS 1 for the tmp.
+#       (plus two storage arrays for each elliptic field)
+#
+$nf = (2+$nrk)*$nu + $nv + $nw + $ndu + $ndv + 1 +3*$numEL;
+#$nf = 5*$nu + $nv + $nw + $ndu + $ndv + 1;
+
+$fieldfile = "fields.inc";
+print "opening $fieldfile\n";
+open(FFILE, ">$fieldfile");
+
+print FFILE<<EOF;
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hyperfcn file or the hypersetup script.
+!
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      integer num_gfuncs
+EOF
+print FFILE "      parameter(num_gfuncs=$nf)\n";
+
+print FFILE<<EOF;
+           integer     GFUNC_U,
+     &                 GFUNC_UADV,
+     &                 GFUNC_URK1,
+     &                 GFUNC_URK2,
+     &                 GFUNC_URK3,
+     &                 GFUNC_DU,
+     &                 GFUNC_V,
+     &                 GFUNC_DV,
+     &                 GFUNC_W,
+     &                 GFUNC_REQD,
+     &                 GFUNC_OTHER
+           parameter ( GFUNC_U              = 0,
+     &                 GFUNC_UADV           = 1,
+     &                 GFUNC_URK1           = 2,
+     &                 GFUNC_URK2           = 3,
+     &                 GFUNC_URK3           = 4,
+     &                 GFUNC_DU             = 5,
+     &                 GFUNC_V              = 6,
+     &                 GFUNC_DV             = 7,
+     &                 GFUNC_W              = 8,
+     &                 GFUNC_REQD           = 9,
+     &                 GFUNC_OTHER          = 10)
+
+      integer          GFUNC_INTEGRAL,
+     &                 GFUNC_INTEGRAL_ADV,
+     &                 GFUNC_DERIVED,
+     &                 GFUNC_STATIC,
+     &                 GFUNC_TEMP,
+     &                 GFUNC_INTEGRAL_DER,
+     &                 GFUNC_INTEGRALFV,
+     &                 GFUNC_INTEGRAL_ADVFV,
+     &                 GFUNC_INTEGRAL_DERFV,
+     &                 GFUNC_INTEGRAL_DEREL
+           parameter ( GFUNC_INTEGRAL       = 0,
+     &                 GFUNC_INTEGRAL_ADV   = 1,
+     &                 GFUNC_DERIVED        = 2,
+     &                 GFUNC_STATIC         = 3,
+     &                 GFUNC_TEMP           = 4,
+     &                 GFUNC_INTEGRAL_DER   = 5,
+     &                 GFUNC_INTEGRALFV     = 6,
+     &                 GFUNC_INTEGRAL_ADVFV = 7,
+     &                 GFUNC_INTEGRAL_DERFV = 8,
+     &                 GFUNC_INTEGRAL_DEREL = 9 )
+
+!
+!
+!          Explanation of field types:
+!             GFUNC_INTEGRAL       --- fields which are evolved, and therefore must have
+!                                      a corresponding _np1 field numerical next in the order
+!                                      They get: initialized from siblings/parents,
+!                                      injected to parents, and synced w/ siblings. They also
+!                                      have boundary data interpolated in time/space from parents.
+!                                      These correspond to the "u" fields in a setup file.
+!             GFUNC_INTEGRAL_ADV   --- the _np1 data correspond to the previous
+!             GFUNC_INTEGRAL_DER   --- fields integral to the evolution, but which are not 
+!                                      evolved. They also get: initialized from siblings/parents,
+!                                      injected to parents, and synced w/ siblings. They do not
+!                                      get boundary data interpolated in time since their parents
+!                                      don't have two time levels.
+!                                      These correspond to the "v" fields in a setup file.
+!             GFUNC_INTEGRAL_DEREL --- elliptic fields integral to the evolution, but which are not 
+!                                      evolved. They also get: initialized from siblings/parents,
+!                                      injected to parents, and synced w/ siblings. They do not
+!                                      get boundary data interpolated in time since their parents
+!                                      don't have two time levels.
+!                                      These correspond to the "v" fields in a setup file.
+!             GFUNC_DERIVED        --- Associated fields not integral to the integration.
+!                                      These correspond to the "w" fields in a setup file.
+!             GFUNC_INTEGRALFV     
+!             GFUNC_INTEGRAL_ADVFV --- Finite volume versions of these as described above.
+!             GFUNC_INTEGRAL_DERFV     Initialization, injection, and boundary treatment
+!                                      are different than that for finite difference (vertex
+!                                      centered). The other types do not need FV versions (yet).
+!
+!             GFUNC_ZSYM ---Declares behavior of function when assuming symmetry about z=0 plane:
+!                            1 [default]--Even... copy f(z=-nh) = +f(z=+nh)
+!                           -1            Odd.... copy f(z=-nh) = -f(z=+nh) and f(z=0)=0
+!             GFUNC_YSYM ---Declares behavior of function when assuming symmetry about y=0 plane
+!             GFUNC_XSYM ---Declares behavior of function when assuming symmetry about x=0 plane
+!
+!
+!
+      character(128) gfunc_name(num_gfuncs)
+      integer     gfunc_type(num_gfuncs),
+     *            gfunc_class(num_gfuncs),      
+     *            gfunc_out(num_gfuncs),
+     *            gfunc_ana(num_gfuncs),
+     *            gfunc_tmpptr(num_gfuncs),
+     *            gfunc_zsym(num_gfuncs),
+     *            gfunc_ysym(num_gfuncs),
+     *            gfunc_xsym(num_gfuncs),
+     *            gfunc_pointer(num_gfuncs,maxnumgrids)
+      real(kind=8)gfunc_shadow(num_gfuncs)
+
+      common  / gfunc_ints / gfunc_pointer,
+     *                       gfunc_tmpptr,
+     *                       gfunc_out,
+     *                       gfunc_ana
+
+EOF
+
+@usuf = ("", "_np1", "_rk1", "_rk2", "_rk3");
+@utype= ("GFUNC_INTEGRAL", "GFUNC_INTEGRAL_ADV");
+@uclass= ("GFUNC_U", "GFUNC_UADV");
+@uFVtype= ("GFUNC_INTEGRALFV", "GFUNC_INTEGRAL_ADVFV");
+$if = 0;
+$countu = 0;
+foreach $e (@u) {
+  #$basename = substr($e,0,10);
+  $basename = $e;
+
+  $FVfield = $u_FV[$countu++];
+  #print STDERR "$e has u_FV of: $FVfield \n";
+  for ($i=0; $i < 2; $i++) {
+    $if++;
+    $s = $usuf[$i];
+    #$type = $utype[$i];
+    $class = $uclass[$i];    
+    if ($FVfield) {
+       # Finite volume fields:
+       $type = $uFVtype[$i];
+    } else {
+       # Finite difference fields:
+       $type = $utype[$i];
+    }
+    $name = $basename . $s;
+    $ptn = "gr_" . $name;
+    print FFILE "      data gfunc_name($if) / '$name' /\n";
+    print FFILE "      data gfunc_type($if) /  $type /\n";
+    print FFILE "      data gfunc_class($if) / $class /\n";
+    if ($i==0){
+       print FFILE "      data gfunc_shadow($if) / $u_apply_SH[$countu-1] d0 /\n";
+    }
+    print FFILE "      data gfunc_zsym($if) / $u_zsym[$countu-1] /\n";
+    print FFILE "      data gfunc_ysym($if) / $u_ysym[$countu-1] /\n";
+    print FFILE "      data gfunc_xsym($if) / $u_xsym[$countu-1] /\n";
+    print FFILE "      integer $ptn\n";
+    print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+  }
+}
+
+@uclass= ("GFUNC_URK1", "GFUNC_URK2", "GFUNC_URK3");
+$maxit = 2 + $nrk;
+$whichu = 0;
+foreach $e (@u) {
+  $basename = $e;
+  $whichu++;
+  for ($i=2; $i < $maxit; $i++) {
+    $if++;
+    $s = $usuf[$i];
+    $type = $utype[$i];
+    $name = $basename . $s;
+    $ptn = "gr_" . $name;
+    $class = $uclass[$i-2];
+    print FFILE "      data gfunc_name($if) / '$name' /\n";
+    print FFILE "      data gfunc_type($if) /  GFUNC_DERIVED/\n";
+    print FFILE "      data gfunc_class($if) / $class /\n";
+    print FFILE "      data gfunc_zsym($if) / $u_zsym[$whichu-1] /\n";
+    print FFILE "      data gfunc_ysym($if) / $u_ysym[$whichu-1] /\n";
+    print FFILE "      data gfunc_xsym($if) / $u_xsym[$whichu-1] /\n";
+    print FFILE "      integer $ptn\n";
+    print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+  }
+}
+
+$countdu = 0;
+foreach $e (@du) {
+  $if++;
+  $countdu++;
+  $name = $e;
+  #$name = substr($e,0,10);
+  $ptn = "gr_" . $name;
+  print FFILE "c     du vars\n";
+  print FFILE "      data gfunc_name($if) / '$name' /\n";
+  print FFILE "      data gfunc_type($if) /  GFUNC_DERIVED/\n";
+  print FFILE "      data gfunc_class($if) / GFUNC_DU /\n";
+  print FFILE "      data gfunc_zsym($if) / $du_zsym[$countdu-1] /\n";
+  print FFILE "      data gfunc_ysym($if) / $du_ysym[$countdu-1] /\n";
+  print FFILE "      data gfunc_xsym($if) / $du_xsym[$countdu-1] /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+}
+
+
+$countv = 0;
+foreach $e (@v) {
+  $ELfield = $v_EL[$countv++];
+  $if++;
+  $name = $e;
+  $ptn = "gr_" . $name;
+  print FFILE "c     v vars\n";
+  if ($ELfield) {
+     #
+     # Elliptic field (requires two associated storage arrays):
+     #
+     print FFILE "      data gfunc_name($if) / '$name' /\n";
+     print FFILE "      data gfunc_type($if) /  GFUNC_INTEGRAL_DEREL/\n";
+     print FFILE "      data gfunc_class($if) / GFUNC_OTHER /\n";
+     print FFILE "      data gfunc_zsym($if) / 1 /\n";
+     print FFILE "      data gfunc_ysym($if) / 1 /\n";
+     print FFILE "      data gfunc_xsym($if) / 1 /\n";
+     print FFILE "      integer $ptn\n";
+     print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+     #
+     $name = $e . "_st1";
+     $ptn = "gr_" . $name;
+     $if++;
+     print FFILE "      data gfunc_name($if) / '$name' /\n";
+     print FFILE "      data gfunc_type($if) /  GFUNC_TEMP/\n";
+     print FFILE "      data gfunc_class($if) / GFUNC_OTHER /\n";
+     print FFILE "      data gfunc_zsym($if) / 1 /\n";
+     print FFILE "      data gfunc_ysym($if) / 1 /\n";
+     print FFILE "      data gfunc_xsym($if) / 1 /\n";
+     print FFILE "      integer $ptn\n";
+     print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+     #
+     $name = $e . "_st2";
+     $ptn = "gr_" . $name;
+     $if++;
+     print FFILE "      data gfunc_name($if) / '$name' /\n";
+     print FFILE "      data gfunc_type($if) /  GFUNC_TEMP/\n";
+     print FFILE "      data gfunc_class($if) / GFUNC_OTHER /\n";
+     print FFILE "      data gfunc_zsym($if) / 1 /\n";
+     print FFILE "      data gfunc_ysym($if) / 1 /\n";
+     print FFILE "      data gfunc_xsym($if) / 1 /\n";
+     print FFILE "      integer $ptn\n";
+     print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+     #
+     $name = $e . "_rhs";
+     $ptn = "gr_" . $name;
+     $if++;
+     print FFILE "      data gfunc_name($if) / '$name' /\n";
+     print FFILE "      data gfunc_type($if) /  GFUNC_TEMP/\n";
+     print FFILE "      data gfunc_class($if) / GFUNC_OTHER /\n";
+     print FFILE "      data gfunc_zsym($if) / 1 /\n";
+     print FFILE "      data gfunc_ysym($if) / 1 /\n";
+     print FFILE "      data gfunc_xsym($if) / 1 /\n";
+     print FFILE "      integer $ptn\n";
+     print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+     #
+  } else {
+     print FFILE "      data gfunc_name($if) / '$name' /\n";
+     print FFILE "      data gfunc_type($if) /  GFUNC_INTEGRAL_DER/\n";
+     print FFILE "      data gfunc_class($if) / GFUNC_V /\n";
+     print FFILE "      data gfunc_zsym($if) / $v_zsym[$countv-1] /\n";
+     print FFILE "      data gfunc_ysym($if) / $v_ysym[$countv-1] /\n";
+     print FFILE "      data gfunc_xsym($if) / $v_xsym[$countv-1] /\n";
+     print FFILE "      integer $ptn\n";
+     print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+  }
+}
+
+$countdv = 0;
+foreach $e (@dv) {
+  $if++;
+  $countdv++;
+  $name = $e;
+  #$name = substr($e,0,10);
+  $ptn = "gr_" . $name;
+  print FFILE "      data gfunc_name($if) / '$name' /\n";
+  print FFILE "      data gfunc_type($if) /  GFUNC_DERIVED/\n";
+  print FFILE "      data gfunc_class($if) / GFUNC_DV /\n";
+  print FFILE "      data gfunc_zsym($if) / $dv_zsym[$countdv-1] /\n";
+  print FFILE "      data gfunc_ysym($if) / $dv_ysym[$countdv-1] /\n";
+  print FFILE "      data gfunc_xsym($if) / $dv_xsym[$countdv-1] /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+}
+
+
+#
+#
+#
+$mycount = 0;
+foreach $e (@w) {
+  $if++;
+  $name = $e;
+  #$name = substr($e,0,10);
+  $ptn = "gr_" . $name;
+  print FFILE "      data gfunc_name($if) / '$name' /\n";
+  print FFILE "      data gfunc_type($if) /  GFUNC_DERIVED/\n";
+  # Last few fields should be of a different gfunc_class:
+  #         --specifically chr cannot by synced or it writes over itself
+  #if ($mycount <= $#w-6) {
+  if ($mycount <= $#w-4) {
+     print FFILE "      data gfunc_class($if) / GFUNC_W /\n";
+  } else {
+     print FFILE "      data gfunc_class($if) / GFUNC_REQD /\n";
+  }
+  print FFILE "      data gfunc_zsym($if) / $w_zsym[$mycount] /\n";
+  print FFILE "      data gfunc_ysym($if) / $w_ysym[$mycount] /\n";
+  print FFILE "      data gfunc_xsym($if) / $w_xsym[$mycount] /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (gfunc_tmpptr($if), $ptn)\n\n";
+  $mycount++;  
+}
+
+#
+#  tmp must be here
+#
+$if++;
+print FFILE "      data gfunc_name($if) / 'gr_tmp' /\n";
+print FFILE "      data gfunc_type($if) /  GFUNC_TEMP /\n";
+print FFILE "      data gfunc_class($if) / GFUNC_REQD /\n";
+print FFILE "      data gfunc_zsym($if) / 1 /\n";
+print FFILE "      data gfunc_ysym($if) / 1 /\n";
+print FFILE "      data gfunc_xsym($if) / 1 /\n";
+print FFILE "      integer gr_tmp\n";
+print FFILE "      equivalence (gfunc_tmpptr($if), gr_tmp)\n\n";
+
+
+close(FFILE);
+
+
+
+########################################################################
+#
+# Create I/O routines  -- 
+#
+########################################################################
+
+$iofile = "param.inc";
+print "opening $iofile\n";
+open(IOFILE, ">$iofile");
+print IOFILE<<EOF;
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hyperfcn file or the hypersetup script.
+!
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+EOF
+@common_int=();
+@common_real=();
+for ($i=0; $i<=$#par; $i++) {
+  if ($par_type[$i] eq "int") {
+    print IOFILE "      integer $par[$i]\n";
+    push(@common_int, $par[$i]);
+  }
+  elsif ($par_type[$i] eq "double") {
+    print IOFILE "      real(kind=8) $par[$i]\n";
+    push(@common_real, $par[$i]);
+  }
+}
+#
+#  The common block should list the doubles first, then the ints for
+#  better performance.
+#
+print IOFILE "      common / use_params / ";
+for ($i=0; $i<=$#common_real; $i++) {
+  print IOFILE "$common_real[$i],";
+}
+for ($i=0; $i<$#common_int; $i++) {
+  print IOFILE "$common_int[$i],";
+}
+print IOFILE "$common_int[$#common_int]\n";
+
+close(IOFILE);
+
+
+
+$iofile = "hyperio.x";
+print "opening $iofile\n";
+open(IOFILE, ">$iofile");
+
+#
+# Beginning of output of iofile:
+#
+print IOFILE<<EOF;
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hyperfcn file or the hypersetup script.
+!
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+#include "cctk.h"
+
+
+EOF
+
+
+
+print IOFILE<<EOF;
+
+!----------------------------------------------------------------------
+!  Subroutine params_dump  
+!----------------------------------------------------------------------
+      subroutine params_dump( )
+      implicit   none
+      include   'grid.inc'
+      include   'glob.inc'
+      include   'param.inc'
+      integer    i
+
+EOF
+
+for ($i=0; $i<=$#params; $i++) {
+  print IOFILE "      write(*,*)'      $params[$i]   = ',$params[$i]\n";
+}
+
+
+print IOFILE<<EOF;
+      do i = 1, num_gfuncs
+         write(*,*) '           gfunc_out(',i,') = ',gfunc_out(i)
+      end do
+      do i = 1, num_gfuncs
+         write(*,*) '           gfunc_ana(',i,') = ',gfunc_ana(i)
+      end do
+      do i = 0, maxlev - 1
+        write(*,*) '           out_period(',i,') = ', out_period(i)
+      end do
+      do i = 0, maxlev - 1
+        write(*,*) '            ref_level(',i,') = ', ref_level(i)
+      end do
+
+      return
+      end  
+
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c                                                                            cc
+!c  params_read:                                                              cc
+!c                   Read in parameters from file given as argument.          cc
+!c                   Sets default values, and then reads in from file.        cc
+!c                   Problem specific routine.                                cc
+!c                                                                            cc
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine params_read( pfile )
+      implicit     none
+      character(64) pfile
+      include     'grid.inc'
+      include     'glob.inc'
+      include     'param.inc'
+      include     'surfaces.inc'
+      integer      fileunum,
+     *             rc,
+     *             i,
+     *             LARGEINT
+      parameter (  LARGEINT = 999999999 )
+      integer      err
+
+c     function declarations
+      integer    get_int_param, get_real_param, get_str_param
+EOF
+
+@usuf=("", "_np1", "_rk1", "_rk2", "_rk3");
+$maxit = 2 + $nrk;
+for ($i=0; $i<=$#u; $i++) {
+  for ($ii = 0; $ii < $maxit; $ii++) {
+    $e = $usuf[$ii];
+    $zz = $u[$i] . $e;
+    $zzo = "output_" . $zz;
+    $zza = "analysis_" . $zz;
+    print IOFILE "      integer $zzo\n";
+    print IOFILE "      integer $zza\n";
+  }
+}
+
+for ($i=0; $i<=$#du; $i++) {
+  $zz = $du[$i];
+  $zzo = "output_" . $zz;
+  $zza = "analysis_" . $zz;
+  print IOFILE "      integer $zzo\n";
+  print IOFILE "      integer $zza\n";
+}
+
+@exts=("_st1", "_st2", "_rhs");
+for ($i=0; $i<=$#v; $i++) {
+  $zz = $v[$i];
+  $zzo = "output_" . $zz;
+  $zza = "analysis_" . $zz;
+  print IOFILE "      integer $zzo\n";
+  print IOFILE "      integer $zza\n";
+  $ELfield = $v_EL[$i];
+  if ($ELfield) {
+     foreach $e (@exts) {
+       $zz = $v[$i] . $e;
+       $zzo = "output_" . $zz;
+       $zza = "analysis_" . $zz;
+       print IOFILE "      integer $zzo\n";
+       print IOFILE "      integer $zza\n";
+     }
+  }
+}
+
+for ($i=0; $i<=$#dv; $i++) {
+  $zz = $dv[$i];
+  $zzo = "output_" . $zz;
+  $zza = "analysis_" . $zz;
+  print IOFILE "      integer $zzo\n";
+  print IOFILE "      integer $zza\n";
+}
+
+
+for ($i=0; $i<=$#w; $i++) {
+  $zz = $w[$i];
+  $zzo = "output_" . $zz;
+  $zza = "analysis_" . $zz;
+  print IOFILE "      integer $zzo\n";
+  print IOFILE "      integer $zza\n";
+}
+
+for ($i=0; $i <= $MAXLEVELS; $i++) {
+  $zzo = "output_level_" . $i;
+  print IOFILE "      integer $zzo\n";
+}
+
+for ($i=0; $i <= $MAXLEVELS; $i++) {
+  $zzo = "refine_level_" . $i;
+  print IOFILE "      real(kind=8) $zzo\n";
+  #print IOFILE "      integer $zzo\n";
+}
+
+
+
+# Surface functions:
+for ($i=0; $i<=$#A; $i++) {
+  $zz = $A[$i];
+  $zzo = "asf_out_" . $zz;
+  print IOFILE "      integer $zzo\n";
+}
+# Surface functions:
+for ($i=0; $i<=$#B; $i++) {
+  $zz = $B[$i];
+  $zzo = "bsf_out_" . $zz;
+  print IOFILE "      integer $zzo\n";
+}
+# Surface functions:
+for ($i=0; $i<=$#C; $i++) {
+  $zz = $C[$i];
+  $zzo = "csf_out_" . $zz;
+  print IOFILE "      integer $zzo\n";
+}
+
+
+print IOFILE<<EOF;
+
+      err = 0
+
+      fileunum = 8
+      open(unit=fileunum,file=pfile,status='old',iostat=rc)
+      if(rc .ne. 0) then
+        write(*,*) 'params_read: Unable to open parameter file: ',pfile
+        call my_exit('Unable to open file.')
+      end if
+
+EOF
+
+#
+#  read the parameters
+#
+for ($i=0; $i<=$#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$params[$i]')\/ \/CHAR(0),$params[$i],\%VAL($params_size[$i]))\n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    print IOFILE "      rc = get_real_param(trim(pfile)\/ \/CHAR(0),trim('$params[$i]')\/ \/CHAR(0),$params[$i],\%VAL($params_size[$i]))\n";
+  }
+  print IOFILE "      if (rc.ne.1) then\n";
+  print IOFILE "        $params[$i] = $params_val[$i]\n";
+  print IOFILE "      end if\n";
+  if ($params_vmin[$i] eq "*") {
+  }
+  else {
+    print IOFILE "      if ($params[$i] .lt. $params_vmin[$i]) then\n";
+    print IOFILE "        write(0,*)'Error: $params[$i] too small. Min value = $par_vmin[$i]',$params[$i]\n";
+    print IOFILE "        err = err + 1\n";
+    print IOFILE "      end if\n";
+  }
+  if ($params_vmax[$i] eq "*") {
+  }
+  else {
+    print IOFILE "      if ($params[$i] .gt. $params_vmax[$i]) then\n";
+    print IOFILE "        write(0,*)'Error: $params[$i] too big. Max value = $par_vmax[$i]',$params[$i]\n";
+    print IOFILE "        err = err + 1\n";
+    print IOFILE "      end if\n";
+  }
+
+}
+
+@usuf=("", "_np1");
+$if = 0;
+for ($i=0; $i<=$#u; $i++) {
+  foreach $e (@usuf) {
+    $if++;
+    $zz = $u[$i] . $e;
+    $zzo = "output_" . $zz;
+    print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zzo = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+    print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+  }
+}
+@usuf2 = ("_rk1", "_rk2", "_rk3");
+$maxit  = $nrk;
+for ($i=0; $i<=$#u; $i++) {
+  for ($ii = 0; $ii < $maxit; $ii++) {
+  foreach $e (@usuf2[$ii]) {
+    $if++;
+    $zz = $u[$i] . $e;
+    $zzo = "output_" . $zz;
+    print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zzo = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+    print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+   }
+  }
+}
+for ($i=0; $i<=$#du; $i++) {
+  $if++;
+  $zz = $du[$i];
+  $zzo = "output_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+}
+for ($i=0; $i<=$#v; $i++) {
+  $if++;
+  $zz = $v[$i];
+  $zzo = "output_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+  $ELfield = $v_EL[$i];
+  if ($ELfield) {
+     $if++;
+     $zzo = "output_" . $zz . "_st1";
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+     print IOFILE "      if (rc .ne. 1) then\n";
+     print IOFILE "        $zzo = 0\n";
+     print IOFILE "      end if\n";
+     print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+     #
+     $if++;
+     $zzo = "output_" . $zz . "_st2";
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+     print IOFILE "      if (rc .ne. 1) then\n";
+     print IOFILE "        $zzo = 0\n";
+     print IOFILE "      end if\n";
+     print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+     #
+     $if++;
+     $zzo = "output_" . $zz . "_rhs";
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+     print IOFILE "      if (rc .ne. 1) then\n";
+     print IOFILE "        $zzo = 0\n";
+     print IOFILE "      end if\n";
+     print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+     print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+     #
+  }
+}
+for ($i=0; $i<=$#dv; $i++) {
+  $if++;
+  $zz = $dv[$i];
+  $zzo = "output_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+}
+for ($i=0; $i<=$#w; $i++) {
+  $if++;
+  $zz = $w[$i];
+  $zzo = "output_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      gfunc_out($if) = $zzo\n";
+    $zza = "analysis_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zza')\/ \/CHAR(0),$zza,\%VAL(1))\n";
+    print IOFILE "      if (rc .ne. 1) then\n";
+    print IOFILE "        $zza = 0\n";
+    print IOFILE "      end if\n";
+    print IOFILE "      gfunc_ana($if) = $zza\n";
+}
+
+# More surface stuff
+# Surface A:
+for ($i=0; $i<=$#A; $i++) {
+  $if = $i + 1;
+  $zz = $A[$i];
+  $zzo = "asf_out_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = -1\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      asf_out($if) = $zzo\n";
+}
+# Surface B:
+for ($i=0; $i<=$#B; $i++) {
+  $if = $i + 1;
+  $zz = $B[$i];
+  $zzo = "bsf_out_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = -1\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      bsf_out($if) = $zzo\n";
+}
+# Surface C:
+for ($i=0; $i<=$#C; $i++) {
+  $if = $i + 1;
+  $zz = $C[$i];
+  $zzo = "csf_out_" . $zz;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = -1\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      csf_out($if) = $zzo\n";
+}
+
+for ($i=0; $i <= $MAXLEVELS-1; $i++) {
+  $zzo = "output_level_" . $i;
+  print IOFILE "      rc = get_int_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      out_period($i) = $zzo\n";
+  #
+  $zzo = "refine_level_" . $i;
+  print IOFILE "      rc = get_real_param(trim(pfile)\/ \/CHAR(0),trim('$zzo')\/ \/CHAR(0),$zzo,\%VAL(1))\n";
+  print IOFILE "      if (rc .ne. 1) then\n";
+  print IOFILE "        $zzo = 1.d0\n";
+  print IOFILE "      end if\n";
+  print IOFILE "      ref_level($i) = $zzo\n";
+}
+
+#print IOFILE "      rc = get_str_param(trim(pfile)\/ \/CHAR(0), trim('tag')\/ \/CHAR(0), tag, \%VAL(3))\n";
+#print IOFILE "      if (rc .ne. 1) then\n";
+#print IOFILE "        tag = ''\n";
+#print IOFILE "      end if\n";
+
+print IOFILE<<EOF;
+
+      if (refine_period.eq.0) then
+         refine_period = LARGEINT
+         write(*,*) 'params_read: Assuming a zero refine_period'
+         write(*,*) 'params_read: indicates never refine.'
+         write(*,*) 'params_read: Resetting to: ',refine_period
+      end if
+
+      if (err .gt. 0) then
+        write(0,*)'params_read: Problem reading in parameters'
+        call my_exit('Problem reading in parameters')
+      end if
+
+      return
+      end
+
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c                                                                            cc
+!c  params_pack:                                                              cc
+!c       Pack user input parameters into arrays for easy and quick            cc
+!c       broadcast to the other (non-master) processes.                       cc
+!c                                                                            cc
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+       subroutine params_pack()
+       implicit     none
+       include     'glob.inc'
+       include     'param.inc'
+       include     'mpif.h'
+       include     'mpi_stuff.inc'
+
+
+EOF
+
+$ii = 0;
+$id = 0;
+for ($i=0; $i<=$#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    $ii++;
+    print IOFILE "      tmp_ints($ii) = $params[$i]\n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    $id++;
+    print IOFILE "      tmp_dbls($id) = $params[$i]\n";
+  }
+}
+print IOFILE<<EOF;
+
+      return
+      end
+
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c                                                                            cc
+!c  params_bcast:                                                             cc
+!c       Broadcast and unpack parameters so that all procs                    cc
+!c       have them stored in their various variables in the *.inc files.      cc
+!c                                                                            cc
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+       subroutine params_bcast()
+       implicit     none
+       include     'glob.inc'
+       include     'grid.inc'
+       include     'param.inc'
+       include     'mpif.h'
+       include     'mpi_stuff.inc'
+
+       integer     taglength, mystringlength, i
+       character(4) tmp
+
+       integer     num_ints, num_dbls
+
+EOF
+
+print IOFILE "      num_ints = $ii\n";
+print IOFILE "      num_dbls = $id\n";
+
+print IOFILE<<EOF;
+
+       if (num_ints .gt. num_int_params) then
+          write(*,*) 'params_bcast: Problem! Increase num_int_params. '
+          write(*,*) 'params_bcast: num_ints       = ',num_ints
+          write(*,*) 'params_bcast: num_int_params = ',num_int_params
+          call my_exit('Incrase num_int_params')
+       end if
+       if (num_dbls .gt. num_dbl_params) then
+          write(*,*) 'params_bcast: Problem! Increase num_dbl_params. '
+          write(*,*) 'params_bcast: num_dbls       = ',num_dbls
+          write(*,*) 'params_bcast: num_dbl_params = ',num_dbl_params
+          call my_exit('Incrase num_dbl_params')
+       end if
+       call MPI_BCAST(tmp_dbls,  num_dbls,    MPI_DOUBLE_PRECISION,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(tmp_ints,  num_ints,    MPI_INTEGER,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(gfunc_out, num_gfuncs,  MPI_INTEGER,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(gfunc_ana, num_gfuncs,  MPI_INTEGER,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(out_period,maxlev,      MPI_INTEGER,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(ref_level, maxlev,      MPI_DOUBLE_PRECISION,
+     &                master,    MPI_COMM_WORLD, ierr)
+       call MPI_BCAST(tag,       4,           MPI_CHARACTER,
+     &                master,    MPI_COMM_WORLD, ierr)
+
+       call int2str(myid,tag)
+EOF
+
+$ii=0;
+$id=0;
+for ($i=0; $i<=$#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    $ii++;
+    print IOFILE "      $params[$i] = tmp_ints($ii)\n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    $id++;
+    print IOFILE "      $params[$i] = tmp_dbls($id)\n";
+  }
+}
+
+print IOFILE<<EOF;
+      hx     =  ( maxx0 - minx0 ) / (nx0-1.d0)
+      hy     =  ( maxy0 - miny0 ) / (ny0-1.d0)
+      hz     =  ( maxz0 - minz0 ) / (nz0-1.d0)
+      dt     =  lambda * hx
+      h      =  hx
+
+      num_anafields = 0
+      do i = 1, num_gfuncs
+         if (gfunc_ana(i) .gt. 0) then
+            num_anafields = num_anafields + 1
+         end if
+      end do
+
+       return
+       end     ! END: params_bcast()
+
+EOF
+
+#
+# Routines for saving and reading parameters to state (SLL):
+#
+print IOFILE<<EOF;
+!----------------------------------------------------------------------
+!  Subroutine params_writestate()
+!----------------------------------------------------------------------
+      subroutine params_writestate(fname)
+      implicit   none
+      character(128) fname
+      include   'grid.inc'
+      include   'glob.inc'
+      include   'param.inc'
+      include   'output.inc'
+      include   'mpif.h'
+      include   'mpi_stuff.inc'
+      integer    i
+
+
+EOF
+
+$ii=0;
+$id=0;
+for ($i=0; $i<=$#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    $ii++;
+    print IOFILE "      gft_rc = mygft_write_id_int(fname,'$params[$i]',$params[$i],1) \n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    $id++;
+    print IOFILE "      gft_rc = mygft_write_id_float(fname,'$params[$i]',$params[$i],1) \n";
+  }
+}
+
+print IOFILE<<EOF;
+
+      return
+      end          ! END: params_writestate
+
+!----------------------------------------------------------------------
+!  Subroutine params_readstate()
+!----------------------------------------------------------------------
+      subroutine params_readstate(fname)
+      implicit   none
+      character(128) fname
+      include   'grid.inc'
+      include   'glob.inc'
+      include   'param.inc'
+      include   'output.inc'
+      include   'mpif.h'
+      include   'mpi_stuff.inc'
+      integer    i
+
+
+EOF
+
+$ii=0;
+$id=0;
+for ($i=0; $i<=$#params; $i++) {
+  if ($params_type[$i] eq "int") {
+    $ii++;
+    print IOFILE "      gft_rc = mygft_read_id_int(fname,'$params[$i]',$params[$i],1) \n";
+  }
+  elsif ($params_type[$i] eq "double") {
+    $id++;
+    print IOFILE "      gft_rc = mygft_read_id_float(fname,'$params[$i]',$params[$i],1) \n";
+  }
+}
+
+print IOFILE<<EOF;
+
+      return
+      end          ! END: params_readstate
+EOF
+#
+# DONE: Routines for saving and reading parameters to state (SLL):
+#
+
+print IOFILE<<EOF;
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c                                                                            cc
+!c  grid_iter:                                                                cc
+!c                                                                            cc
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine grid_iter( gridnum )
+      use params
+      use GF
+      use utileqs
+      use hypercoords
+      implicit    none
+      integer     gridnum
+      include    'grid.inc'
+      include    'glob.inc'
+      include    'param.inc'
+      include    'chr.inc'
+      integer    nx, ny, nz, i
+      real(kind=8) minx, miny, minz, maxx, maxy, maxz
+      real(kind=8) hg,  dtg, factor, time
+      logical     ltrace
+      parameter ( ltrace = .false. )
+
+      type(gridfunction), dimension(NU):: u0,u2, dxu,dyu,dzu
+EOF
+
+for ($ii=1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print IOFILE "      type(gridfunction), dimension(NU):: $e\n";
+}
+
+print IOFILE<<EOF;
+      type(gridfunction), dimension(NV):: v, dxv, dyv, dzv
+      type(gridfunction), dimension(NW):: w
+      CCTK_REAL, dimension(NPAR)           :: par
+
+
+      call load_pointers(gridnum)
+
+      hg   = gr_h(gridnum)
+      dtg  = lambda*hg
+      local_nx   = gr_nx(gridnum)
+      local_ny   = gr_ny(gridnum)
+      local_nz   = gr_nz(gridnum)
+      minx = gr_minx(gridnum)
+      miny = gr_miny(gridnum)
+      minz = gr_minz(gridnum)
+      maxx = gr_maxx(gridnum)
+      maxy = gr_maxy(gridnum)
+      maxz = gr_maxz(gridnum)
+      time = gr_t(gridnum)
+      gr_iter(gridnum) = gr_iter(gridnum) + 1
+      rk_iter = gr_iter(gridnum)
+
+      call mapCoords1dTo3d(q(gr_cctk_x), q(gr_cctk_y), q(gr_cctk_z), q(gr_x(gridnum)), q(gr_y(gridnum)), q(gr_z(gridnum)), local_nx, local_ny, local_nz)
+
+EOF
+
+print IOFILE "      call assign_ptrs_fields(";
+for ($i=0; $i<=$#u; $i++) {
+  $n1 = $u[$i];
+  $n2 = $n1 . "_np1";
+  print IOFILE "q(gr_$n1), q(gr_$n2),";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print IOFILE "q(gr_$v[$i]),";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print IOFILE "q(gr_$w[$i]),";
+}
+print IOFILE "u2, u0, v, w, local_nx, local_ny, local_nz)\n";
+
+print IOFILE "      call assign_ptrs_rks(";
+for ($i=0; $i<=$#u; $i++) {
+  $n = $u[$i];
+  for ($ii = 1; $ii <=$nrk; $ii++) {
+    $n1 = "gr_" . $n . "_rk" . $ii;
+    print IOFILE "q($n1),";
+  }
+}
+
+for ($ii = 1; $ii <=$nrk; $ii++) {
+  $e = "urk" . $ii;
+  print IOFILE "$e,";
+}
+
+print IOFILE "local_nx, local_ny, local_nz)\n";
+
+print IOFILE "      call assign_ptrs_derivs(";
+foreach $e (@du) {
+  $n = "gr_" . $e;
+  print IOFILE "q($n),";
+}
+foreach $e (@dv) {
+  $n = "gr_" . $e;
+  print IOFILE "q($n),";
+}
+print IOFILE "dxu, dyu, dzu, dxv, dyv, dzv, local_nx, local_ny, local_nz)\n";
+
+print IOFILE "      call set_bbox(bbox1, bbox2, bbox3, bbox4, bbox5, bbox6, q(gr_chr), local_nx, local_ny, local_nz)\n";
+print IOFILE "      call assign_params(";
+foreach $e (@params) {
+  print IOFILE "$e,";
+}
+print IOFILE "hg,dtg,minx,miny,minz,maxx,maxy,maxz,time,par)\n";
+
+#print IOFILE "      call HyperEvolveRK(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv, urk1,urk2,urk3,par)\n";
+#print IOFILE "      call HyperEvolveRK(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv, urk1,urk2,urk3,par,gr_iter(gridnum))\n";
+print IOFILE "      call HyperEvolveRK(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv,";
+for ($ii=1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print IOFILE "$e,";
+}
+print IOFILE "par)\n";
+print IOFILE "      if (gr_iter(gridnum).eq.3) then\n";
+print IOFILE "         call HyperAnalysis(u0, u2, v, w, dxu,dyu,dzu, dxv, dyv, dzv, par)\n";
+print IOFILE "         gr_iter(gridnum) = 0\n";
+print IOFILE "      end if\n";
+
+#print IOFILE "      call HyperAnalysis2(u0, v, w, par)\n";
+print IOFILE<<EOF;
+      return
+      end
+
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!c                                                                            cc
+!c  grid_init_t0:                                                             cc
+!c                                                                            cc
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine grid_init_t0( gridnum )
+      use params
+      use GF
+      use utileqs
+      use hypercoords
+      implicit    none
+      integer     gridnum
+      include    'grid.inc'
+      include    'glob.inc'
+      include    'param.inc'
+      include    'chr.inc'
+      integer    nx, ny, nz, i
+      real(kind=8)  minx, miny, minz, maxx, maxy, maxz
+      real(kind=8)  hg,  dtg, factor, time
+      logical     ltrace
+      parameter ( ltrace = .false. )
+      
+      type(gridfunction), dimension(NU):: u0,u2, dxu,dyu,dzu
+EOF
+
+for ($ii=1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print IOFILE "      type(gridfunction), dimension(NU):: $e\n";
+}
+
+print IOFILE<<EOF;
+      type(gridfunction), dimension(NV):: v, dxv, dyv, dzv
+      type(gridfunction), dimension(NW):: w
+      CCTK_REAL, dimension(NPAR)           :: par
+
+
+      call load_pointers(gridnum)
+
+      hg   = gr_h(gridnum)
+      dtg  = lambda*hg
+      local_nx   = gr_nx(gridnum)
+      local_ny   = gr_ny(gridnum)
+      local_nz   = gr_nz(gridnum)
+      minx = gr_minx(gridnum)
+      miny = gr_miny(gridnum)
+      minz = gr_minz(gridnum)
+      maxx = gr_maxx(gridnum)
+      maxy = gr_maxy(gridnum)
+      maxz = gr_maxz(gridnum)
+      time = gr_t(gridnum)
+      call mapCoords1dTo3d(q(gr_cctk_x), q(gr_cctk_y), q(gr_cctk_z), q(gr_x(gridnum)), q(gr_y(gridnum)), q(gr_z(gridnum)), local_nx, local_ny, local_nz)
+      rk_iter = 0
+EOF
+
+print IOFILE "      call set_bbox(bbox1, bbox2, bbox3, bbox4, bbox5, bbox6, q(gr_chr), local_nx, local_ny, local_nz)\n";
+print IOFILE "      call assign_params(";
+foreach $e (@params) {
+  print IOFILE "$e,";
+}
+print IOFILE "hg,dtg,minx,miny,minz,maxx,maxy,maxz,time,par)\n";
+
+
+print IOFILE "      call assign_ptrs_fields(";
+for ($i=0; $i<=$#u; $i++) {
+  $n1 = $u[$i];
+  $n2 = $n1 . "_np1";
+  print IOFILE "q(gr_$n1), q(gr_$n2),";
+}
+for ($i=0; $i<=$#v; $i++) {
+  print IOFILE "q(gr_$v[$i]),";
+}
+for ($i=0; $i<=$#w; $i++) {
+  print IOFILE "q(gr_$w[$i]),";
+}
+print IOFILE "u2, u0, v, w, local_nx, local_ny, local_nz)\n";
+
+###################### Need to assign derivatives
+print IOFILE "      call assign_ptrs_derivs(";
+foreach $e (@du) {
+  $n = "gr_" . $e;
+  print IOFILE "q($n),";
+}
+foreach $e (@dv) {
+  $n = "gr_" . $e;
+  print IOFILE "q($n),";
+}
+print IOFILE "dxu, dyu, dzu, dxv, dyv, dzv, local_nx, local_ny, local_nz)\n";
+######################
+
+print IOFILE "      call assign_ptrs_rks(";
+for ($i=0; $i<=$#u; $i++) {
+  $n = $u[$i];
+  for ($ii = 1; $ii <= $nrk; $ii++) {
+    $n1 = "gr_" . $n . "_rk" . $ii;
+    print IOFILE "q($n1),";
+  }
+}
+for ($ii = 1; $ii <= $nrk; $ii++) {
+  $e = "urk" . $ii;
+  print IOFILE "$e,";
+}
+print IOFILE "local_nx, local_ny, local_nz)\n";
+
+print IOFILE<<EOF;
+      call HyperInit(u0, u2, v, w, dxu, dyu, dzu, dxv, dyv, dzv, par)
+!      call HyperInit(u0, v, w, par)              
+!      call HyperAnalysis2(u0, v, w, par)
+      return
+      end
+EOF
+
+
+
+
+close(IOFILE);
+
+##############################################################################
+#
+#  Create cctk.h
+#
+##############################################################################
+$outfile = "cctk.h";
+open(OFILE,">$outfile");
+
+print OFILE<<EOF;
+
+#if 0
+/*------------------------------------------------------------------------
+ *
+ *  \$Id$
+ *
+ *  This is a machine-generated file.  Do not edit this file directly!
+ *  (You can, of course, but your changes will be lost...)
+ *
+ *------------------------------------------------------------------------*/
+#endif
+#ifndef _CCTK_H
+#define _CCTK_H
+
+#define EOS_POLY 0
+#define EOS_UWM_CAND1 1
+#define EOS_UWM_CAND2 2
+#define EOS_UWM_CAND3 3
+#define EOS_UWM_CAND6 6
+#define EOS_COLD_POLY 11
+
+#define CCTK_INT   integer
+#define CCTK_REAL  real(kind=8)
+#define HAVE_SDF_LIB
+EOF
+$cptr_type = $ENV{'CCTK_C_PTR_TYPE'};
+
+if ($cptr_type eq "") {
+  # default case
+  print OFILE "#define CCTK_C_PTR integer(kind=4)\n";
+}
+elsif ($cptr_type eq "integer8") {
+  # integer*8
+  print OFILE "#define CCTK_C_PTR integer(kind=8)\n";
+}
+elsif ($cptr_type eq "integer4") {
+  # integer*4
+  print OFILE "#define CCTK_C_PTR integer(kind=4)\n";
+}
+else {
+  print OFILE "#define CCTK_C_PTR integer(kind=4)\n";
+  print STDERR "failed to determine pointer type\n";
+}
+
+#
+#  hyperMHD has a file that can use quadruple precision (real*16) in F77.  
+#  Not all machines support this, so the default will be real*8.  However,
+#  if the variable CCTK_F77_QUAD_TYPE is set to real16 at compile time,
+#  then real*16 will be used.
+#
+$quad_type = $ENV{'CCTK_F77_QUAD_TYPE'};
+if ($quad_type eq "") {
+  # default case
+  print OFILE "#define CCTK_F77_QUAD real*8\n";
+}
+elsif ($quad_type eq "real16") {
+  # real*16
+  print OFILE "#define CCTK_F77_QUAD real*16\n";
+}
+elsif ($quad_type eq "real8") {
+  # real*8
+  print OFILE "#define CCTK_F77_QUAD real*8\n";
+}
+else {
+  print OFILE "#define CCTK_F77_QUAD real*8\n";
+  print STDERR "failed to determine QUAD type\n";
+}
+
+#
+#  Set the EOS
+#
+$eos_type = $ENV{'GEN_EOS'};
+if ($eos_type eq "") {
+  # default case (polytrope)
+  print OFILE "#define GEN_EOS_TYPE EOS_POLY\n";
+}
+elsif ($eos_type eq "poly") {
+  # polytrope.  (default)
+  print OFILE "#define GEN_EOS_TYPE EOS_POLY\n";
+}
+elsif ($eos_type eq "UWM_cand_1") {
+  print OFILE "#define GEN_EOS_TYPE EOS_UWM_CAND1\n";
+}
+elsif ($eos_type eq "UWM_cand_2") {
+  print OFILE "#define GEN_EOS_TYPE EOS_UWM_CAND2\n";
+}
+elsif ($eos_type eq "UWM_cand_3") {
+  print OFILE "#define GEN_EOS_TYPE EOS_UWM_CAND3\n";
+}
+elsif ($eos_type eq "UWM_cand_6") {
+  print OFILE "#define GEN_EOS_TYPE EOS_UWM_CAND6\n";
+}
+elsif ($eos_type eq "EOS_cold_poly") {
+  print OFILE "#define GEN_EOS_TYPE EOS_COLD_POLY\n";
+}
+
+print OFILE "#endif\n";
+close(OFILE);
+
+##############################################################################
+#
+#
+#  Write header files for C code.  Necessary for MHD
+#
+#
+##############################################################################
+if ($need_c_files) {
+
+$outfile = "cfunc.h";
+
+open(OFILE,">$outfile");
+
+print OFILE<<EOF;
+
+/*------------------------------------------------------------------------
+ *
+ *  \$Id$
+ *
+ *  This is a machine-generated file.  Do not edit this file directly!
+ *  (You can, of course, but your changes will be lost...)
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _EQS_FUNC_H
+#define _EQS_FUNC_H
+EOF
+
+$tnu = $#u + 1;
+$tnv = $#v + 1;
+$tnw = $#w + 1;
+
+
+print OFILE "const int NU = $tnu;\n";
+print OFILE "const int NV = $tnv;\n";
+print OFILE "const int NW = $tnw;\n";
+
+print OFILE "\n";
+$indx = 0;
+for ($i = 0; $i <= $#u; $i++) {
+  $name = $u[$i];
+  $name =~ tr/a-z/A-Z/;
+  print OFILE "const int UF_$name = $indx;\n";
+  $indx++;
+}
+
+print OFILE "\n";
+$indx = 0;
+for ($i = 0; $i <= $#v; $i++) {
+  $name = $v[$i];
+  $name =~ tr/a-z/A-Z/;
+  print OFILE "const int VF_$name = $indx;\n";
+  $indx++;
+}
+
+print OFILE "\n";
+$indx = 0;
+for ($i = 0; $i <= $#w; $i++) {
+  $name = $w[$i];
+  $name =~ tr/a-z/A-Z/;
+  print OFILE "const int WF_$name = $indx;\n";
+  $indx++;
+}
+
+
+print OFILE "\n";
+print OFILE "#endif";
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#  Write C parameter file
+#
+###########################################################################
+$outfile = "fpar.h";
+
+open(OFILE,">$outfile");
+
+print OFILE<<EOF;
+/*------------------------------------------------------------------------
+ *
+ *  \$Id$
+ *
+ *  This is a machine-generated file.  Do not edit this file directly!
+ *  (You can, of course, but your changes will be lost...)
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _FPAR_H
+#define _FPAR_H
+
+EOF
+
+$i = 0;
+foreach $e (@params) {
+  $e1 = $e;
+  $e1 =~ s/local_//;
+  $e1 =~ tr/a-z/A-Z/;
+  print OFILE "#define P_$e1  $i\n";
+  $i++;
+}
+
+
+print OFILE "\n";
+print OFILE "#endif";
+print OFILE "\n";
+close(OFILE);
+
+###########################################################################
+#
+#  Write C parameter file
+#
+###########################################################################
+$outfile = "cpar.h";
+
+open(OFILE,">$outfile");
+
+print OFILE<<EOF;
+/*------------------------------------------------------------------------
+ *
+ *  \$Id$
+ *
+ *  This is a machine-generated file.  Do not edit this file directly!
+ *  (You can, of course, but your changes will be lost...)
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CPAR_H
+#define _CPAR_H
+
+typedef struct par_t {
+EOF
+
+  for ($i=0; $i<=$#params; $i++) {
+    $e1 = $params[$i];
+    $e1 =~ s/local_//;
+    if ($params_type[$i] eq "int") {
+      print OFILE "  int $e1;\n";
+    }
+    if ($params_type[$i] eq "double") {
+      print OFILE "  double $e1;\n";
+    }
+  }
+
+print OFILE<<EOF;
+} Par;
+
+#endif
+EOF
+close(OFILE);
+
+###########################################################################
+#
+#  Create C parameter structure
+#
+###########################################################################
+$outfile = "cpar.c";
+
+open(OFILE,">$outfile");
+
+print OFILE<<EOF;
+/*------------------------------------------------------------------------
+ *
+ *  \$Id$
+ *
+ *  This is a machine-generated file.  Do not edit this file directly!
+ *  (You can, of course, but your changes will be lost...)
+ *
+ *------------------------------------------------------------------------*/
+#include "cpar.h"
+#include "fpar.h"
+#ifdef AIX
+void map_pars(Par **parptr, double *fpar)
+#else
+void map_pars_(Par **parptr, double *fpar)
+#endif
+{
+  static Par par;
+
+EOF
+  for ($i=0; $i<=$#params; $i++) {
+    $e1 = $params[$i];
+    $e1 =~ s/local_//;
+    $e2 = $e1;
+    $e2 =~ tr/a-z/A-Z/;
+    if ($params_type[$i] eq "int") {
+      print OFILE "  par.$e1 = (int) fpar[P_$e2];\n";
+    }
+    if ($params_type[$i] eq "double") {
+      print OFILE "  par.$e1 = fpar[P_$e2];\n";
+    }
+  }
+
+
+print OFILE<<EOF;
+
+  *parptr = &par;
+}
+EOF
+
+close(OFILE);
+
+#end NEED_C_FILES
+}  
+
+########################################################################
+#
+# Create the surfaces.inc file
+#
+########################################################################
+
+
+$surfacesfile = "surfaces.inc";
+print "opening $surfacesfile\n";
+open(FFILE, ">$surfacesfile");
+
+$na = $#A + 1;
+
+print FFILE<<EOF;
+
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!
+! This is a machine-generated file.  Do not edit this file directly.
+! Rather edit the hyperfcn file or the hypersetup script.
+!
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      real(kind=8)   cpi
+      parameter    ( cpi  =  3.14159265d0 )
+
+
+      integer        num_afuncs
+EOF
+print FFILE "      parameter    ( num_afuncs = $na )\n";
+
+print FFILE<<EOF;
+      character(128) asf_name(num_afuncs)
+      integer        asf_out(num_afuncs),
+     *               asf_pointer(num_afuncs)
+
+      integer        asf_shape(2)
+
+      real(kind=8)   asf_bbox(4)
+
+      common  / asf_ints   / asf_pointer, asf_out,
+     *                       asf_shape
+
+      common  / asf_doubles/ asf_bbox
+
+EOF
+
+$if = 0;
+$countu = 0;
+foreach $e (@A) {
+  $if++;
+  $name = $e;
+  $ptn = "asf_" . $name;
+  print FFILE "c     A surface functions:\n";
+  print FFILE "      data asf_name($if) / '$name' /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (asf_pointer($if), $ptn)\n\n";
+}
+
+#
+# B Surface Output:
+#
+$nb = $#B + 1;
+print FFILE<<EOF;
+c     !--------------------------------------------------------
+c     !-------------- B Surface  ------------------------------
+c     !--------------------------------------------------------
+
+      integer        num_bfuncs
+EOF
+print FFILE "      parameter    ( num_bfuncs = $nb )\n";
+
+print FFILE<<EOF;
+      character(128) bsf_name(num_bfuncs)
+      integer        bsf_out(num_bfuncs),
+     *               bsf_pointer(num_bfuncs)
+
+      integer        bsf_shape(2)
+
+      real(kind=8)   bsf_bbox(4)
+
+      common  / bsf_ints   / bsf_pointer, bsf_out,
+     *                       bsf_shape
+
+      common  / bsf_doubles/ bsf_bbox
+
+EOF
+
+$if = 0;
+$countu = 0;
+foreach $e (@B) {
+  $if++;
+  $name = $e;
+  $ptn = "bsf_" . $name;
+  print FFILE "c     B surface functions:\n";
+  print FFILE "      data bsf_name($if) / '$name' /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (bsf_pointer($if), $ptn)\n\n";
+}
+
+#
+# C Surface Output:
+#
+$nc = $#C + 1;
+print FFILE<<EOF;
+c     !--------------------------------------------------------
+c     !-------------- C Surface  ------------------------------
+c     !--------------------------------------------------------
+
+      integer        num_cfuncs
+EOF
+print FFILE "      parameter    ( num_cfuncs = $nb )\n";
+
+print FFILE<<EOF;
+      character(128) csf_name(num_cfuncs)
+      integer        csf_out(num_cfuncs),
+     *               csf_pointer(num_cfuncs)
+
+      integer        csf_shape(2)
+
+      real(kind=8)   csf_bbox(4)
+
+      common  / csf_ints   / csf_pointer, csf_out,
+     *                       csf_shape
+
+      common  / csf_doubles/ csf_bbox
+c     !--------------------------------------------------------
+
+EOF
+
+$if = 0;
+$countu = 0;
+foreach $e (@C) {
+  $if++;
+  $name = $e;
+  $ptn = "csf_" . $name;
+  print FFILE "c     C surface functions:\n";
+  print FFILE "      data csf_name($if) / '$name' /\n";
+  print FFILE "      integer $ptn\n";
+  print FFILE "      equivalence (csf_pointer($if), $ptn)\n\n";
+}
+
+close(FFILE);

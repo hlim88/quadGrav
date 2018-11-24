@@ -1,0 +1,492 @@
+###############################################################
+#  Number of iterations
+#nt0                  := 1
+nt0                  := 300
+
+#  Number of gridpoints for base grid
+nx0                  := 81
+ny0                  := 81
+nz0                  := 81
+
+#  Coordinate ranges for base grid
+minx0                := -64.0
+maxx0                :=  64.0
+miny0                := -64.0
+maxy0                :=  64.0
+minz0                := -64.0
+maxz0                :=  64.0
+
+#  Courant factor
+lambda               :=  0.25
+
+################################################################
+#  Output parameters
+###############################################################
+# output_style = 1 -> separate
+#              = 2 -> together
+#              = 3 -> both
+#              = 4 -> ?
+#              = 5 -> 1-D
+#              = 6 -> both
+output_style      :=  4
+output_dim        := 3
+
+#
+# Dimension of SDF output:
+#   (dimensionally reduced corresponds to slices through
+#    the middle of the coarse grid):
+#
+#    [1,2,3] --> select dimension to be output
+#    [4,5,6] --> sum the dimensions to be output if more than one
+#    7       --> for output of [1 and 2] dimensional SDFs
+#
+
+#     Output types:
+#          3---3D output over the region (lb1,lb2,lb3)-->(ub1,ub2,ub3)
+#         11---1D output along x with constant y=lb2 and z=lb3
+#         12---1D output along y with constant x=lb1 and z=lb3
+#         13---1D output along z with constant x=lb1 and y=lb2
+#         21---2D output with constant x=lb1
+#         22---2D output with constant y=lb2
+#         23---2D output with constant z=lb3
+
+
+# Family 1:
+output_f1_type   := 21
+output_f1_level  := 0
+output_f1_period := 0
+output_f1_lb1    := 0.0
+output_f1_lb2    :=-240.0
+output_f1_lb3    :=-240.0
+output_f1_ub1    := 0.0
+output_f1_ub2    := 240.0
+output_f1_ub3    := 240.0
+# Family 2:
+output_f2_type   := 22
+output_f2_level  := 0
+output_f2_period := 0
+output_f2_lb1    :=-240.0
+output_f2_lb2    := 0.0
+output_f2_lb3    :=-240.0
+output_f2_ub1    := 240.0
+output_f2_ub2    := 0.0
+output_f2_ub3    := 240.0
+# Family 3:
+output_f3_type   := 23
+output_f3_level  := 0
+output_f3_period := 5
+output_f3_lb1    :=-240.0
+output_f3_lb2    :=-240.0
+output_f3_lb3    := 0.0
+output_f3_ub1    := 240.0
+output_f3_ub2    := 240.0
+output_f3_ub3    := 0.0
+# Family 4:
+output_f4_type    := 3
+output_f4_level   := 0
+output_f4_period  := 0
+output_f4_lb1     :=-80.0
+output_f4_lb2     :=-80.0
+output_f4_lb3     :=-80.0
+output_f4_ub1     := 80.0
+output_f4_ub2     := 80.0
+output_f4_ub3     := 80.0
+
+
+output_Bx    := 11111
+output_By    := 11111
+output_Bz    := 11111
+output_Ex    := 11111
+output_Ey    := 11111
+output_Ez    := 11111
+output_Jx    := 11111
+output_Jy    := 11111
+output_Jz    := 11111
+output_qE    := 11111
+output_Phi_em   := 11111
+output_Psi_em   := 11111
+
+
+output_phiR   := 11111
+output_phiI   := 11111
+output_piR    := 11111
+output_piI    := 11111
+
+
+output_gt11   := 0
+output_gt12   := 0
+output_gt13   := 0
+output_gt22   := 0
+output_gt23   := 0
+output_gt33   := 0
+output_A11    := 0
+output_A12    := 0
+output_A13    := 0
+output_A22    := 0
+output_A23    := 0
+output_A33    := 0
+output_chi    := 11111
+output_trK    := 11111
+
+output_Gam1    := 0
+output_Gam2    := 0
+output_Gam3    := 0
+
+output_alpha  := 11111
+output_shift1 := 0
+output_shift2 := 0
+output_shift3 := 0
+
+output_gb1    := 0
+output_gb2    := 0
+output_gb3    := 0
+
+output_ham  := 11111
+output_momx := 11111
+output_momy := 11111
+output_momz := 11111
+
+output_div_b  := 11111
+output_div_e  := 11111
+output_Bsq   := 0
+#
+# analysis_XXX:  Perform some analysis on the given field XXX as per:
+#          NB1:  Experimental so far, nothing done yet
+#          NB2:  Computed each time step on the
+#                      effective coarse level (0 if no shadow, 1 otherwise)
+#          NB3:  For more than one, simply sum up desired options
+#         == 0  [default] no analysis
+#         == 1  spatial integral
+#         == 2  l2norm
+#         == 4  global min
+#         == 8  global max
+#         ==16  global abs min
+#         ==32  global abs max
+#         ==64  first and second moments (com and quadrupole)
+#
+#
+#analysis_Ex   := 48
+#analysis_Ey   := 48
+#analysis_Ez   := 48
+#analysis_Bx   := 48
+#analysis_By   := 48
+#analysis_Bz   := 48
+#analysis_Bsq  := 11
+#analysis_DivB := 34
+#analysis_energy_dens   := 1
+
+output_psi4R   := 11111
+output_psi4I   := 11111
+
+output_phi2R   := 11111
+output_phi2I   := 11111
+output_phi0R   := 11111
+output_phi0I   := 11111
+
+#
+#
+output_chr   := 0
+output_error := 0
+
+chkpt_period     := 300000
+chkpt_readstate  := 0
+chkpt_control    := 1
+
+tag                  :=  '   '
+
+output_level_0       :=  0
+output_level_1       :=  0
+output_level_2       :=  0
+output_level_3       :=  0
+output_level_4       :=  0
+output_level_5       :=  0
+output_level_6       :=  0
+output_level_7       :=  0
+output_level_8       :=  0
+output_level_9       :=  0
+output_level_10      :=  0
+
+
+###############################################################
+#
+#  Method parameters
+#
+###############################################################
+runge_kutta_type     := 2
+initial_analysis     := 1
+weno_interp          := 0
+linearbounds         := 0
+damp                 := 0
+
+# evolve geometry and em fields
+evolve_geometry      := 1
+evolve_em_field      := 1
+evolve_scalar_field  := 1
+
+# It appears the variable to use is instead force_free
+#   though it looks like electrovac isn't completely
+#   implemented since the current isn't set to zero
+#   in include/bssn_emtest.h
+# evolve electrovacuum (0) or force-free (1)
+force_free           := 0
+
+# parameters of the scalar field representing the dilaton
+#  V = mass**2*phi^2
+dil_mass    := 0.0
+dil_alpha   := 1.0
+dil_infty   :=-1e-10
+
+axn_mass    := 0.0
+axn_alpha   := 1.0
+axn_infty   :=-1e-10
+
+###############################################################
+#
+#  Initial Data parameters
+#
+###############################################################
+
+#  idtype   = 1 -> Shocktube
+#           = 2 ->
+idtype               := 0
+gr_idtype            := 0
+mhd_idtype           := 5
+
+# geometry_type = 0 binary black hole
+#               = 10 single boson star                  
+#               = 11 bh in EMD
+#		= 13 bh in Kerr-Sen for EMDA
+geometry_type        := 13
+
+boundary_conditions  := 7
+gh_bound_cond        := 7
+CPBC_type            := 2
+fluid_bound_cond     := 5
+
+constraints_analysis := 1
+psi4_analysis        := 1
+
+# gauge choices (black holes)
+bssn_lambda_1        := 1
+bssn_lambda_2        := 1
+bssn_lambda_3        := 1
+bssn_lambda_4        := 1
+bssn_lambda_f0       := 1.0
+bssn_lambda_f1       := 0.0
+bssn_lambda_f2       := 1.0
+bssn_lambda_f1       := 0.0
+bssn_eta             := 2.0
+bssn_trk0            := 0.0
+
+bssn_matter_derivs   := 0
+bssn_adv_derivs      := 1
+
+# damping of the shift
+bssn_eta_damping     := 1
+bssn_eta_damping_exp := 1.0
+bssn_R_0             := 40.0
+
+# damping of the EM field
+bssn_kappa1          := 1.0
+bssn_kappa2          := 1.0
+
+# New matter parameters for the EMD
+#emd_bh_type          := 1
+initial_b            := 2    
+sf_amp               :=-1e-10
+sf_amp_axn           :=-1e-10 # Additional parameter for axion
+e1_amp               := 0.01
+
+# Parameters for EMDA, Kerr-Sen
+sen_alpha 	     := 1 
+a_ang_par 	     := 1
+
+# Black hole parameters:
+bh_n                 := 1
+bh_type              := 1
+
+bh_1_mass            := 1.0
+bh_1_x               := 0.0
+bh_1_y               := 0.0
+bh_1_z               := 0.00123
+bh_1_px              := 0.0
+bh_1_py              := 0.0
+bh_1_pz              := 0.0
+bh_1_spin            := 0.0
+bh_1_sth             := 0.0
+bh_1_sphi            := 0.0
+
+asf_level            := 2
+asf_period           := 1
+asf_rconst           := 30.0
+asf_ntheta           := 161
+asf_nphi             := 81
+
+bsf_level            := 2
+bsf_period           := 1
+bsf_rconst           := 45.0
+bsf_ntheta           := 161
+bsf_nphi             := 81
+
+csf_level            := 2
+csf_period           := 1
+csf_rconst           := 60.0
+csf_ntheta           := 161
+csf_nphi             := 81
+
+asf_out_rap4         := 2
+asf_out_iap4         := 2
+asf_out_rap2         := 2
+asf_out_iap2         := 2
+
+bsf_out_rbp4         := 2
+bsf_out_ibp4         := 2
+bsf_out_rbp2         := 2
+bsf_out_ibp2         := 2
+
+csf_out_rcp4         := 2
+csf_out_icp4         := 2
+csf_out_rcp2         := 2
+csf_out_icp2         := 2
+
+
+# for the tracers
+tracers_period       := 0
+
+#
+# These parameters are used to terminate code
+# execution when the max of the abs value of the
+# field reaches some threshold after some minimum
+# amount of time:
+#     (NB: if maxchi_thresh==0, then this feature
+#          is turned off                         )
+#
+maxchi_thresh        :=   0.0
+maxchi_minctime      :=   0.0
+
+###############################################################
+#
+#  parameters
+#
+###############################################################
+#  dissipation:  0 -> No artificial dissipation
+dissipation      := 42
+sigma_diss       := 0.12
+deriv_order      := 42
+extradiss        := 0.0
+extradissout     := 0.0
+
+
+###############################################################
+#
+#  Boundary parameters
+#
+###############################################################
+
+#   WARNING: bc_type may not actually do anything
+#   bc_type = 0 -> Same BC applied to all functions
+#           = 1 -> Group functions
+bc_type              :=  0
+#   inner_bound_data = 0 -> DO NOT Supply boundary data at inner exision surface
+#                    = 1 -> Supply boundary data at inner exision surface
+inner_bound_data     :=  0
+#  Set how boundary conditions are applied to the metric.
+#  Not applicable here?  Leave at default value.
+
+##############################################################
+#
+#  AMR parameters
+#
+#       For simple FMR, set refine_period very high,
+#       and set simpleFMR to some value greater than 0
+#       where the value is inversely related to the volume
+#       resolved (simpleFMR==8 is a good value).
+#
+#       ClusterDD controls whether grids get decomposed:
+#         0 (default) always try to decompose
+#         1           don't decompose coarse grid
+#         >1          never decompose
+#
+#       Clusterstyle restricts the clustering:
+#         0 (default) normal clustering
+#         1           no cuts based on inflection points
+#
+###############################################################
+#  Maximum number of refinement levels, must be less than 25.
+#allowedl             :=  3
+allowedl             :=  3
+refine_factor        :=  2
+refine_period        := 12800000
+simpleFMR            :=  0
+clusterstyle         :=  1
+diss_afterinj        :=  0
+trace_level          :=  3
+#ethreshold           :=  0.4
+ethreshold           :=  0.0001
+G_scale_factor       :=  1.0
+shadow               :=  0
+buffer               :=  4
+mindim               :=  17
+window               :=  4
+minefficiency        :=  0.6
+
+
+refine_level_0 = -2.0
+refine_level_1 = -2.0
+refine_level_2 = -2.0
+refine_level_3 = -2.0
+refine_level_4 = -2.0
+#refine_level_5 = -2.0
+#refine_level_6 = -2.0
+
+
+#
+# For ICN, you probably just need this to be 1
+# For RK3, you'll probably want this to be 6
+#    Related to this, you need to check the flags MOLboundaries and ICN
+#    in the code. At some point, these flags will get converted into
+#    parameters one would set here.
+#
+ghostwidth           :=  7
+bound_width          :=  5
+
+#
+# Choice the update scheme (see had/src/hyper/rk3.f90)
+#    0 ==> RK3
+#    1 ==> ICN
+#
+update_scheme        := 0
+#
+# Regarding setting the boundary values of AMR subgrids:
+#    set    *before* the evolution step ===> 0
+#        or *after*                     ===> 1 ?
+#
+amrbound_prepost     := 1
+#
+#    set    *only* when parent/child grids aligned ===> 0
+#        or        at every time step of subgrid   ===> 1
+#
+amrbound_timealign   := 0
+
+#
+# clusterreadwrite --- controls reading cluster info from file (.cluster):
+#        0 --- normal, dynamic refinement
+#        1 --- read  in  hierarchy info from previously written file
+#        2 --- write out hierarchy info
+#
+clusterreadwrite     :=  0
+
+#
+# For typical ICN, one would want:
+#
+#     update_scheme        := 1
+#     amrbound_prepost     := 0
+#     amrbound_timealign   := 1
+#     ghostwidth           := 1
+#
+# For typical RK3, one would want:
+#
+#     update_scheme        := 0
+#     amrbound_prepost     := 1
+#     amrbound_timealign   := 0
+#     ghostwidth           := 6

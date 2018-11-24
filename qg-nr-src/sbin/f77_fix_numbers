@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+# This script removes spaces in numbers.  F77 allows this, F90 sometimes not.
+
+while (<STDIN>) {
+  s/(\d) (\d)/$1$2/g;
+  print "$_";
+}
+

@@ -1,0 +1,21 @@
+#!/bin/tcsh
+
+
+foreach NUMP (1 2 4)
+#foreach NUMP (1 2 3 4 5 6 7 8 9 10)
+    mkdir $NUMP
+    cp kgrk id $NUMP/
+    cd $NUMP
+       set NUMPOINTS=`echo $NUMP | nf  "_1*32+1"`
+       set NUMTIMES=`echo $NUMP | nf  "_1*32"`
+       setparid id nx0 $NUMPOINTS
+       setparid id ny0 $NUMPOINTS
+       setparid id nz0 $NUMPOINTS
+       setparid id nt0 $NUMTIMES 
+       setparid id "out_period(0)" $NUMP
+       kgrk id > output
+    cd ..
+end
+
+ cvtestsdf 1/0chi0.sdf 2/0chi0.sdf 4/0chi0.sdf > cv_chi_124.dat
+

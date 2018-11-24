@@ -1,0 +1,136 @@
+
+
+par
+{
+nx0                :   int      :   1    :     1     :    *    :    10
+ny0                :   int      :   1    :     1     :    *    :    10
+nz0                :   int      :   1    :     1     :    *    :    10
+nt0                :   int      :   1    :     0     :    *    :    0
+h                  :   double   :   1    :     0.0   :    *    :    0.1
+hx                 :   double   :   1    :     0.0   :    *    :    0.1
+hy                 :   double   :   1    :     0.0   :    *    :    0.1
+hz                 :   double   :   1    :     0.0   :    *    :    0.1
+hxyz0              :   double   :   1    :     *     :    *    :    0.0
+run_wtime          :   double   :   1    :     0.0   :    *    :    0.0
+#--------------------- These variables should not be needed for general
+#                      equations, but are currently required to compile.  
+#                      This should be fixed.
+amp                :   double   :   1    :     *     :    *    :    0.0
+idata              :   int      :   1    :     *     :    *    :    0
+maxchi_thresh      :   double   :   1    :     0.0   :    *    :    0.0
+maxchi_minctime    :   double   :   1    :     0.0   :    *    :    0.0
+}
+
+
+amr_par
+{
+#------------------------ AMR code variables ---------------------------
+#                  These are variables that are read in on the command line,
+#                  but are not included in param.inc.  Eventually these
+#                  variables can be in another file that the user does not see.
+#
+# Name             :  type     :  size  :   min     :  max    : default val
+lambda             :   double   :   1    :     0.0   :    *    :    0.01
+refine_factor      :   int      :   1    :     2     :    *    :    2
+refine_period_ctrl :   int      :   1    :     0     :    1    :    0
+refine_period      :   int      :   1    :     0     :    *    :    1000000
+refine_deltat      :   double   :   1    :     0     :    *    :    1000000.0
+simpleFMR          :   int      :   1    :     0     :    *    :    0
+clusterDD          :   int      :   1    :     *     :    *    :    0
+clusterstyle       :   int      :   1    :     0     :    *    :    0
+diss_afterinj      :   int      :   1    :     0     :    1    :    0
+allowedl           :   int      :   1    :     0     :    24   :    0
+linearbounds       :   int      :   1    :     0     :    *    :    1
+shadow             :   int      :   1    :     0     :    *    :    0
+minx0              :   double   :   1    :     *     :    *    :    0.0
+miny0              :   double   :   1    :     *     :    *    :    0.0
+minz0              :   double   :   1    :     *     :    *    :    0.0
+maxx0              :   double   :   1    :     *     :    *    :    1.0
+maxy0              :   double   :   1    :     *     :    *    :    1.0
+maxz0              :   double   :   1    :     *     :    *    :    1.0
+trace_level        :   int      :   1    :     0     :    *    :    1
+ethreshold         :   double   :   1    :     0     :    *    :    1.0
+buffer             :   int      :   1    :     0     :    *    :    1
+mindim             :   int      :   1    :     0     :    *    :    1
+window             :   int      :   1    :     0     :    *    :    1
+minefficiency      :   double   :   1    :     0     :    *    :    0.7
+output_style       :   int      :   1    :     0     :    *    :    1
+output_dim         :   int      :   1    :     0     :    *    :    3
+output_f1_type     :   int      :   1    :     0     :    *    :    11
+output_f1_level    :   int      :   1    :     0     :    *    :    1
+output_f1_period   :   int      :   1    :     0     :    *    :    0
+output_f1_lb1      :   double   :   1    :     *     :    *    :    0.0
+output_f1_lb2      :   double   :   1    :     *     :    *    :    0.0
+output_f1_lb3      :   double   :   1    :     *     :    *    :    0.0
+output_f1_ub1      :   double   :   1    :     *     :    *    :    0.0
+output_f1_ub2      :   double   :   1    :     *     :    *    :    0.0
+output_f1_ub3      :   double   :   1    :     *     :    *    :    0.0
+output_f2_type     :   int      :   1    :     0     :    *    :    11
+output_f2_level    :   int      :   1    :     0     :    *    :    1
+output_f2_period   :   int      :   1    :     0     :    *    :    0
+output_f2_lb1      :   double   :   1    :     *     :    *    :    0.0
+output_f2_lb2      :   double   :   1    :     *     :    *    :    0.0
+output_f2_lb3      :   double   :   1    :     *     :    *    :    0.0
+output_f2_ub1      :   double   :   1    :     *     :    *    :    0.0
+output_f2_ub2      :   double   :   1    :     *     :    *    :    0.0
+output_f2_ub3      :   double   :   1    :     *     :    *    :    0.0
+output_f3_type     :   int      :   1    :     0     :    *    :    11
+output_f3_level    :   int      :   1    :     0     :    *    :    1
+output_f3_period   :   int      :   1    :     0     :    *    :    0
+output_f3_lb1      :   double   :   1    :     *     :    *    :    0.0
+output_f3_lb2      :   double   :   1    :     *     :    *    :    0.0
+output_f3_lb3      :   double   :   1    :     *     :    *    :    0.0
+output_f3_ub1      :   double   :   1    :     *     :    *    :    0.0
+output_f3_ub2      :   double   :   1    :     *     :    *    :    0.0
+output_f3_ub3      :   double   :   1    :     *     :    *    :    0.0
+output_f4_type     :   int      :   1    :     0     :    *    :    11
+output_f4_level    :   int      :   1    :     0     :    *    :    1
+output_f4_period   :   int      :   1    :     0     :    *    :    0
+output_f4_lb1      :   double   :   1    :     *     :    *    :    0.0
+output_f4_lb2      :   double   :   1    :     *     :    *    :    0.0
+output_f4_lb3      :   double   :   1    :     *     :    *    :    0.0
+output_f4_ub1      :   double   :   1    :     *     :    *    :    0.0
+output_f4_ub2      :   double   :   1    :     *     :    *    :    0.0
+output_f4_ub3      :   double   :   1    :     *     :    *    :    0.0
+clusterreadwrite   :   int      :   1    :     0     :    2    :    0
+ghostwidth         :   int      :   1    :     1     :    *    :    1
+update_scheme      :   int      :   1    :     0     :    *    :    0
+amrbound_prepost   :   int      :   1    :     0     :    *    :    0
+amrbound_timealign :   int      :   1    :     0     :    *    :    0
+elliptic_solve     :   int      :   1    :     *     :    *    :    0
+nvcycle            :   int      :   1    :     0     :    *    :    1
+preswp             :   int      :   1    :     0     :    *    :    3
+pstswp             :   int      :   1    :     0     :    *    :    3
+maxsweeps          :   int      :   1    :     0     :    *    :    1000
+ell_epsilon        :   double   :   1    :     0     :    *    :    9.d-15
+num_evol_iters     :   int      :   1    :     0     :    *    :    3
+chkpt_period       :   int      :   1    :     *     :    *    :    0
+chkpt_readstate    :   int      :   1    :     *     :    *    :    0
+chkpt_control      :   int      :   1    :     *     :    *    :    0
+bound_width        :   int      :   1    :     1     :    *    :    3
+weno_interp        :   int      :   1    :     0     :    1    :    0
+findhorizon        :   int      :   1    :     *     :    *    :    0
+mask_period        :   int      :   1    :     1     :    *    :    1
+mask_usemin        :   int      :   1    :     *     :    *    :    0
+mask_minfield      :   int      :   1    :     1     :    *    :    1
+horizon_ntheta     :   int      :   1    :     1     :    *    :    30
+horizon_nphi       :   int      :   1    :     1     :    *    :    30
+horizon_thresh     :   double   :   1    :     0     :    *    :    1.d-1
+horizon_nholes     :   int      :   1    :     0     :    *    :    1
+horizon_recenterp  :   int      :   1    :     0     :    *    :    0
+horizon_growth     :   double   :   1    :     0     :    *    :    1.0d0
+emulate_proc       :   int      :   1    :     -1    :    *    :   -1
+assume_symmetry    :   int      :   1    :     0     :    6    :    0
+flush_period       :   int      :   1    :     0     :    *    :    0
+tracers_period     :   int      :   1    :     0     :    *    :    0
+tracers_initial    :   int      :   1    :     0     :    *    :    0
+tracers_scheme     :   int      :   1    :     0     :    *    :    0
+# Name             :  type     :  size  :   min     :  max    : default val
+# Variable timestep modification by Dominic Marcello 2009-08-03
+variable_timestep  :   int      :   1    :     0     :    1    :    0
+cfl_lambda         :   double   :   1    :     0     :   1.0   :    0.4
+# --------------end modification by Dominic Marcello 2009-08-03
+periodicBC         :   int      :   1    :     0     :    2    :    0
+}
+# Name             :  type      :  size  :   min     :  max    : default val
+

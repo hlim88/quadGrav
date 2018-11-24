@@ -1,0 +1,1079 @@
+#!/usr/bin/perl
+
+
+#####################################################################
+#
+#
+#   @d   - list of geometric vars that need 1st derivs for RHS
+#   @dd  - list of geometric vars that need 2nd derivs for RHS
+#   @ad  - list of geometric vars that need advective derivs for RHS
+#   @con_d - 
+#   @con_dd - 
+#   @bound_d - 
+#   @mad_d
+#   @funcs - combined list of all derivatives for functions in @d and @dd
+#
+#
+#####################################################################
+
+# first derivs required for RHS
+
+# Note: gbx, gby, gbz are not needed for the RHS, but the derivatives
+# are needed for the boundary conditions.  The allocation of derivatives
+# and calls to derivative routines for the boundaries uses the functions
+# required for the rhs, so I include them here.
+@d = (alpha, shiftx, shifty, shiftz, 
+      gbx, gby, gbz,
+      chi, Gamtx, Gamty, Gamtz, trK,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, 
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# second derivs required for RHS
+@dd = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, chi,
+       alpha, shiftx, shifty, shiftz );
+
+# advective derivatives
+@ad = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz,
+       Atxx, Atxy, Atxz, Atyy, Atyz, Atzz ,
+       alpha, shiftx, shifty, shiftz, chi, Gamtx, Gamty, Gamtz, trK,
+       gbx, gby, gbz );
+
+# first derivs required for constraints---no gauge
+@con_d = (chi, Gamtx, Gamty, Gamtz, trK,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, 
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# second derivs required for constraints---no gauge
+@con_dd = (gtxx, gtxy, gtxz, gtyy, gtyz, gtzz, chi);
+
+@bound_d = (alpha, shiftx, shifty, shiftz,
+      gbx, gby, gbz,
+      chi, Gamtx, Gamty, Gamtz, trK,
+      gtxx, gtxy, gtxz, gtyy, gtyz, gtzz,
+      Atxx, Atxy, Atxz, Atyy, Atyz, Atzz );
+
+# matter derivatives
+@mat_d = (Ex, Ey, Ez, Bx, By, Bz, Phi_em, Psi_em, phiR, phiI, piR, piI);
+
+@con_mat_d = (Ex, Ey, Ez, Bx, By, Bz, phiR, phiI, piR, piI);
+
+@mat_dd = (phiR, phiI);
+
+@pd = ("dx_", "dy_", "dz_");
+@pad = ("adx_", "ady_", "adz_");
+@pdd = ("dxx_", "dxy_", "dxz_", "dyy_", "dyz_", "dzz_");
+
+# RHS derivatives...................................................
+@funcs = ();
+
+foreach $f (@d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@funcs, $n);
+  }  
+}
+
+foreach $f (@dd) {
+  foreach $p (@pdd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@funcs, $n);
+  }  
+}
+
+# constraint derivatives...................................................
+@cfuncs = ();
+
+foreach $f (@con_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@cfuncs, $n);
+  }  
+}
+
+foreach $f (@con_dd) {
+  foreach $p (@pdd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@cfuncs, $n);
+  }  
+}
+
+# constraint matter derivatives...........................................
+@cmfuncs = ();
+
+foreach $f (@con_mat_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@cmfuncs, $n);
+  }  
+}
+
+# advective derivatives...................................................
+@afuncs=();
+foreach $f (@ad) {
+  foreach $p (@pad) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@afuncs, $n);
+  } 
+}
+
+# advective derivatives 2....here we handle advective derivs with centered
+# ...........................operators....................................
+@afuncs2=();
+foreach $f (@ad) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@afuncs2, $n);
+  } 
+}
+
+
+
+# boundary derivatives...................................................
+@bfuncs=();
+foreach $f (@bound_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@bfuncs, $n);
+  } 
+}
+
+# matter derivatives.......................................................
+@mfuncs=();
+foreach $f (@mat_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    push(@mfuncs, $n);
+  } 
+}
+
+foreach $f (@mat_dd) {
+  foreach $p (@pdd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@mfuncs, $n);
+  }  
+}
+
+# matter advective derivatives..............................................
+@mafuncs=();
+foreach $f (@mat_d) {
+  foreach $p (@pad) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@mafuncs, $n);
+  } 
+}
+
+
+# matter advective derivatives2......Here we use centered derivatives for....
+# ...................................the Lie derivative terms................
+@mafuncs2=();
+foreach $f (@mat_d) {
+  foreach $p (@pd) {
+    $n = $p . $f;
+    # printf "name: $n\n";
+    push(@mafuncs2, $n);
+  } 
+}
+
+
+
+
+###########################################################################
+#
+#  Write declarations for the main RHS file
+#
+###########################################################################
+
+###  FIRST DECLARE POINTERS FOR GEOMETRY ##################################
+
+$ofile = "MR_declare_ptrs.h";
+open(OFILE, ">$ofile");
+#print OFILE "#include \"cctk.h\"\n\n";
+
+# The first and second derivatives
+$i=0;
+while($i<=$#funcs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#funcs) {
+    if ($j == 0) {
+      print OFILE $funcs[$i];
+    }
+    else {
+      print OFILE ", " . $funcs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# The advective derivatives
+$i=0;
+while($i<=$#afuncs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#afuncs) {
+    if ($j == 0) {
+      print OFILE $afuncs[$i];
+    }
+    else {
+      print OFILE ", " . $afuncs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+###  FIRST DECLARE POINTERS FOR MATTER ####################################
+
+$i=0;
+while($i<=$#mfuncs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#mfuncs) {
+    if ($j == 0) {
+      print OFILE $mfuncs[$i];
+    }
+    else {
+      print OFILE ", " . $mfuncs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# The advective derivatives
+$i=0;
+while($i<=$#mafuncs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#mafuncs) {
+    if ($j == 0) {
+      print OFILE $mafuncs[$i];
+    }
+    else {
+      print OFILE ", " . $mafuncs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Allocate memory (1)
+#
+###########################################################################
+$ofile = "MR_alloc.h";
+open(OFILE, ">$ofile");
+
+foreach $f (@funcs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+foreach $f (@mfuncs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "MR_derivs.h";
+open(OFILE, ">$ofile");
+
+### Calls for first derivatives
+foreach $e (@d) {
+  $dxn = "dx_" . $e;
+  $dyn = "dy_" . $e;
+  $dzn = "dz_" . $e;
+  print OFILE "        call deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz, d_type)\n";
+  print OFILE "        if (debug_derivs) then\n";
+  print OFILE "          fname = '".$e."'\n";
+  print OFILE "          call check_derivs_1(rc, ".$e.", q(" . $dxn . "),\n";
+  print OFILE "     &                      q(" . $dyn . "),q(" . $dzn . "),\n";
+  print OFILE "     &                   fname, deriv_time, myproc,\n";
+  print OFILE "     &                   x1d, y1d, z1d, nx, ny, nz)\n";
+  print OFILE "          if (rc .eq. 0) deriv_error = 1\n";
+  print OFILE "        end if\n";
+}
+
+### Calls for matter first derivatives
+foreach $e (@mat_d) {
+  $dxn = "dx_" . $e;
+  $dyn = "dy_" . $e;
+  $dzn = "dz_" . $e;
+  print OFILE "        call deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz, d_type)\n";
+  print OFILE "        if (debug_derivs) then\n";
+  print OFILE "          fname = '".$e."'\n";
+  print OFILE "          call check_derivs_1(rc, ".$e.", q(" . $dxn . "),\n";
+  print OFILE "     &                    q(" . $dyn . "),q(" . $dzn . "),\n";
+  print OFILE "     &                 fname, deriv_time, myproc,\n";
+  print OFILE "     &                 x1d, y1d, z1d, nx, ny, nz)\n";
+  print OFILE "          if (rc .eq. 0) deriv_error = 1\n";
+  print OFILE "        end if\n";
+}
+
+### Calls for 2nd derivatives
+@all_dd = (@dd, @mat_dd);
+foreach $e (@all_dd) {
+  $dxn  = "dx_" . $e;
+  $dyn  = "dy_" . $e;
+  $dzn  = "dz_" . $e;
+  $dxxn = "dxx_" . $e;
+  $dxyn = "dxy_" . $e;
+  $dxzn = "dxz_" . $e;
+  $dyyn = "dyy_" . $e;
+  $dyzn = "dyz_" . $e;
+  $dzzn = "dzz_" . $e;
+
+  print OFILE "        call deriv_xx(q(" . $dxxn . ")," . $e . ",dx, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_yy(q(" . $dyyn . ")," . $e . ",dy, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_zz(q(" . $dzzn . ")," . $e . ",dz, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_y(q(" . $dxyn . "),q(" . $dxn . "),dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dxzn . "),q(" . $dxn . "),dz, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dyzn . "),q(" . $dyn . "),dz, nx, ny, nz, d_type)\n";
+  print OFILE "        if (debug_derivs) then\n";
+  print OFILE "          fname = '".$e."'\n";
+  print OFILE "          call check_derivs_2(rc, ".$e.",\n";
+  print OFILE "     &                   q(" . $dxxn . "),q(" . $dxyn . "),\n";
+  print OFILE "     &                   q(" . $dxzn . "),q(" . $dyyn . "),\n";
+  print OFILE "     &                   q(" . $dyzn . "),q(" . $dzzn . "),\n";
+  print OFILE "     &                   fname, deriv_time, myproc, \n";
+  print OFILE "     &                   x1d, y1d, z1d, nx, ny, nz)\n";
+  print OFILE "          if (rc .eq. 0) deriv_error = 1\n";
+  print OFILE "        end if\n";
+}
+
+
+close(OFILE);
+
+###########################################################################
+#
+#  Call to bssnrhs
+#
+###########################################################################
+$ofile = "MR_call_bssn.h";
+open(OFILE, ">$ofile");
+
+
+# geometric vars
+$i=0;
+while($i<=$#funcs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#funcs) {
+    print OFILE "q(". $funcs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+# matter vars
+$i=0;
+while($i<=$#mfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mfuncs) {
+    print OFILE "q(". $mfuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Deallocate memory
+#
+###########################################################################
+$ofile = "MR_dealloc.h";
+open(OFILE, ">$ofile");
+
+# geometric vars
+foreach $f (@funcs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+
+# matter vars
+foreach $f (@mfuncs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+# Now do the same for advective derivatives
+#
+###########################################################################
+
+###########################################################################
+#
+#  Allocate memory for advective derivs
+#
+###########################################################################
+$ofile = "MR_alloc_adv.h";
+open(OFILE, ">$ofile");
+
+#geometric vars
+foreach $f (@afuncs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+#matter vars
+foreach $f (@mafuncs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "MR_derivs_adv.h";
+open(OFILE, ">$ofile");
+
+### Calls for geometric advective derivatives
+foreach $e (@ad) {
+  $dxn = "adx_" . $e;
+  $dyn = "ady_" . $e;
+  $dzn = "adz_" . $e;
+  print OFILE "        call adv_deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz,\n     &          d_type, shiftx)\n";
+  print OFILE "        call adv_deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz,\n     &          d_type, shifty)\n";
+  print OFILE "        call adv_deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz,\n     &          d_type, shiftz)\n";
+}
+
+
+### Calls for matter advective derivatives
+foreach $e (@mat_d) {
+  $dxn = "adx_" . $e;
+  $dyn = "ady_" . $e;
+  $dzn = "adz_" . $e;
+  print OFILE "          call adv_deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz,\n     &          d_type, shiftx)\n";
+  print OFILE "          call adv_deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz,\n     &          d_type, shifty)\n";
+  print OFILE "          call adv_deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz,\n     &          d_type, shiftz)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Call to advective deriv. routine
+#
+###########################################################################
+$ofile = "MR_call_bssn_adv.h";
+open(OFILE, ">$ofile");
+
+# geometric vars
+$i=0;
+while($i<=$#afuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#afuncs) {
+    print OFILE "q(". $afuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+# matter vars
+$i=0;
+while($i<=$#mafuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mafuncs) {
+    print OFILE "q(". $mafuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Call to advective deriv. routines WITH centered derivatives
+#
+###########################################################################
+$ofile = "MR_call_bssn_adv_centered.h";
+open(OFILE, ">$ofile");
+
+# geometric vars
+$i=0;
+while($i<=$#afuncs2) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#afuncs2) {
+    print OFILE "q(". $afuncs2[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+# matter vars
+$i=0;
+while($i<=$#mafuncs2) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mafuncs2) {
+    print OFILE "q(". $mafuncs2[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+
+
+###########################################################################
+#
+# Deallocate memory for advective derivs
+#
+###########################################################################
+$ofile = "MR_dealloc_adv.h";
+open(OFILE, ">$ofile");
+
+# geometric vars
+foreach $f (@afuncs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+
+# matter vars
+foreach $f (@mafuncs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+close(OFILE);
+
+
+
+###########################################################################
+#
+# BSSN RHS deriv arguments for cal_bssn_rhs
+#
+###########################################################################
+$ofile = "BR_bssnrhs_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometric functions
+$i=0;
+while($i<=$#funcs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#funcs) {
+    print OFILE "$funcs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter functions
+$i=0;
+while($i<=$#mfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mfuncs) {
+    print OFILE "$mfuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments
+#
+###########################################################################
+$ofile = "BR_bssnrhs_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometric functions
+foreach $e (@funcs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+# matter functions
+foreach $e (@mfuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Advective sub arguments
+#
+###########################################################################
+$ofile = "BR_bssnlie_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometric
+$i=0;
+while($i<=$#afuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#afuncs) {
+    print OFILE "$afuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#mafuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mafuncs) {
+    print OFILE "$mafuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Advective sub arguments
+#
+###########################################################################
+$ofile = "BR_bssnlie_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometric subroutine arguments
+$i=0;
+while($i<=$#afuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#afuncs) {
+    print OFILE "$afuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter subroutine arguments
+$i=0;
+while($i<=$#mafuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mafuncs) {
+    print OFILE "$mafuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#
+#
+###########################################################################
+$ofile = "BR_bssnlie_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@afuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+# matter
+foreach $e (@mafuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Now do the same for constraint derivatives
+#
+############################################################################
+############################################################################
+#
+#  Write declarations
+#
+###########################################################################
+$ofile = "AN_declare_ptrs.h";
+open(OFILE, ">$ofile");
+#print OFILE "#include \"cctk.h\"\n\n";
+
+# geometry
+# The first and second derivatives
+$i=0;
+while($i<=$#cfuncs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#cfuncs) {
+    if ($j == 0) {
+      print OFILE $cfuncs[$i];
+    }
+    else {
+      print OFILE ", " . $cfuncs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#cmfuncs) {
+  $j = 0;
+  print OFILE "       CCTK_INT :: ";
+  while($j < 4 && $i <= $#cmfuncs) {
+    if ($j == 0) {
+      print OFILE $cmfuncs[$i];
+    }
+    else {
+      print OFILE ", " . $cmfuncs[$i];
+    }
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Allocate memory ANALYSIS
+#
+###########################################################################
+$ofile = "AN_alloc.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $f (@cfuncs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+# matter
+foreach $f (@cmfuncs) {
+  print OFILE "        " . $f . " = mem_alloc(nd)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Calls for derivatives (1)
+#
+###########################################################################
+$ofile = "AN_derivs.h";
+open(OFILE, ">$ofile");
+
+### Calls for first derivatives
+@all_con_d = (@con_d, @con_mat_d);
+foreach $e (@all_con_d) {
+  $dxn = "dx_" . $e;
+  $dyn = "dy_" . $e;
+  $dzn = "dz_" . $e;
+  print OFILE "        call deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz, d_type)\n";
+}
+
+### Calls for 2nd derivatives
+foreach $e (@con_dd) {
+  $dxn  = "dx_" . $e;
+  $dyn  = "dy_" . $e;
+  $dzn  = "dz_" . $e;
+  $dxxn = "dxx_" . $e;
+  $dxyn = "dxy_" . $e;
+  $dxzn = "dxz_" . $e;
+  $dyyn = "dyy_" . $e;
+  $dyzn = "dyz_" . $e;
+  $dzzn = "dzz_" . $e;
+
+  print OFILE "        call deriv_xx(q(" . $dxxn . ")," . $e . ",dx, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_yy(q(" . $dyyn . ")," . $e . ",dy, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_zz(q(" . $dzzn . ")," . $e . ",dz, nx, ny, nz, dd_type)\n";
+  print OFILE "        call deriv_y(q(" . $dxyn . "),q(" . $dxn . "),dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dxzn . "),q(" . $dxn . "),dz, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dyzn . "),q(" . $dyn . "),dz, nx, ny, nz, d_type)\n";
+}
+
+# calls derivatives of matter variables
+foreach $e (@con_mat_d) {
+  $dxn = "dx_" . $e;
+  $dyn = "dy_" . $e;
+  $dzn = "dz_" . $e;
+  print OFILE "        call deriv_x(q(" . $dxn . ")," . $e . ",dx, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_y(q(" . $dyn . ")," . $e . ",dy, nx, ny, nz, d_type)\n";
+  print OFILE "        call deriv_z(q(" . $dzn . ")," . $e . ",dz, nx, ny, nz, d_type)\n";
+}
+
+close(OFILE);
+
+###########################################################################
+#
+#  Argument list for analysis call
+#
+###########################################################################
+$ofile = "AN_call_analysis.h";
+open(OFILE, ">$ofile");
+
+# geometry
+$i=0;
+while($i<=$#cfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#cfuncs) {
+    print OFILE "q(". $cfuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#cmfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#cmfuncs) {
+    print OFILE "q(". $cmfuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Deallocate memory
+#
+###########################################################################
+$ofile = "AN_dealloc.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $f (@cfuncs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+
+# matter
+foreach $f (@cmfuncs) {
+  print OFILE "        call mem_dealloc(" . $f . ", nd)\n";
+}
+
+close(OFILE);
+
+############################################################################
+#
+# Analysis deriv arguments for constraints
+#
+###########################################################################
+$ofile = "CR_con_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+$i=0;
+while($i<=$#cfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#cfuncs) {
+    print OFILE "$cfuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#cmfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#cmfuncs) {
+    print OFILE "$cmfuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments for constraint routine
+#
+###########################################################################
+$ofile = "CR_con_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@cfuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+# matter
+foreach $e (@cmfuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+close(OFILE);
+
+
+############################################################################
+#
+#   CREATE CALLS FOR BOUNDARY CONDITIONS
+#
+############################################################################
+
+###########################################################################
+#
+#  Call to BCS
+#
+###########################################################################
+$ofile = "MR_call_bcs.h";
+open(OFILE, ">$ofile");
+
+# geometry
+$i=0;
+while($i<=$#bfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#bfuncs) {
+    print OFILE "q(". $bfuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#mfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mfuncs) {
+    print OFILE "q(". $mfuncs[$i] . "), ";
+    $j++;
+    $i++;
+  }
+  print OFILE "\n";
+}
+
+
+close(OFILE);
+
+############################################################################
+#
+# BSSN deriv arguments for boundary conditions
+#
+###########################################################################
+$ofile = "BC_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+$i=0;
+while($i<=$#bfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#bfuncs) {
+    print OFILE "$bfuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+# matter
+$i=0;
+while($i<=$#mfuncs) {
+  $j = 0;
+  print OFILE "     &  ";
+  while($j < 4 && $i <= $#mfuncs) {
+    print OFILE "$mfuncs[$i],";
+    $i++;
+    $j++;
+  }
+  print OFILE "\n";
+}
+
+close(OFILE);
+
+
+###########################################################################
+#
+# Declare deriv arguments for constraint routine
+#
+###########################################################################
+$ofile = "BC_decl_sub_args.h";
+open(OFILE, ">$ofile");
+
+# geometry
+foreach $e (@bfuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+# matter
+foreach $e (@mfuncs) {
+  print OFILE "      CCTK_REAL, dimension(nx,ny,nz) :: $e\n";
+}
+
+close(OFILE);
+
+########################################################################

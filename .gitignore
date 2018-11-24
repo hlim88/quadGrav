@@ -3,3 +3,4 @@
 *.log
 *.synctex.gz
 .DS_Store
+*.optrpt

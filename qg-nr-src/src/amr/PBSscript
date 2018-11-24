@@ -1,0 +1,19 @@
+#PBS -N testqueue
+#PBS -l nodes=1,walltime=0:05:00
+#PBS -S /bin/sh
+#PBS -q npaci
+#PBS -M steve@liebling.us
+#PBS -m abe
+#PBS -o /home/ux450026/nlsm3d_mpiad/src/output_job
+#PBS -e /home/ux450026/nlsm3d_mpiad/src/errors_job
+#
+echo "I ran on:"
+cat $PBS_NODEFILE
+#
+export GMPICONF=/home/ux450026/.gmpi/$PBS_JOBID
+#
+#cd to your execution directory first
+cd ~/nlsm3d_mpiad/src
+#
+#use mpirun to run my MPI binary with 7 nodes for 1 hour
+mpirun -np 2 ./nlsm.b id
