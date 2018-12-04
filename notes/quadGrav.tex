@@ -22,6 +22,8 @@
 \usepackage{hyperref}
 \usepackage{slashed}
 \usepackage{youngtab}
+\usepackage{physics}
+
 
 \usepackage{siunitx}
 \sisetup{exponent-product = \cdot, 
@@ -46,12 +48,16 @@
 \setsecnumdepth{subsection}
 \numberwithin{equation}{section} %Denotes that equations should be numbered a section level
 
+
 \newcommand{\aaron}[1]{{\color{OliveGreen} #1}}
+\newcommand{\TODO}[1]{{\color{red}[}{\color{red}TODO:} {\color{blue}#1}{\color{red}]}}
+\newcommand{\NOTE}[1]{{\color{blue}[#1]}}
+
 
 % % % % Document % % % % 
 \begin{document}
 
-\title{\HUGE Gravitational Waves from Black Holes in Quadratic Gravity}
+\title{\HUGE Dynamical Black Holes and Gravitational Waves in Quadratic Gravity}
 
 \author{Hyun Lim, Aaron Held\\(work in progress)}
 
@@ -93,6 +99,31 @@ Field-theoretic attempts to quantize gravity have difficulties retaining renorma
     Another motivation for the presence of higher-order curvature terms is given by an embedding of both GR and QG into a non-perturbatively renormalizable quantum field theory of gravity solely defined by diffeomorphism symmetry and a corresponding asymptotically safe fixed point. This theory of Asymptotically Safe Gravity (ASG) was conjectured by Steven Weinberg in 1976 \cite{Weinberg:1980gg}.  It is supported by the mounting evidence around the corresponding Reuter fixed-point \cite{Reuter:1996cp}, cf.~\cite{} for reviews. Since the Reuter fixed-point is fully interacting, \emph{all} higher-order couplings will be present at Planckian energies. Below the Planck scale the EFT-description applies and one, again, expects the associated low-energy effective theory to be governed by the four couplings of QG, i.e., $G_N$, $\Lambda$, $\alpha$ and $\beta$. It can be added here, that current approximations of the Reuter fixed-point indicate that there are only three so-called relevant couplings. AS restores the predictivity of a quantum field theory of gravity precisely by non-perturbative relations, which express \emph{all} other (irrelevant) couplings in terms of the three relevant ones. Hence, one of the two QG couplings could follow as a prediction from AS, e.g., $\alpha = \alpha (\beta,\,G_N,\,\Lambda)$.
 \end{itemize} 
 
+\subsection{Testing General Relativity}
+aLIGO/VIRGO has detected gravitational waves (GWs) and these observations extend into the strong-field regime of gravity,
+where the gravitational field is non-linear and dynamical, precisely where tests of general relativity(GR) are currently lacking. 
+Strong field tests of GR have implications to a large areas in physics and astrophysics. For example, 
+gravitational parity breaking modifies the geometry of spinning black holes (BHs) and the propagation of GWs in 
+these backgrounds. Constrain such a departure from the Kerr geometry of GR in the strong field regime will place
+constraints on the coupling constants of such theories.\TODO{Need references}
+
+In this work, we are interested in dynamics and stability of BH in QG.
+In literatures \TODO{Need references}, considerable works are done withimposing extra 
+scalar field into the action such that (in the most general form)
+\begin{align}
+S &\equiv \int d^4 s \sqrt{-g} \Bigg\{ \frac{1}{16 \pi G_N} R + \alpha_1 f_1 (\vartheta) R^2 + \alpha_2 f_2 (\vartheta) R_{\mu \nu} R^{\mu \nu} 
+    + \alpha_3 f_3 (\theta) R_{\mu \nu \lambda \sigma} R^{\mu \nu \lambda \sigma} \nonumber \\
+    &+ \alpha_4 f_4 (\vartheta) R_{\mu \nu \lambda \sigma} (*R^{\mu \nu \lambda \sigma}) - \frac{\beta}{2} [ \nabla_a \vartheta \nabla^a \vartheta
+    + 2 V(\vartheta) ] + \mathcal{L}_{matter} \Bigg\}
+\end{align}
+where $g$ stands for the determinant of the metric $g_{\mu \nu}$. $R, \, R_{\mu \nu}, \, R_{\mu \nu \lambda \sigma}$, 
+and $*R_{\mu \nu \lambda \sigma}$ are the Ricci scalar, Ricci tensor, Riemann tensor and its dual respectively. 
+$\vartheta$ is a dynamical scalar field, $f_i (\vartheta)$ are functionals of this field, $(\alpha_i , \beta)$ are coupling constants.
+Coupling to a scalar field $\vartheta$ enables to make dynamical theory such as dynamical Chern-Simon (dCS) gravity 
+and Einstein-dilaton-Gauss-Bonnet (EdGB) gravity as examples of QG theories.
+\NOTE{What is the major difference (in motivation point of view) having (or not having) dynamical scalar field?}
+
+
 \section{Mathematical Formulations of the Quadratic Gravity}
 
 \subsection{Equations of Motion in the Quadratic Gravity}
@@ -110,7 +141,7 @@ where $G_{\mu\nu} = R_{\mu\nu} -1/2 R g_{\mu\nu}$ is the usual Einstein tensor, 
 	&-2\beta R R_{\mu\nu}-\frac{1}{2}g_{\mu\nu}(\alpha R_{\alpha\beta}R^{\alpha\beta}-\beta R^2)\;.
 \end{align}
 
-\subsection{Hyperbolic formulation of the Equations of Motion}
+\subsection{Hyperbolic formulation of the Equations of Motion and Well-posedness of the System}
 
 According to \cite{Noakes:1983} and recently also \cite{Morales:2018imi} the eom \eqref{eq:eom-QG} as formulated by use of harmonic coordinates can be written as a well-posed second order system.
 \\
@@ -118,7 +149,48 @@ According to \cite{Noakes:1983} and recently also \cite{Morales:2018imi} the eom
 
 
 \section{Initial Data}
+\subsection{Single Black Hole}
+\NOTE{Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
+\subsection{Binary Black Hole}
+\NOTE{Maybe solve elliptic equations or just find puncture like ID}
 
+\section{Gravitational Wave Extractions for QG}
+Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. There are lots of possible ways
+to do this but we will try to follow the way I know (a way is in \texttt{hyperGHSF} code). We define the timelike member of the tetrad to be the 
+normal to our spacelike hypersurfaces. The remaining three are then constructed via a Gram-Schmidt procedure from a set of three independent
+vectors living on the hypersurfaces. Our demand for them seem to be only that in the asymptotically flat limit, we recover something akin to
+the usual unit vectors of spherical coordinates. Indeed, we start with a version of them
+\begin{align}
+u^a &= (0,x,y,z) \\
+v^a &= (0,xz,yz,-x^2 - y^2) \\
+w^a &= (0,-y,x,0)
+\end{align}
+and then using the 3-metric, $\gamma_{ij}$ ,orthonormalize them with respect to it. In particular, we define new orthonormal spacelike vectors
+\begin{align}
+^{(1)}e^i &= \frac{u^i}{||u||} \\
+^{(2)}e^i &= \frac{v^i -  \bra{ ^{(1)}e}\ket{v} \, ^{(1)}e^i}{||v -  \bra{ ^{(1)}e}\ket{v} \, ^{(1)}e ||} \\
+^{(3)}e^i &= \frac{w^i -  \bra{ ^{(1)}e}\ket{w} \, ^{(1)}e^i -  \bra{ ^{(2)}e}\ket{w} \, ^{(2)}e^i}{||w -  \bra{ ^{(1)}e}\ket{w} \, ^{(1)}e - \bra{ ^{(2)}e}\ket{w} \, ^{(2)}e ||} 
+\end{align}
+where we are defining the inner product and the norm as
+\begin{align}
+\bra{u}\ket{v} \equiv \gamma_{ij} u^i v^j \\
+|| u || \equiv \sqrt{\bra{u}\ket{u}}
+\end{align}
+with these, we construct a null tetrad according to
+\begin{align}
+l^a &= \frac{1}{2} (n^a + \, ^{(1)}e^a) \\
+\tilde{n}^a &= \frac{1}{2} (n^a - \, ^{(1)}e^a) \\
+m^a &= \frac{1}{2} (^{(2)}e^a + i \, ^{(3)}e^a) \\
+\bar{m}^a &=  \frac{1}{2} (^{(2)}e^a - i \, ^{(3)}e^a)
+\end{align}
+where, because we are running out of letters, the usual null vector $n^a$ has been written with a tilde to distinguish if from the normal 
+to the foliation. Then we can compute the relevant complex Penrose scalar $\Psi4$ such that
+\begin{align}
+\Psi_4 &= C_{abcd} \tilde{n}^a \bar{m}^b \tilde{n}^c \bar{m}^d \\
+           &= C_{abcd} \tilde{n}^a \tilde{n}^c \left[\frac{1}{2} \{ ^{(2)}e^b \, ^{(2)}e^d - ^{(3)}e^b \, ^{(3)}e^d  \} + i \, ^{(2)}e^b \, ^{(3)}e^d \right] 
+\end{align}
+Now we must decompose this with respect to an assumed spacelike hypersurface. As usual, we define the normal to the hypersurface as $n_a$, the metric on the hypersurface as $h_{ij}$ and the extrinsic curvature as $K_{ij}$.
+\NOTE{Here is subtly. If we do notneed to consider additional higher derivatives of curvature into this manner, we may use same procedure as Einstein GR but not sure}
 
 
 \bibliography{References}

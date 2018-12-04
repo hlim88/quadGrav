@@ -12,7 +12,8 @@ apporoach to have linearized version of system. Numerical
 simulations of this system would be performed by `HAD`
 toolkit (Will be added).
 
-`notes` directory contains theory/formulation for this project
+`notes` directory contains theory/formulation for this project.
+Type 'make' to complie the note
 
 `scripts` directory contains `Mathematica` file that peforms 3+1
 decomposition of the equations. It is saved in `Wolfram Language`

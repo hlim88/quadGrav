@@ -4,3 +4,6 @@
 *.synctex.gz
 .DS_Store
 *.optrpt
+*.bbl
+*.blg
+*.out
