@@ -23,6 +23,7 @@
 \usepackage{slashed}
 \usepackage{youngtab}
 \usepackage{physics}
+\usepackage{tensor}
 
 
 \usepackage{siunitx}
@@ -148,19 +149,43 @@ According to \cite{Noakes:1983} and recently also \cite{Morales:2018imi} the eom
 \\
 \aaron{\textbf{[I think we should be really sure about this, but Noakes claims he `shows that the higher-derivative gravity equations, when treated as twenty second-order equations (not ten fourth-order equations), have a well-posed initial value problem']}}
 
+\subsection{Gauge Choice and Full Evolution System}
 
 \section{Initial Data}
-\subsection{Single Black Hole}
-\NOTE{Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
-\subsection{Binary Black Hole}
+Under usual 3+1 decomposition \NOTE{Still same for QG?}, the constraint equations are (in vacua)
+\begin{align}
+D_j K\indices{^j_i} - D_i K &= 0 \\
+R + K^2 - K_{ij} K^{ij} &= 0
+\end{align}
+The spatial metric $\gamma_{ij}$, the extrinsic curvature $K_{ij}$, and any matter field should 
+satisfy the constraints. Thus, we have to specify $(\gamma_{ij}, K_{ij})$ on some initial 
+spatial slice $\Sigma$ that are compatible with the constraint equations. These fields can 
+then be used as initial data for a dynamical evolution obtained by solving the evolution equation.
+
+\subsection{Elementary Black Hole Solution}
+
+\NOTE{Might use Brill-Lindquist for testing case. \\
+Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
+
+\subsection{Black Holes in QG}
+
+\NOTE{We may use some analytic solutions in literatures}
+
+\subsection{Binary Black Hole Initial Data}
+\subsubsection{Puncture Method}
+
 \NOTE{Maybe solve elliptic equations or just find puncture like ID}
 
 \section{Gravitational Wave Extractions for QG}
-Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. There are lots of possible ways
-to do this but we will try to follow the way I know (a way is in \texttt{hyperGHSF} code). We define the timelike member of the tetrad to be the 
-normal to our spacelike hypersurfaces. The remaining three are then constructed via a Gram-Schmidt procedure from a set of three independent
-vectors living on the hypersurfaces. Our demand for them seem to be only that in the asymptotically flat limit, we recover something akin to
-the usual unit vectors of spherical coordinates. Indeed, we start with a version of them
+Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. 
+There are lots of possible ways to do this but we will try to follow the way I know 
+(a way is in \texttt{hyperGHSF} code). We define the timelike member of the tetrad to be the 
+normal to our spacelike hypersurfaces. The remaining three are then constructed 
+via a Gram-Schmidt procedure from a set of three independent vectors living on the 
+hypersurfaces. Our demand for them seem to be only that in the asymptotically flat limit, 
+we recover something akin to the usual unit vectors of spherical coordinates. 
+
+Indeed, we start with a version of them
 \begin{align}
 u^a &= (0,x,y,z) \\
 v^a &= (0,xz,yz,-x^2 - y^2) \\
@@ -190,7 +215,9 @@ to the foliation. Then we can compute the relevant complex Penrose scalar $\Psi4
 \Psi_4 &= C_{abcd} \tilde{n}^a \bar{m}^b \tilde{n}^c \bar{m}^d \\
            &= C_{abcd} \tilde{n}^a \tilde{n}^c \left[\frac{1}{2} \{ ^{(2)}e^b \, ^{(2)}e^d - ^{(3)}e^b \, ^{(3)}e^d  \} + i \, ^{(2)}e^b \, ^{(3)}e^d \right] 
 \end{align}
-Now we must decompose this with respect to an assumed spacelike hypersurface. As usual, we define the normal to the hypersurface as $n_a$, the metric on the hypersurface as $h_{ij}$ and the extrinsic curvature as $K_{ij}$.
+Now we must decompose this with respect to an assumed spacelike hypersurface. As usual, 
+we define the normal to the hypersurface as $n_a$, the metric on the hypersurface as $\gamma_{ij}$ 
+and the extrinsic curvature as $K_{ij}$.
 \NOTE{Here is subtly. If we do notneed to consider additional higher derivatives of curvature into this manner, we may use same procedure as Einstein GR but not sure}
 
 
