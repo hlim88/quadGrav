@@ -1,36 +1,97 @@
-\documentclass[prd]{revtex4}
-\usepackage{amsmath, graphicx}
-\usepackage{grffile}
-\usepackage{dcolumn}
-\usepackage{bm}
-\usepackage{epsfig}
-\usepackage{mathrsfs}  %  package for the "curly" fonts 
-\usepackage{subfigure}
-\usepackage{multirow}
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{algorithmicx}
-\usepackage{amssymb}
-\usepackage{tensor}
+\documentclass[a4paper,oneside,openany,11pt]{memoir}
+\usepackage{geometry}
+\geometry{
+	inner=2.0cm, % Inner margin
+	outer=3.0cm, % Outer margin
+	bindingoffset=.5cm, % Binding offset
+	top=3.5cm, % Top margin
+	bottom=3.5cm, % Bottom margin
+	%	showframe, % Uncomment to show how the type block is set on the page
+}
+\linespread{1.15}
+
+\usepackage[english]{babel}	
+\usepackage{xspace}
+\usepackage{microtype}	
+\usepackage[utf8]{inputenc}	% Allows for writing special charachters in the tex-file 
+
+\usepackage{amsmath,amssymb,amsfonts,dsfont,bm} 	% Standard mathematics 
+\allowdisplaybreaks 	%Allows pagebreak during multiline math enviroments
 \usepackage{mathrsfs}
-\usepackage{bookmark}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+\usepackage{slashed}
+\usepackage{youngtab}
 
-\newcommand*\apost{\textsc{\char13}}
+\usepackage{siunitx}
+\sisetup{exponent-product = \cdot, 
+	separate-uncertainty} 
 
-\topmargin 0.30in
-\textheight 9.00in
+%Bibliography
+\usepackage[sort&compress, numbers, merge]{natbib}
+\setlength{\bibsep}{0.0em}
+\bibliographystyle{apsrev4-1}
+\addto\captionsenglish{\renewcommand*{\bibname}{\LARGE References}}
+\makeatletter
+%\renewcommand{\@memb@bchap}{ \section*{\bibname} \bibmark \prebibhook}
+\makeatother
 
- \addtolength{\voffset}{-2cm}
- 
+%Figures and tables
+\usepackage{graphicx}
+\graphicspath{{./Figures/}}
+
+
+\counterwithout{section}{chapter} % Include if sections should be taken at the top level
+\counterwithout{figure}{chapter} %Removes chapter number on figures
+\setsecnumdepth{subsection}
+\numberwithin{equation}{section} %Denotes that equations should be numbered a section level
+
+\newcommand{\aaron}[1]{{\color{OliveGreen} #1}}
+
+% % % % Document % % % % 
 \begin{document}
 
-\title{Black Hole Dynamics in Quadratic Gravity}
+\title{\HUGE Gravitational Waves from Black Holes in Quadratic Gravity}
 
-%\author{Hyun Lim}
+\author{Hyun Lim, Aaron Held\\(work in progress)}
 
 
-%\pacs{}
 \maketitle
+
+%=======================================================================================================
+
+\section{Motivation}
+
+Einstein's theory of General Relativity (GR) is built upon diffeomorphism symmetry, manifest in its formulation in terms of the Einstein-Hilbert action
+\begin{align}
+    S_{\text{GR}} &=
+ \frac1{16\pi G_\text{N}}\int_x \sqrt{\text{det } g}\, (2\Lambda-R)\;,
+\end{align}
+where $G_N$ and $\Lambda$ denote the Newton coupling and cosmological constant, respectively. It is a simple theory with only two free parameters and describes all measured gravitational phenomena to date. Apart from simplicity a l\`a Occam's razor, there is no fundamental principle in classical gravity that would explain the absence of higher-order, diffeomorphism-invariant curvature terms. In fact, as all solar-system dynamics only tests the weak-gravity regime, the existing constraints on higher-order modifications of GR are extremely weak. \aaron{\textbf{[make this more explicit]}}
+\\
+Here, we will look at the quadratic order in curvature diffeomorphism-invariant invariants. Neglecting the topological Gauss-Bonnet invariant, the most general action of Quadratic Gravity (QG) is given by
+\begin{align}
+    S_{\text{gravity}} &=
+ S_\text{GR}
+ + \int_x \sqrt{\text{det }g} \left(\alpha  R_{\mu\nu}R^{\mu\nu} + \beta  R^2\right)  \;. 
+\end{align}
+Beyond the fact that there is no principle which forbids these terms and the experimental constraints on them are extremely weak, there exist several good theoretical motivations for their presence: All of them bear some relation to the unsolved issue of how to quantize of gravity. Before we indulge in the main motivation for this paper, namely working towards new experimental constraints of those quadratic curvature couplings $\alpha$ and $\beta$, we will thus quickly review these motivations.
+
+\subsection{Quadratic Gravity from quantization}
+
+Field-theoretic attempts to quantize gravity have difficulties retaining renormalizability. Without higher-derivative terms, General Relativity is a non-renormalizable theory. The underlying reason can be associated with the negative canonical dimension of the Newton coupling, i.e., $[G_N]=-2$. The quantization of gravity is not just an academic problem. If $G_N$ was of order one at accessible energy scales, then the effects of delocalized quantum matter would directly imply significant quantum-fluctuations in the associated gravitational field. It is only the smallness of the gravitational force, i.e., $G_N\sim 10^{-38}$ GeV, which hides these effects from experimental observation. In fact, this is one particularly insightful way of obtaining the Planck scale. The dimensionless Newton coupling $g_N(\mu) = G_N\times \mu^2$ scales with a quadratic power-law in the characteristic energy scale $\mu$. Since it is dimensionless couplings which determine field-theoretic cross sections, gravitational effects become important whenever $g_N(\mu)\approx 1$, i.e., at a mass scale of $M_\text{Planck} = 10^{19}$ GeV -- the Planck scale.
+\begin{itemize}
+    \item
+    The most agnostic approach to the quantization of gravity is to look at quantum gravity as an effective field theory (EFT). In correspondence to, for instance, the Standard Model, this assumes that \emph{all} operators allowed by symmetry are present at $M_\text{Planck}$. Neglecting the index structure we can schematically denote those (dimensionful) couplings and the corresponding curvature invariants as $C_N\times R^N$. Since the underlying theory is not known, \emph{all} EFT-couplings are assumed to be of order one at the Planck-scale, i.e., $C_N(\mu=M_\text{Planck})\approx 1$. The EFT draws its predictive power from canonical scaling. Since in four dimensions the dimension of curvature is $[R]=2$, the associated couplings have dimension $[C_N] = 2N - 4$. The corresponding dimensionless couplings $c_N(\mu) = C_N / \mu^{2N-4}$ scale like $c_N \sim \mu^{4-2N}$. Hence they are suppressed by
+\begin{align}
+    c_N(M_\text{exp}) \approx \left(\frac{M_\text{exp}}{M_\text{Planck}}\right)^{(2N-4)}\;.
+\end{align}
+    In an EFT one would thus conclude that all couplings $c_{N>2}$ are suppressed by increasing powers of the enormously large Planck scale. This does not apply for the quadratic couplings $c_{N=2}$, which constitute so-called marginal couplings of the EFT. These are \emph{not} power-law suppressed and are hence expected to be of similar order as at the Planck-scale.
+    \item
+    It was shown by Kellog Stelle in 1976 \cite{Stelle:1976gc} that QG, opposed to GR, defines a perturbatively renormalizable quantum field theory. However, this theory suffers from negative norm states which spoil a unitary evolution. There are several proposals how these states could be tamed \cite{}, all of which retain the presence of non-vanishing quadratic couplings.
+    \item
+    Another motivation for the presence of higher-order curvature terms is given by an embedding of both GR and QG into a non-perturbatively renormalizable quantum field theory of gravity solely defined by diffeomorphism symmetry and a corresponding asymptotically safe fixed point. This theory of Asymptotically Safe Gravity (ASG) was conjectured by Steven Weinberg in 1976 \cite{Weinberg:1980gg}.  It is supported by the mounting evidence around the corresponding Reuter fixed-point \cite{Reuter:1996cp}, cf.~\cite{} for reviews. Since the Reuter fixed-point is fully interacting, \emph{all} higher-order couplings will be present at Planckian energies. Below the Planck scale the EFT-description applies and one, again, expects the associated low-energy effective theory to be governed by the four couplings of QG, i.e., $G_N$, $\Lambda$, $\alpha$ and $\beta$. It can be added here, that current approximations of the Reuter fixed-point indicate that there are only three so-called relevant couplings. AS restores the predictivity of a quantum field theory of gravity precisely by non-perturbative relations, which express \emph{all} other (irrelevant) couplings in terms of the three relevant ones. Hence, one of the two QG couplings could follow as a prediction from AS, e.g., $\alpha = \alpha (\beta,\,G_N,\,\Lambda)$.
+\end{itemize} 
 
 \section{Mathematical Formulations of the Quadratic Gravity}
 
@@ -40,4 +101,11 @@
 
 \section{Initial Data}
 
+
+
+\bibliography{References}
+	
 \end{document}
+
+
+
