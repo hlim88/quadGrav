@@ -8,7 +8,7 @@ view: $(FILE).pdf display
 .PHONY: clean
 
 clean:
-	rm -rf *~ *.idx *.lot *.toc *.lof *.aux *.blg *.out *.bbl *.log *.pdf
+	rm -rf *~ *.idx *.lot *.toc *.lof *.aux *.blg *.out *.bbl *.log $(FILE).pdf
 
 display: 
 	open $(FILE).pdf
