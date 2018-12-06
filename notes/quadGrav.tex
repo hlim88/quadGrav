@@ -1,8 +1,8 @@
 \documentclass[a4paper,oneside,openany,11pt]{memoir}
 \usepackage{geometry}
 \geometry{
-	inner=2.0cm, % Inner margin
-	outer=3.0cm, % Outer margin
+	inner=1.5cm, % Inner margin
+	outer=2cm, % Outer margin
 	bindingoffset=.5cm, % Binding offset
 	top=3.5cm, % Top margin
 	bottom=3.5cm, % Bottom margin
@@ -54,6 +54,10 @@
 \newcommand{\TODO}[1]{{\color{red}[}{\color{red}TODO:} {\color{blue}#1}{\color{red}]}}
 \newcommand{\NOTE}[1]{{\color{blue}[#1]}}
 
+%Table of contents
+\renewcommand{\aftertoctitle}{\par\nobreak }
+\maxtocdepth{subsection}
+
 
 % % % % Document % % % % 
 \begin{document}
@@ -65,40 +69,35 @@
 
 \maketitle
 
+\tableofcontents*
+
 %=======================================================================================================
 
-\section{Motivation}
+\section{Quadratic Gravity in the Strong-Gravity Regime}
 
 Einstein's theory of General Relativity (GR) is built upon diffeomorphism symmetry, manifest in its formulation in terms of the Einstein-Hilbert action
 \begin{align}
     S_{\text{GR}} &=
  \frac1{16\pi G_\text{N}}\int_x \sqrt{\text{det } g}\, (2\Lambda-R)\;,
 \end{align}
-where $G_N$ and $\Lambda$ denote the Newton coupling and cosmological constant, respectively. It is a simple theory with only two free parameters and describes all measured gravitational phenomena to date. Apart from simplicity a l\`a Occam's razor, there is no fundamental principle in classical gravity that would explain the absence of higher-order, diffeomorphism-invariant curvature terms. In fact, as all solar-system dynamics only tests the weak-gravity regime, the existing constraints on higher-order modifications of GR are extremely weak. Submillimeter-tests using pendulums constrain Yukawa-like corrections to the Newtonian potential that arise from higher-derivative terms like $\alpha  R_{\mu\nu}R^{\mu\nu}$ and $\beta  R^2$. But, the constraints are as weak as $\alpha,\,\beta < 10^{61}$ \cite{Hoyle:2004cw, Kapner:2006si, Calmet:2017rxl}. Further, they do not allow to distinguish between the two couplings.
-\\
-Here, we will look at the quadratic order in curvature diffeomorphism-invariant invariants. Neglecting the topological Gauss-Bonnet invariant, the most general action of Quadratic Gravity (QG) is given by
+where $G_N$ and $\Lambda$ denote the Newton coupling and cosmological constant, respectively. It is a simple theory with only two free parameters and describes all measured gravitational phenomena to date. Apart from simplicity, a l\`a Occam's razor, there is no fundamental principle in classical gravity that would explain the absence of higher-order, diffeomorphism-invariant curvature terms. The next (quadratic) order in curvature invariants, i.e., Quadratic Gravity (QG) is given by
 \begin{align}
     S_{\text{gravity}} &=
  S_\text{GR}
  + \int_x \sqrt{\text{det }g} \left(\alpha  R_{\mu\nu}R^{\mu\nu} + \beta  R^2\right)  \;. 
 \end{align}
-Beyond the fact that there is no principle which forbids these terms and the experimental constraints on them are extremely weak, there exist several good theoretical motivations for their presence: All of them bear some relation to the unsolved issue of how to quantize of gravity. The main motivation for this paper is to generate gravitational wave templates from QG, to use experimental data from binary mergers to constraint the QG-couplings $\alpha$ and $\beta$, see also \cite{Berry:2011pb, Cao:2013osa} for a similar study in $f(R)$-gravity. Beforehand, we will quickly review the theoretical motivations for this modified theory of gravity.
+In spacetimes topologically equivalent to flat space the Gauss-Bonnet topological invariant ensures that this is the most general action at quadratic order. Kellog Stelle showed that, opposed to GR, QG is perturbatively renormalizable as a quantum field theory \cite{Stelle:1976gc}. Him, and many subsequent authors, also discuss the appearence of additional massive ghost-like modes, one scalar and one spin-2, which spoil the unitarity of this quantized theory of gravity. Further, the theory can be motivated as a generic infra-red limit of an effective field theory (EFT) treatment of the quantization of gravity, see e.g. \cite{Donoghue:2012zc} for a pedagogical review, and \cite{} for how this formulation avoids the issue of unitarity. All subsequent (unresummed local) curvature invariants will be suppressed by powers of the Planck scale.
+\\
+One might argue for the uniqueness of GR by the fact that it admits a well-posed (numerical) evolution. In fact, as David R. Noakes showed in \cite{Noakes:1983}, also the dynamics of quadratic gravity can be formulated as a well-posed initial value problem.
+We regard both these concepts of such crucial importance for all what follows, that we will review them. Readers not interested in a motivation for QG because of its well-posed numerical evolution or for the absence of even higher orders because of effective field theory, can safely skip Sec.~\ref{sec:EFT} and \ref{sec:well-posedness}, respectively.
+\\
 
-\subsection{Quadratic Gravity from quantization}
-
-Field-theoretic attempts to quantize gravity have difficulties retaining renormalizability. Without higher-derivative terms, General Relativity is a non-renormalizable theory. The underlying reason can be associated with the negative canonical dimension of the Newton coupling, i.e., $[G_N]=-2$. The quantization of gravity is not just an academic problem. If $G_N$ was of order one at accessible energy scales, then the effects of delocalized quantum matter would directly imply significant quantum-fluctuations in the associated gravitational field. It is only the smallness of the gravitational force, i.e., $G_N\sim 10^{-38}$ GeV, which hides these effects from experimental observation. In fact, this is one particularly insightful way of obtaining the Planck scale. The dimensionless Newton coupling $g_N(\mu) = G_N\times \mu^2$ scales with a quadratic power-law in the characteristic energy scale $\mu$. Since it is dimensionless couplings which determine field-theoretic cross sections, gravitational effects become important whenever $g_N(\mu)\approx 1$, i.e., at a mass scale of $M_\text{Planck} = 10^{19}$ GeV -- the Planck scale.
-\begin{itemize}
-    \item
-    The most agnostic approach to the quantization of gravity is to look at quantum gravity as an effective field theory (EFT). In correspondence to, for instance, the Standard Model, this assumes that \emph{all} operators allowed by symmetry are present at $M_\text{Planck}$. Neglecting the index structure we can schematically denote those (dimensionful) couplings and the corresponding curvature invariants as $C_N\times R^N$. Since the underlying theory is not known, \emph{all} EFT-couplings are assumed to be of order one at the Planck-scale, i.e., $C_N(\mu=M_\text{Planck})\approx 1$. The EFT draws its predictive power from canonical scaling. Since in four dimensions the dimension of curvature is $[R]=2$, the associated couplings have dimension $[C_N] = 2N - 4$. The corresponding dimensionless couplings $c_N(\mu) = C_N / \mu^{2N-4}$ scale like $c_N \sim \mu^{4-2N}$. Hence they are suppressed by
+Experiments on solar-system scales only test the weak-gravity regime: the existing constraints on higher-order modifications of GR are therefore extremely weak. Submillimeter-tests using pendulums constrain Yukawa-like corrections to the Newtonian potential that arise from higher-derivative terms like $\alpha  R_{\mu\nu}R^{\mu\nu}$ and $\beta  R^2$. But, the constraints are as weak as $\alpha,\,\beta < 10^{60}\sim 10^{70}$ \cite{Hoyle:2004cw, Kapner:2006si, Calmet:2017rxl}. Further, they do not allow to distinguish between the two couplings.
+\\
+The main motivation for this paper is to generate gravitational wave templates from QG, to use experimental data from binary mergers to constraint the QG-couplings $\alpha$ and $\beta$, see also \cite{Berry:2011pb, Cao:2013osa} for a similar study in $f(R)$-gravity. A simple comparison of typical curvature scales exemplifies how vastly studies of the strong-gravity regime could improve these bounds. For that, we compare the curvature at the surface of the earth horizon with that of a solar-mass black hole, by use of the Kretschmann scalar $K\sim M^2/r^6$, i.e.,
 \begin{align}
-    c_N(M_\text{exp}) \approx \left(\frac{M_\text{exp}}{M_\text{Planck}}\right)^{(2N-4)}\;.
+	\frac{K_{\oplus\text{-surface}}}{K_{\odot\text{-horizon}}} = \frac{K_{\oplus\text{-surface}}}{K_{\oplus\text{-horizon}}}\;\frac{K_{\oplus\text{-horizon}}}{K_{\odot\text{-horizon}}} \approx 10^{-32}\;.
 \end{align}
-    In an EFT one would thus conclude that all couplings $c_{N>2}$ are suppressed by increasing powers of the enormously large Planck scale. This does not apply for the quadratic couplings $c_{N=2}$, which constitute so-called marginal couplings of the EFT. These are \emph{not} power-law suppressed and are hence expected to be of similar order as at the Planck-scale.
-    \item
-    It was shown by Kellog Stelle in 1976 \cite{Stelle:1976gc} that QG, opposed to GR, defines a perturbatively renormalizable quantum field theory. However, this theory suffers from negative norm states which spoil a unitary evolution. There are several proposals how these states could be tamed \cite{}, all of which retain the presence of non-vanishing quadratic couplings.
-    \item
-    Another motivation for the presence of higher-order curvature terms is given by an embedding of both GR and QG into a non-perturbatively renormalizable quantum field theory of gravity solely defined by diffeomorphism symmetry and a corresponding asymptotically safe fixed point. This theory of Asymptotically Safe Gravity (ASG) was conjectured by Steven Weinberg in 1976 \cite{Weinberg:1980gg}.  It is supported by the mounting evidence around the corresponding Reuter fixed-point \cite{Reuter:1996cp}, cf.~\cite{} for reviews. Since the Reuter fixed-point is fully interacting, \emph{all} higher-order couplings will be present at Planckian energies. Below the Planck scale the EFT-description applies and one, again, expects the associated low-energy effective theory to be governed by the four couplings of QG, i.e., $G_N$, $\Lambda$, $\alpha$ and $\beta$. It can be added here, that current approximations of the Reuter fixed-point indicate that there are only three so-called relevant couplings. AS restores the predictivity of a quantum field theory of gravity precisely by non-perturbative relations, which express \emph{all} other (irrelevant) couplings in terms of the three relevant ones. Hence, one of the two QG couplings could follow as a prediction from AS, e.g., $\alpha = \alpha (\beta,\,G_N,\,\Lambda)$.
-\end{itemize} 
 
 \subsection{Testing General Relativity}
 aLIGO/VIRGO has detected gravitational waves (GWs) and these observations extend into the strong-field regime of gravity,
@@ -125,7 +124,29 @@ and Einstein-dilaton-Gauss-Bonnet (EdGB) gravity as examples of QG theories.
 \NOTE{What is the major difference (in motivation point of view) having (or not having) dynamical scalar field?}
 
 
-\section{Mathematical Formulations of the Quadratic Gravity}
+
+
+
+
+
+\section{Review: Quadratic Gravity from an Effective-Field-Theory Quantization}
+\label{sec:EFT}
+\TODO{rewrite}
+Field-theoretic attempts to quantize gravity have difficulties retaining renormalizability. Without higher-derivative terms, General Relativity is a non-renormalizable theory. The underlying reason can be associated with the negative canonical dimension of the Newton coupling, i.e., $[G_N]=-2$. The quantization of gravity is not just an academic problem. If $G_N$ was of order one at accessible energy scales, then the effects of delocalized quantum matter would directly imply significant quantum-fluctuations in the associated gravitational field. It is only the smallness of the gravitational force, i.e., $G_N\sim 10^{-38}$ GeV, which hides these effects from experimental observation. In fact, this is one particularly insightful way of obtaining the Planck scale. The dimensionless Newton coupling $g_N(\mu) = G_N\times \mu^2$ scales with a quadratic power-law in the characteristic energy scale $\mu$. Since it is dimensionless couplings which determine field-theoretic cross sections, gravitational effects become important whenever $g_N(\mu)\approx 1$, i.e., at a mass scale of $M_\text{Planck} = 10^{19}$ GeV -- the Planck scale.
+\\
+
+The most agnostic approach to the quantization of gravity is to look at quantum gravity as an effective field theory (EFT). In correspondence to, for instance, the Standard Model, this assumes that \emph{all} operators allowed by symmetry are present at $M_\text{Planck}$. Neglecting the index structure we can schematically denote those (dimensionful) couplings and the corresponding curvature invariants as $C_N\times R^N$. Since the underlying theory is not known, \emph{all} EFT-couplings are assumed to be of order one at the Planck-scale, i.e., $C_N(\mu=M_\text{Planck})\approx 1$. The EFT draws its predictive power from canonical scaling. Since in four dimensions the dimension of curvature is $[R]=2$, the associated couplings have dimension $[C_N] = 2N - 4$. The corresponding dimensionless couplings $c_N(\mu) = C_N / \mu^{2N-4}$ scale like $c_N \sim \mu^{4-2N}$. Hence they are suppressed by
+\begin{align}
+    c_N(M_\text{exp}) \approx \left(\frac{M_\text{exp}}{M_\text{Planck}}\right)^{(2N-4)}\;.
+\end{align}
+    In an EFT one would thus conclude that all couplings $c_{N>2}$ are suppressed by increasing powers of the enormously large Planck scale. This does not apply for the quadratic couplings $c_{N=2}$, which constitute so-called marginal couplings of the EFT. These are \emph{not} power-law suppressed and are hence expected to be of similar order as at the Planck-scale.
+\\
+    
+The EFT for quantum gravity is valid below the Planck scale. It might be possible to embedd it into a non-perturbatively renormalizable quantum field theory of gravity solely defined by diffeomorphism symmetry and a corresponding asymptotically safe fixed point. This theory of Asymptotically Safe Gravity (ASG) was conjectured by Steven Weinberg in 1976 \cite{Weinberg:1980gg}.  It is supported by the mounting evidence around the corresponding Reuter fixed-point \cite{Reuter:1996cp}, cf.~\cite{} for reviews. Since the Reuter fixed-point is fully interacting, \emph{all} higher-order couplings will be present at Planckian energies. Below the Planck scale the EFT-description applies and one, again, expects the associated low-energy effective theory to be governed by the four couplings of QG, i.e., $G_N$, $\Lambda$, $\alpha$ and $\beta$. It can be added here, that current approximations of the Reuter fixed-point indicate that there are only three so-called relevant couplings. AS restores the predictivity of a quantum field theory of gravity precisely by non-perturbative relations, which express \emph{all} other (irrelevant) couplings in terms of the three relevant ones. Hence, one of the two QG couplings could follow as a prediction from AS, e.g., $\alpha = \alpha (\beta,\,G_N,\,\Lambda)$.
+
+\section{Review: Well-posed Initial Value Problem for Quadratic Gravity}
+\label{sec:well-posedness}
+\TODO{suggest to properly review Noakes (even if just for our selves)}
 
 \subsection{Equations of Motion in the Quadratic Gravity}
 
@@ -145,8 +166,6 @@ where $G_{\mu\nu} = R_{\mu\nu} -1/2 R g_{\mu\nu}$ is the usual Einstein tensor, 
 \subsection{Hyperbolic formulation of the Equations of Motion and Well-posedness of the System}
 
 According to \cite{Noakes:1983} and recently also \cite{Morales:2018imi} the eom \eqref{eq:eom-QG} as formulated by use of harmonic coordinates can be written as a well-posed second order system.
-\\
-\aaron{\textbf{[I think we should be really sure about this, but Noakes claims he `shows that the higher-derivative gravity equations, when treated as twenty second-order equations (not ten fourth-order equations), have a well-posed initial value problem']}}
 
 \subsection{Gauge Choice and Full Evolution System}
 
