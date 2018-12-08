@@ -146,14 +146,15 @@ The EFT for quantum gravity is valid below the Planck scale. It might be possibl
 
 \section{Review: Well-posed Initial Value Problem for Quadratic Gravity}
 \label{sec:well-posedness}
-\TODO{suggest to properly review Noakes (even if just for our selves)}
 
 \subsection{Equations of Motion in the Quadratic Gravity}
 
 The equations of motion (eom) of QG are given by
 \begin{align}
 \label{eq:eom-QG}
-	H_{\mu\nu}=\frac{1}{16 \pi G_N} G_{\mu\nu} + E_{\mu\nu}=\frac{1}{2}T_{\mu\nu}\;,
+	H_{\mu\nu}=\kappa\,G_{\mu\nu} + E_{\mu\nu}=\frac{1}{2}T_{\mu\nu}\;,
+	\quad\quad
+	\text{with: }\kappa = \frac{1}{16 \pi G_N}\;,
 \end{align}
 where $G_{\mu\nu} = R_{\mu\nu} -1/2 R g_{\mu\nu}$ is the usual Einstein tensor, which is supplemented by its quadratic-order counter-part
 \begin{align}
@@ -162,10 +163,87 @@ where $G_{\mu\nu} = R_{\mu\nu} -1/2 R g_{\mu\nu}$ is the usual Einstein tensor, 
 	\notag\\
 	&-2\beta R R_{\mu\nu}-\frac{1}{2}g_{\mu\nu}(\alpha R_{\alpha\beta}R^{\alpha\beta}-\beta R^2)\;.
 \end{align}
+QG propagates, besides the graviton, an additional massive scalar mode associated with the Ricci-scalar $R$ and a massive spin-2 mode corresponding to the traceless part of the Ricci-tensor $\widetilde{R}_{\mu\nu} = R_{\mu\nu} - \frac{1}{4}g_{\mu\nu}R$ \cite{Stelle:1977ry}. Knowing this, it is useful to split the equations of motion into a trace and a traceless part, i.e.,
+\begin{align}
+	\label{eq:eomForTraceRicci-1}
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\textbf{\aaron{[have to check the factor of 2]}}
+	\\
+	\alpha\,\square \tilde{R}_{\mu\nu} = &-\kappa\,\tilde{R}_{\mu\nu} -(2\beta-\alpha) \left(\frac{\kappa}{8(3\beta-2\alpha)}g_{\mu\nu} -\nabla_\mu\nabla_\nu\right) R 
+	\notag\\
+	\label{eq:eomForTracelessRicci-1}
+	&- (\alpha-2\beta) R\widetilde{R}_{\mu\nu}
+	-2\alpha \left(R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}\right) \widetilde{R}^{\rho\sigma}
+\end{align}
+As anticipated, these equations are fourth order in derivatives.
+Following \cite{Noakes:1983}, there are two more essential steps to cast the equations of motion into a well-posed IVP: (i) we employ harmonic coordinates to treat $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independet variables, which reduces the system to contain only second-order derivatives; (ii) we use a differentiation procedure to diagonalize the resulting equations and put them in quasilinear form.
 
-\subsection{Hyperbolic formulation of the Equations of Motion and Well-posedness of the System}
+\subsection{Reduction to a second order system}
 
-According to \cite{Noakes:1983} and recently also \cite{Morales:2018imi} the eom \eqref{eq:eom-QG} as formulated by use of harmonic coordinates can be written as a well-posed second order system.
+The Ricci tensor in a general coordinate system is given by
+\begin{align}
+	\label{eq:RicciTensorInTermsOfMetric}
+	R_{\mu\nu}&=-\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu}+Q_{\mu\nu}(g,\partial g)+\frac{1}{2}
+\left(g_{\mu\beta}\partial_\nu F^\beta+g_{\nu\beta}\partial_\mu F^\beta\right),
+	\\[0.5em]\notag
+	\text{where }\quad
+	Q^{\mu\nu}(g,\partial g)&=g^{\alpha\beta}\left(\Gamma_{\alpha\gamma}^{\mu}\partial_{\beta} g^{\nu\gamma}+\Gamma_{\alpha\gamma}^{\nu}\partial_{\beta} g^{\mu\gamma}-2\Gamma_{\alpha\beta}^{\gamma}\partial_{\gamma} g^{\nu\mu}\right)\;,
+	\\[0.5em]\notag
+	\text{and }\quad
+	F^\alpha &= g^{\mu\nu}\Gamma_{\mu\nu}^\alpha = \frac{1}{\sqrt{-g}}\frac{\partial}{\partial x^\alpha}\bigg(\sqrt{-g}g^{\alpha\beta}\bigg)\;.
+\end{align}
+Harmonic coordinates are defined by $F^{\mu} = 0$. This choice is advantagous because it allows to reduces the expression of the Ricci tensor in terms of the metric into a quasilinear form, that is the last term in Eq.~\eqref{eq:RicciTensorInTermsOfMetric} vanishes in harmonic coordinates. Hence, 
+\begin{align}
+	\label{eq:EOMforMetricInHarmonicCoords}
+	-\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu}+Q_{\mu\nu}(g,\partial g) = R_{\mu\nu} = \widetilde{R}_{\mu\nu}
++\frac{1}{4}g_{\mu\nu}R\;.
+\end{align}
+Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independent variables reduces the system to second order. Notice that Eq.~\eqref{eq:EOMforMetricInHarmonicCoords} and therefore all following equations only hold in harmonic coordinates. The second order set of equations reads
+\begin{align}
+	\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu} = &Q_{\mu\nu}(g,\partial g)-\widetilde{R}_{\mu\nu}
++\frac{1}{4}g_{\mu\nu}R\;,
+	\\
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\\
+	\alpha\,\square \tilde{R}_{\mu\nu} = &
+	(2\beta-\alpha) R_{,\mu\nu} - \kappa\,\widetilde{R}_{\mu\nu}
+	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu} R
+	\notag\\
+	&+ (\alpha-2\beta)\left(g^{\alpha\beta}g^{\sigma\rho}g_{\sigma\rho,\alpha\beta}-2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
+	\notag\\
+	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;.
+\end{align}
+Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates). 
+\textbf{\aaron{[motivation not really clear to me]}}
+This set of equations is now only of second order, but the last equation is still not quasilinear.
+
+\subsection{Diagonalization to a quasilinear hyperbolic system}
+We can diagonalize the equations to a quasilinear system by introducing additional variables $V_\mu = \partial_\mu R$ and $h_{\mu\nu\alpha} = g_{\mu\nu,\alpha}$ and adding derivatives of the first two (already quasilinear) equations to the system. We obtain
+\begin{align}
+	-\frac{1}{2}g^{\eta\delta}g_{\mu\nu,\eta\delta}=
+	&-Q_{\mu\nu}(g,\partial g)+\widetilde{R}_{\mu\nu} + \frac{1}{4}g_{\mu\nu}R,
+	\\
+	g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}R=
+	&\frac{\kappa}{2(3\beta-2\alpha)}R
+	\\
+	-\frac{1}{2}g^{\eta\delta}h_{\mu\nu\gamma,\eta\delta}=
+	&\frac{1}{2}g^{\eta\delta}_{\,\,\,\,,\gamma}\,h_{\mu\nu\eta,\delta}-Q_{\mu\nu,\gamma}(g,\partial g, c)+\widetilde{R}_{\mu\nu,\gamma}
+	+\frac{1}{4}g_{\mu\nu,\gamma}R+\frac{1}{4}g_{\mu\nu}V_\gamma,
+	\\
+	g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}V_\gamma=
+	&\frac{\kappa}{2(3\beta-2\alpha)}V_\gamma,
+	\\
+	\alpha \square \widetilde R_{\mu\nu}=
+	&(2\beta-\alpha) \nabla_{\mu}V_\nu
+	-\kappa\,\widetilde{R}_{\mu\nu}
+	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu}R 
+	\\\notag
+	&-(\alpha-2\beta)\left(-g^{\alpha\beta}g^{\sigma\rho}h_{\sigma\rho\alpha,\beta}+2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
+	-\frac{\alpha}{8} g_{\mu\nu}\left(-g^{\alpha\beta}h_{\rho\sigma\alpha,\beta}+2Q_{\rho\sigma}(g,\partial g)\right)\widetilde{R}^{\rho\sigma}
+	\\\notag
+	&-\alpha \left(h_{\rho\sigma\mu,\nu} +h_{\mu\nu\rho,\sigma}-h_{\rho\nu\mu,\sigma} -h_{\mu\sigma\rho,\nu}+2g_{\alpha\beta}(\Gamma^{\alpha}_{\rho\nu}\Gamma^{\beta}_{\mu\sigma}-\Gamma_{\rho\sigma}^{\alpha}\Gamma_{\mu\nu}^{\beta})\right)\widetilde{R}^{\rho\sigma}.
+\end{align}
+the final well-posed form of the evolution equations.
 
 \subsection{Gauge Choice and Full Evolution System}
 
