@@ -1,43 +1,404 @@
-\documentclass[prd]{revtex4}
-\usepackage{amsmath, graphicx}
-\usepackage{grffile}
-\usepackage{dcolumn}
-\usepackage{bm}
-\usepackage{epsfig}
-\usepackage{mathrsfs}  %  package for the "curly" fonts 
-\usepackage{subfigure}
-\usepackage{multirow}
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{algorithmicx}
-\usepackage{amssymb}
-\usepackage{tensor}
+\documentclass[a4paper,oneside,openany,11pt]{memoir}
+\usepackage{geometry}
+\geometry{
+	inner=1.5cm, % Inner margin
+	outer=2cm, % Outer margin
+	bindingoffset=.5cm, % Binding offset
+	top=3.5cm, % Top margin
+	bottom=3.5cm, % Bottom margin
+	%	showframe, % Uncomment to show how the type block is set on the page
+}
+\linespread{1.15}
+
+\usepackage[english]{babel}	
+\usepackage{xspace}
+\usepackage{microtype}	
+\usepackage[utf8]{inputenc}	% Allows for writing special charachters in the tex-file 
+
+\usepackage{amsmath,amssymb,amsfonts,dsfont,bm} 	% Standard mathematics 
+\allowdisplaybreaks 	%Allows pagebreak during multiline math enviroments
 \usepackage{mathrsfs}
-\usepackage{bookmark}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+\usepackage{slashed}
+\usepackage{youngtab}
+\usepackage{physics}
+\usepackage{tensor}
 
-\newcommand*\apost{\textsc{\char13}}
 
-\topmargin 0.30in
-\textheight 9.00in
+\usepackage{siunitx}
+\sisetup{exponent-product = \cdot, 
+	separate-uncertainty} 
 
- \addtolength{\voffset}{-2cm}
- 
+%Bibliography
+\usepackage[sort&compress, numbers, merge]{natbib}
+\setlength{\bibsep}{0.0em}
+\bibliographystyle{apsrev4-1}
+\addto\captionsenglish{\renewcommand*{\bibname}{\LARGE References}}
+\makeatletter
+%\renewcommand{\@memb@bchap}{ \section*{\bibname} \bibmark \prebibhook}
+\makeatother
+
+%Figures and tables
+\usepackage{graphicx}
+\graphicspath{{./Figures/}}
+
+
+\counterwithout{section}{chapter} % Include if sections should be taken at the top level
+\counterwithout{figure}{chapter} %Removes chapter number on figures
+\setsecnumdepth{subsection}
+\numberwithin{equation}{section} %Denotes that equations should be numbered a section level
+
+
+\newcommand{\aaron}[1]{{\color{OliveGreen} #1}}
+\newcommand{\TODO}[1]{{\color{red}[}{\color{red}TODO:} {\color{blue}#1}{\color{red}]}}
+\newcommand{\NOTE}[1]{{\color{blue}[#1]}}
+
+%Table of contents
+\renewcommand{\aftertoctitle}{\par\nobreak }
+\maxtocdepth{subsection}
+
+
+% % % % Document % % % % 
 \begin{document}
 
-\title{Black Hole Dynamics in Quadratic Gravity}
+\title{\HUGE Dynamical Black Holes and Gravitational Waves in Quadratic Gravity}
 
-%\author{Hyun Lim}
+\author{Hyun Lim, Aaron Held\\(work in progress)}
 
 
-%\pacs{}
 \maketitle
 
-\section{Mathematical Formulations of the Quadratic Gravity}
+\tableofcontents*
+
+%=======================================================================================================
+
+\section{Quadratic Gravity in the Strong-Gravity Regime}
+
+Einstein's theory of General Relativity (GR) is built upon diffeomorphism symmetry, manifest in its formulation in terms of the Einstein-Hilbert action
+\begin{align}
+    S_{\text{GR}} &=
+ \frac1{16\pi G_\text{N}}\int_x \sqrt{\text{det } g}\, (2\Lambda-R)\;,
+\end{align}
+where $G_N$ and $\Lambda$ denote the Newton coupling and cosmological constant, respectively. It is a simple theory with only two free parameters and describes all measured gravitational phenomena to date. Apart from simplicity, a l\`a Occam's razor, there is no fundamental principle in classical gravity that would explain the absence of higher-order, diffeomorphism-invariant curvature terms. The next (quadratic) order in curvature invariants, i.e., Quadratic Gravity (QG) is given by
+\begin{align}
+    S_{\text{gravity}} &=
+ S_\text{GR}
+ + \int_x \sqrt{\text{det }g} \left(\alpha  R_{\mu\nu}R^{\mu\nu} + \beta  R^2\right)  \;. 
+\end{align}
+In spacetimes topologically equivalent to flat space the Gauss-Bonnet topological invariant ensures that this is the most general action at quadratic order. Kellog Stelle showed that, opposed to GR, QG is perturbatively renormalizable as a quantum field theory \cite{Stelle:1976gc}. Him, and many subsequent authors, also discuss the appearence of additional massive ghost-like modes, one scalar and one spin-2, which spoil the unitarity of this quantized theory of gravity. Further, the theory can be motivated as a generic infra-red limit of an effective field theory (EFT) treatment of the quantization of gravity, see e.g. \cite{Donoghue:2012zc} for a pedagogical review, and \cite{} for how this formulation avoids the issue of unitarity. All subsequent (unresummed local) curvature invariants will be suppressed by powers of the Planck scale.
+\\
+One might argue for the uniqueness of GR by the fact that it admits a well-posed (numerical) evolution. In fact, as David R. Noakes showed in \cite{Noakes:1983}, also the dynamics of quadratic gravity can be formulated as a well-posed initial value problem.
+We regard both these concepts of such crucial importance for all what follows, that we will review them. Readers not interested in a motivation for QG because of its well-posed numerical evolution or for the absence of even higher orders because of effective field theory, can safely skip Sec.~\ref{sec:EFT} and \ref{sec:well-posedness}, respectively.
+\\
+
+Experiments on solar-system scales only test the weak-gravity regime: the existing constraints on higher-order modifications of GR are therefore extremely weak. Submillimeter-tests using pendulums constrain Yukawa-like corrections to the Newtonian potential that arise from higher-derivative terms like $\alpha  R_{\mu\nu}R^{\mu\nu}$ and $\beta  R^2$. But, the constraints are as weak as $\alpha,\,\beta < 10^{60}\sim 10^{70}$ \cite{Hoyle:2004cw, Kapner:2006si, Calmet:2017rxl}. Further, they do not allow to distinguish between the two couplings.
+\\
+The main motivation for this paper is to generate gravitational wave templates from QG, to use experimental data from binary mergers to constraint the QG-couplings $\alpha$ and $\beta$, see also \cite{Berry:2011pb, Cao:2013osa} for a similar study in $f(R)$-gravity. A simple comparison of typical curvature scales exemplifies how vastly studies of the strong-gravity regime could improve these bounds. For that, we compare the curvature at the surface of the earth horizon with that of a solar-mass black hole, by use of the Kretschmann scalar $K\sim M^2/r^6$, i.e.,
+\begin{align}
+	\frac{K_{\oplus\text{-surface}}}{K_{\odot\text{-horizon}}} = \frac{K_{\oplus\text{-surface}}}{K_{\oplus\text{-horizon}}}\;\frac{K_{\oplus\text{-horizon}}}{K_{\odot\text{-horizon}}} \approx 10^{-32}\;.
+\end{align}
+
+\subsection{Testing General Relativity}
+aLIGO/VIRGO has detected gravitational waves (GWs) and these observations extend into the strong-field regime of gravity,
+where the gravitational field is non-linear and dynamical, precisely where tests of general relativity(GR) are currently lacking. 
+Strong field tests of GR have implications to a large areas in physics and astrophysics. For example, 
+gravitational parity breaking modifies the geometry of spinning black holes (BHs) and the propagation of GWs in 
+these backgrounds. Constrain such a departure from the Kerr geometry of GR in the strong field regime will place
+constraints on the coupling constants of such theories.\TODO{Need references}
+
+In this work, we are interested in dynamics and stability of BH in QG.
+In literatures \TODO{Need references}, considerable works are done withimposing extra 
+scalar field into the action such that (in the most general form)
+\begin{align}
+S &\equiv \int d^4 s \sqrt{-g} \Bigg\{ \frac{1}{16 \pi G_N} R + \alpha_1 f_1 (\vartheta) R^2 + \alpha_2 f_2 (\vartheta) R_{\mu \nu} R^{\mu \nu} 
+    + \alpha_3 f_3 (\theta) R_{\mu \nu \lambda \sigma} R^{\mu \nu \lambda \sigma} \nonumber \\
+    &+ \alpha_4 f_4 (\vartheta) R_{\mu \nu \lambda \sigma} (*R^{\mu \nu \lambda \sigma}) - \frac{\beta}{2} [ \nabla_a \vartheta \nabla^a \vartheta
+    + 2 V(\vartheta) ] + \mathcal{L}_{matter} \Bigg\}
+\end{align}
+where $g$ stands for the determinant of the metric $g_{\mu \nu}$. $R, \, R_{\mu \nu}, \, R_{\mu \nu \lambda \sigma}$, 
+and $*R_{\mu \nu \lambda \sigma}$ are the Ricci scalar, Ricci tensor, Riemann tensor and its dual respectively. 
+$\vartheta$ is a dynamical scalar field, $f_i (\vartheta)$ are functionals of this field, $(\alpha_i , \beta)$ are coupling constants.
+Coupling to a scalar field $\vartheta$ enables to make dynamical theory such as dynamical Chern-Simon (dCS) gravity 
+and Einstein-dilaton-Gauss-Bonnet (EdGB) gravity as examples of QG theories.
+\NOTE{What is the major difference (in motivation point of view) having (or not having) dynamical scalar field?}
+
+
+
+
+
+
+
+\section{Review: Quadratic Gravity from an Effective-Field-Theory Quantization}
+\label{sec:EFT}
+\TODO{rewrite}
+Field-theoretic attempts to quantize gravity have difficulties retaining renormalizability. Without higher-derivative terms, General Relativity is a non-renormalizable theory. The underlying reason can be associated with the negative canonical dimension of the Newton coupling, i.e., $[G_N]=-2$. The quantization of gravity is not just an academic problem. If $G_N$ was of order one at accessible energy scales, then the effects of delocalized quantum matter would directly imply significant quantum-fluctuations in the associated gravitational field. It is only the smallness of the gravitational force, i.e., $G_N\sim 10^{-38}$ GeV, which hides these effects from experimental observation. In fact, this is one particularly insightful way of obtaining the Planck scale. The dimensionless Newton coupling $g_N(\mu) = G_N\times \mu^2$ scales with a quadratic power-law in the characteristic energy scale $\mu$. Since it is dimensionless couplings which determine field-theoretic cross sections, gravitational effects become important whenever $g_N(\mu)\approx 1$, i.e., at a mass scale of $M_\text{Planck} = 10^{19}$ GeV -- the Planck scale.
+\\
+
+The most agnostic approach to the quantization of gravity is to look at quantum gravity as an effective field theory (EFT). In correspondence to, for instance, the Standard Model, this assumes that \emph{all} operators allowed by symmetry are present at $M_\text{Planck}$. Neglecting the index structure we can schematically denote those (dimensionful) couplings and the corresponding curvature invariants as $C_N\times R^N$. Since the underlying theory is not known, \emph{all} EFT-couplings are assumed to be of order one at the Planck-scale, i.e., $C_N(\mu=M_\text{Planck})\approx 1$. The EFT draws its predictive power from canonical scaling. Since in four dimensions the dimension of curvature is $[R]=2$, the associated couplings have dimension $[C_N] = 2N - 4$. The corresponding dimensionless couplings $c_N(\mu) = C_N / \mu^{2N-4}$ scale like $c_N \sim \mu^{4-2N}$. Hence they are suppressed by
+\begin{align}
+    c_N(M_\text{exp}) \approx \left(\frac{M_\text{exp}}{M_\text{Planck}}\right)^{(2N-4)}\;.
+\end{align}
+    In an EFT one would thus conclude that all couplings $c_{N>2}$ are suppressed by increasing powers of the enormously large Planck scale. This does not apply for the quadratic couplings $c_{N=2}$, which constitute so-called marginal couplings of the EFT. These are \emph{not} power-law suppressed and are hence expected to be of similar order as at the Planck-scale.
+\\
+    
+The EFT for quantum gravity is valid below the Planck scale. It might be possible to embedd it into a non-perturbatively renormalizable quantum field theory of gravity solely defined by diffeomorphism symmetry and a corresponding asymptotically safe fixed point. This theory of Asymptotically Safe Gravity (ASG) was conjectured by Steven Weinberg in 1976 \cite{Weinberg:1980gg}.  It is supported by the mounting evidence around the corresponding Reuter fixed-point \cite{Reuter:1996cp}, cf.~\cite{} for reviews. Since the Reuter fixed-point is fully interacting, \emph{all} higher-order couplings will be present at Planckian energies. Below the Planck scale the EFT-description applies and one, again, expects the associated low-energy effective theory to be governed by the four couplings of QG, i.e., $G_N$, $\Lambda$, $\alpha$ and $\beta$. It can be added here, that current approximations of the Reuter fixed-point indicate that there are only three so-called relevant couplings. AS restores the predictivity of a quantum field theory of gravity precisely by non-perturbative relations, which express \emph{all} other (irrelevant) couplings in terms of the three relevant ones. Hence, one of the two QG couplings could follow as a prediction from AS, e.g., $\alpha = \alpha (\beta,\,G_N,\,\Lambda)$.
+
+\section{Review: Well-posed Initial Value Problem for Quadratic Gravity}
+\label{sec:well-posedness}
 
 \subsection{Equations of Motion in the Quadratic Gravity}
 
-\subsection{Hyperbolic formulation of the Equations of Motion}
+The equations of motion (eom) of QG are given by
+\begin{align}
+\label{eq:eom-QG}
+	H_{\mu\nu}=\kappa\,G_{\mu\nu} + E_{\mu\nu}=\frac{1}{2}T_{\mu\nu}\;,
+	\quad\quad
+	\text{with: }\kappa = \frac{1}{16 \pi G_N}\;,
+\end{align}
+where $G_{\mu\nu} = R_{\mu\nu} -1/2 R g_{\mu\nu}$ is the usual Einstein tensor, which is supplemented by its quadratic-order counter-part
+\begin{align}
+	E_{\mu\nu} = &(\alpha-2\beta)\nabla_\mu\nabla_\nu R-\alpha \square R_{\mu\nu}-(\frac{1}{2}\alpha-2\beta)g_{\mu\nu}\square R
++2\alpha R^{\alpha\beta}R_{\mu\alpha\nu\beta}
+	\notag\\
+	&-2\beta R R_{\mu\nu}-\frac{1}{2}g_{\mu\nu}(\alpha R_{\alpha\beta}R^{\alpha\beta}-\beta R^2)\;.
+\end{align}
+QG propagates, besides the graviton, an additional massive scalar mode associated with the Ricci-scalar $R$ and a massive spin-2 mode corresponding to the traceless part of the Ricci-tensor $\widetilde{R}_{\mu\nu} = R_{\mu\nu} - \frac{1}{4}g_{\mu\nu}R$ \cite{Stelle:1977ry}. Knowing this, it is useful to split the equations of motion into a trace and a traceless part, i.e.,
+\begin{align}
+	\label{eq:eomForTraceRicci-1}
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\textbf{\aaron{[have to check the factor of 2]}}
+	\\
+	\alpha\,\square \tilde{R}_{\mu\nu} = &-\kappa\,\tilde{R}_{\mu\nu} -(2\beta-\alpha) \left(\frac{\kappa}{8(3\beta-2\alpha)}g_{\mu\nu} -\nabla_\mu\nabla_\nu\right) R 
+	\notag\\
+	\label{eq:eomForTracelessRicci-1}
+	&- (\alpha-2\beta) R\widetilde{R}_{\mu\nu}
+	-2\alpha \left(R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}\right) \widetilde{R}^{\rho\sigma}
+\end{align}
+As anticipated, these equations are fourth order in derivatives.
+Following \cite{Noakes:1983}, there are two more essential steps to cast the equations of motion into a well-posed IVP: (i) we employ harmonic coordinates to treat $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independet variables, which reduces the system to contain only second-order derivatives; (ii) we use a differentiation procedure to diagonalize the resulting equations and put them in quasilinear form.
+
+\subsection{Reduction to a second order system}
+
+The Ricci tensor in a general coordinate system is given by
+\begin{align}
+	\label{eq:RicciTensorInTermsOfMetric}
+	R_{\mu\nu}&=-\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu}+Q_{\mu\nu}(g,\partial g)+\frac{1}{2}
+\left(g_{\mu\beta}\partial_\nu F^\beta+g_{\nu\beta}\partial_\mu F^\beta\right),
+	\\[0.5em]\notag
+	\text{where }\quad
+	Q^{\mu\nu}(g,\partial g)&=g^{\alpha\beta}\left(\Gamma_{\alpha\gamma}^{\mu}\partial_{\beta} g^{\nu\gamma}+\Gamma_{\alpha\gamma}^{\nu}\partial_{\beta} g^{\mu\gamma}-2\Gamma_{\alpha\beta}^{\gamma}\partial_{\gamma} g^{\nu\mu}\right)\;,
+	\\[0.5em]\notag
+	\text{and }\quad
+	F^\alpha &= g^{\mu\nu}\Gamma_{\mu\nu}^\alpha = \frac{1}{\sqrt{-g}}\frac{\partial}{\partial x^\alpha}\bigg(\sqrt{-g}g^{\alpha\beta}\bigg)\;.
+\end{align}
+Harmonic coordinates are defined by $F^{\mu} = 0$. This choice is advantagous because it allows to reduces the expression of the Ricci tensor in terms of the metric into a quasilinear form, that is the last term in Eq.~\eqref{eq:RicciTensorInTermsOfMetric} vanishes in harmonic coordinates. Hence, 
+\begin{align}
+	\label{eq:EOMforMetricInHarmonicCoords}
+	-\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu}+Q_{\mu\nu}(g,\partial g) = R_{\mu\nu} = \widetilde{R}_{\mu\nu}
++\frac{1}{4}g_{\mu\nu}R\;.
+\end{align}
+Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independent variables reduces the system to second order. Notice that Eq.~\eqref{eq:EOMforMetricInHarmonicCoords} and therefore all following equations only hold in harmonic coordinates. The second order set of equations reads
+\begin{align}
+	\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu} = &Q_{\mu\nu}(g,\partial g)-\widetilde{R}_{\mu\nu}
++\frac{1}{4}g_{\mu\nu}R\;,
+	\\
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\\
+	\alpha\,\square \tilde{R}_{\mu\nu} = &
+	(2\beta-\alpha) R_{,\mu\nu} - \kappa\,\widetilde{R}_{\mu\nu}
+	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu} R
+	\notag\\
+	&+ (\alpha-2\beta)\left(g^{\alpha\beta}g^{\sigma\rho}g_{\sigma\rho,\alpha\beta}-2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
+	\notag\\
+	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;.
+\end{align}
+Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates). 
+\textbf{\aaron{[motivation not really clear to me]}}
+This set of equations is now only of second order, but the last equation is still not quasilinear.
+
+\subsection{Diagonalization to a quasilinear hyperbolic system}
+We can diagonalize the equations to a quasilinear system by introducing additional variables $V_\mu = \partial_\mu R$ and $h_{\mu\nu\alpha} = g_{\mu\nu,\alpha}$ and adding derivatives of the first two (already quasilinear) equations to the system. We obtain
+\begin{align}
+	-\frac{1}{2}g^{\eta\delta}g_{\mu\nu,\eta\delta}=
+	&-Q_{\mu\nu}(g,\partial g)+\widetilde{R}_{\mu\nu} + \frac{1}{4}g_{\mu\nu}R,
+	\\
+	g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}R=
+	&\frac{\kappa}{2(3\beta-2\alpha)}R
+	\\
+	-\frac{1}{2}g^{\eta\delta}h_{\mu\nu\gamma,\eta\delta}=
+	&\frac{1}{2}g^{\eta\delta}_{\,\,\,\,,\gamma}\,h_{\mu\nu\eta,\delta}-Q_{\mu\nu,\gamma}(g,\partial g, c)+\widetilde{R}_{\mu\nu,\gamma}
+	+\frac{1}{4}g_{\mu\nu,\gamma}R+\frac{1}{4}g_{\mu\nu}V_\gamma,
+	\\
+	g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}V_\gamma=
+	&\frac{\kappa}{2(3\beta-2\alpha)}V_\gamma,
+	\\
+	\alpha \square \widetilde R_{\mu\nu}=
+	&(2\beta-\alpha) \nabla_{\mu}V_\nu
+	-\kappa\,\widetilde{R}_{\mu\nu}
+	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu}R 
+	\\\notag
+	&-(\alpha-2\beta)\left(-g^{\alpha\beta}g^{\sigma\rho}h_{\sigma\rho\alpha,\beta}+2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
+	-\frac{\alpha}{8} g_{\mu\nu}\left(-g^{\alpha\beta}h_{\rho\sigma\alpha,\beta}+2Q_{\rho\sigma}(g,\partial g)\right)\widetilde{R}^{\rho\sigma}
+	\\\notag
+	&-\alpha \left(h_{\rho\sigma\mu,\nu} +h_{\mu\nu\rho,\sigma}-h_{\rho\nu\mu,\sigma} -h_{\mu\sigma\rho,\nu}+2g_{\alpha\beta}(\Gamma^{\alpha}_{\rho\nu}\Gamma^{\beta}_{\mu\sigma}-\Gamma_{\rho\sigma}^{\alpha}\Gamma_{\mu\nu}^{\beta})\right)\widetilde{R}^{\rho\sigma}.
+\end{align}
+the final well-posed form of the evolution equations.
+
+\subsection{Gauge Choice and Full Evolution System}
+
+\section{Simple Model Problem : Spherical Symmetry}
+As an example, we impose spherical symmetry in our system. In this section, we adopt $G_N = c = 1$ unit system.
+\subsection{Choice of Coordinate : Horizon Penetrating coordinate}
+We present a horizon penetrating coordinate for spherically symmetric metric. Consider usual Schwarzschild line element in Boyer-Lindquist coordinate 
+\begin{align}
+\label{eqn:schw_bl}
+ds^2 = - \left(1- \frac{2M}{r} \right) dt^2 + \left(1- \frac{2M}{r} \right)^{-1} dr^2 + r^2 d\Omega^2 
+\end{align}
+where $M$ is a mass. Compare this with usual 3+1 line element form $ds^2 = - \alpha^2 dt^2 + \gamma_{ij} ( dx^2 + \beta^i dt)(dx^j + \beta^j dt)$ we can identify the lapse $\alpha^2 = \left(1- \frac{2M}{r} \right)$. As we know, the line element(Eqn.~\ref{eqn:schw_bl}) is singular at the horizon ($r=2M$) and lapse collapse to zero. This can be problematic because equations of motion for the metric can be become exponentially unstable in the presence of a coordinate singularity without some regularization technique.
+
+One way to resolve this problem is to move to a horizon penetrating coordinate system where this singularity is not present. The Kerr-Schild coordinates are one such coordinate system. 
+
+For example, Schwarzschild solution in spherical type Kerr-Schild coordinates
+\begin{align}
+\alpha &= \sqrt{\frac{r}{r+2M}} \\
+\beta^r &= \frac{2M}{r+2M} \\
+\beta_r &=\frac{2M}{r} \\
+\beta^\theta &= \beta^\varphi = 0 \\
+K_{ij} &= \textrm{diag} \left[ -\frac{2M(r+M)}{\sqrt{r^5 (r+2M)}} , 2M \sqrt{\frac{r}{r+2M}}, K_{\theta \theta} \sin^2 \theta \right]
+\end{align}
+Schwarzschild solution in Cartesian type Kerr-Schild coordinate
+\begin{align}
+\alpha &= \sqrt{\frac{r}{r+2M}} \\
+\beta^i &= \frac{2M}{r} \frac{x^i}{r+2M} \\
+\beta_i &=\frac{2M x_i}{r^2} \\
+K_{ij} &= \-\frac{2M}{r^4} \sqrt{\frac{r}{r+2M}} \left[ \left( \frac{M}{r}+2 \right) x_i x_j - r^2 \delta_{ij} \right]
+\end{align}
+where $x^i = (x,y,z)$ which is usual spatial Cartesian coordinate. In both cases, we can see lapse is regular at the horizon.
+
+General spherical symmetric line element in polar-areal form
+\begin{align}
+\label{eqn:ss-met-pa}
+ds^2 = - \alpha(r)^2 dt^2 + a(r)^2 dr^2 + r^2 d \Omega^2
+\end{align}
+where $\alpha$ is referred as lapse function. Compare with above Schwarzschild solution, $\alpha = 1/a$. 
+
+Now consider a transformation of the Schwarzschild time t coordinate to a new generic coordinate $\hat{t}$ according to
+\begin{align}
+d\hat{t} = dt + a^2 \sqrt{1-\frac{g}{a^2}} dr
+\end{align}
+where $g(r)$ is arbitrary function. Substitute this into $ds^2 = -\alpha^2 dt^2 + a^2 dr^2 + r^2 d\Omega^2$ gives
+\begin{align}
+ds^2 &= - \alpha^2 \left (d\hat{t} - a^2 \sqrt{1-\frac{g}{a^2}} dr\right)^2 + a^2 dr^2 + r^2 d\Omega^2 \nonumber \\
+&= - \alpha^2 d \hat{t}^2 + 2 \sqrt{1-\frac{g}{a^2}} d\hat{t} dr + g dr^2 + r^2 d \Omega^2
+\end{align}
+Compare this with usual 3+1 framework
+\begin{align}
+ds^2 = - \alpha^2 d \hat{t}^2 + \gamma_{ij} (dx^i + \beta^i d\hat{t}\,)(dx^j + \beta^j d\hat{t}\,)
+\end{align}
+and so into the lapse $\alpha = 1/\sqrt{g}$, the shift $\beta_i = (\sqrt{1-g/a^2},0,0)$ or $\beta^i = \gamma^{ij} \beta_j$ and the spatial metric of the constant $\hat{t}$ hypersurface $\gamma_{ij} = diag(g,r^2,r^2\sin^2 \theta)$. 
+
+If we choose $\alpha = \sqrt{1-2M/r} = 1/a$ and $g = 1+2M/r$ like in previous (which we will use this), we get
+\begin{align}
+ds^2 = - \left(1 - \frac{2M}{r} \right) d \hat{t}^2 + \frac{4M}{r} d \hat{t} dr + \left(1+\frac{2M}{r} \right) dr^2 + r^2 d\Omega^2
+\end{align}
+which is Schwarzschild in Kerr-Schild coordinate (or Eddington-Finkelstein coordinate). And correspondingly, $\alpha = \sqrt{r/(r+2M)}$, $\beta_i = (2M/r,0,0)$, and $\gamma_{ij} = diag(1+2M/r,r^2,r^2\sin^2 \theta)$ which are same as above.
+
+As you can see here, the KS (or EF) form of the metric represents an analytic expansion of the Schwarzschild solution from the region $2M < r< \infty$ to  $0<r<\infty$. Thus, we apply this coordinate transformation for our equations.
+
+It is good to rewrite the metric into usual $3+1$ variable form i.e. keep it geometric variables (should be careful of confusion) with considering time dependent case. Here, we use $t$ for time coordinate that we used above.
+\begin{align}
+\label{eqn:gen-sph-met}
+ds^2 = (-\alpha^2 + a^2 \beta^2) dt^2 + 2a^2 \beta dt dr + a^2 dr^2 + r^2 b^2 d \Omega^2
+\end{align}
+where $\alpha$, $a$, $b$, and $\beta$ are functions of $r$ and $t$, and $d\Omega^2$ is the metric of unit sphere. From this, we can calculate non-vanishing components of connection coefficients and Ricci tensors for $i,j$, and $k$ (spatial indices)
+\begin{align}
+&\Gamma\indices{^r_{rr}} = \frac{\partial_r a}{a}, \,\,\,\,\,\,\,\, \Gamma\indices{^r_{\theta \theta}} = - \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\theta_{r \theta}} = \frac{\partial_r (rb)}{rb} \nonumber  \\
+&\Gamma\indices{^r_{\varphi \varphi}} = -\sin^2 \theta \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{r \varphi}} = \Gamma\indices{^\theta_{r \theta}} \nonumber \\
+&\Gamma\indices{^\theta_{\varphi \varphi}} = -\sin \theta \cos \theta, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{\varphi \theta}} = -\cot \theta \nonumber 
+\end{align}
+\begin{align}
+R\indices{^r_r} &= -\frac{2}{arb} \partial_r \left(\frac{\partial_r (rb)}{a} \right) \\
+R\indices{^\theta_\theta} &= \frac{1}{ar^2b^2} \left[a-\partial_r \left(\frac{rb \partial_r (rb)}{a} \right) \right] \\
+\end{align}
+
+
+\subsection{Evolution System in Spherical Symmetry}
+\TODO{What is ADM form of quadratic gravity? We can impose above argument to make the evolution equation in SS}
 
 \section{Initial Data}
+Under usual 3+1 decomposition \NOTE{Still same for QG?}, the constraint equations are (in vacua)
+\begin{align}
+D_j K\indices{^j_i} - D_i K &= 0 \\
+R + K^2 - K_{ij} K^{ij} &= 0
+\end{align}
+The spatial metric $\gamma_{ij}$, the extrinsic curvature $K_{ij}$, and any matter field should 
+satisfy the constraints. Thus, we have to specify $(\gamma_{ij}, K_{ij})$ on some initial 
+spatial slice $\Sigma$ that are compatible with the constraint equations. These fields can 
+then be used as initial data for a dynamical evolution obtained by solving the evolution equation.
 
+\subsection{Elementary Black Hole Solution}
+
+\NOTE{Might use Brill-Lindquist for testing case. \\
+Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
+
+\subsection{Black Holes in QG}
+
+\NOTE{We may use some analytic solutions in literatures}
+
+\subsection{Binary Black Hole Initial Data}
+\subsubsection{Puncture Method}
+
+\NOTE{Maybe solve elliptic equations or just find puncture like ID}
+
+\section{Gravitational Wave Extractions for QG}
+Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. 
+There are lots of possible ways to do this but we will try to follow the way I know 
+(a way is in \texttt{hyperGHSF} code). We define the timelike member of the tetrad to be the 
+normal to our spacelike hypersurfaces. The remaining three are then constructed 
+via a Gram-Schmidt procedure from a set of three independent vectors living on the 
+hypersurfaces. Our demand for them seem to be only that in the asymptotically flat limit, 
+we recover something akin to the usual unit vectors of spherical coordinates. 
+
+Indeed, we start with a version of them
+\begin{align}
+u^a &= (0,x,y,z) \\
+v^a &= (0,xz,yz,-x^2 - y^2) \\
+w^a &= (0,-y,x,0)
+\end{align}
+and then using the 3-metric, $\gamma_{ij}$ ,orthonormalize them with respect to it. In particular, we define new orthonormal spacelike vectors
+\begin{align}
+^{(1)}e^i &= \frac{u^i}{||u||} \\
+^{(2)}e^i &= \frac{v^i -  \bra{ ^{(1)}e}\ket{v} \, ^{(1)}e^i}{||v -  \bra{ ^{(1)}e}\ket{v} \, ^{(1)}e ||} \\
+^{(3)}e^i &= \frac{w^i -  \bra{ ^{(1)}e}\ket{w} \, ^{(1)}e^i -  \bra{ ^{(2)}e}\ket{w} \, ^{(2)}e^i}{||w -  \bra{ ^{(1)}e}\ket{w} \, ^{(1)}e - \bra{ ^{(2)}e}\ket{w} \, ^{(2)}e ||} 
+\end{align}
+where we are defining the inner product and the norm as
+\begin{align}
+\bra{u}\ket{v} \equiv \gamma_{ij} u^i v^j \\
+|| u || \equiv \sqrt{\bra{u}\ket{u}}
+\end{align}
+with these, we construct a null tetrad according to
+\begin{align}
+l^a &= \frac{1}{2} (n^a + \, ^{(1)}e^a) \\
+\tilde{n}^a &= \frac{1}{2} (n^a - \, ^{(1)}e^a) \\
+m^a &= \frac{1}{2} (^{(2)}e^a + i \, ^{(3)}e^a) \\
+\bar{m}^a &=  \frac{1}{2} (^{(2)}e^a - i \, ^{(3)}e^a)
+\end{align}
+where, because we are running out of letters, the usual null vector $n^a$ has been written with a tilde to distinguish if from the normal 
+to the foliation. Then we can compute the relevant complex Penrose scalar $\Psi4$ such that
+\begin{align}
+\Psi_4 &= C_{abcd} \tilde{n}^a \bar{m}^b \tilde{n}^c \bar{m}^d \\
+           &= C_{abcd} \tilde{n}^a \tilde{n}^c \left[\frac{1}{2} \{ ^{(2)}e^b \, ^{(2)}e^d - ^{(3)}e^b \, ^{(3)}e^d  \} + i \, ^{(2)}e^b \, ^{(3)}e^d \right] 
+\end{align}
+Now we must decompose this with respect to an assumed spacelike hypersurface. As usual, 
+we define the normal to the hypersurface as $n_a$, the metric on the hypersurface as $\gamma_{ij}$ 
+and the extrinsic curvature as $K_{ij}$.
+\NOTE{Here is subtly. If we do notneed to consider additional higher derivatives of curvature into this manner, we may use same procedure as Einstein GR but not sure}
+
+
+\bibliography{References}
+	
 \end{document}
+
+
+
