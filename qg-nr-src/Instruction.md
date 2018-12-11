@@ -2,6 +2,8 @@
 
 This instruction contains to build NR infrastructure for our project. 
 We import AMR infrastructure from HAD which is written in Fortran 90
+(and also little bit about different languages such as Fortran 77 and
+C/C++ for Lorene lib)
 
 ### Dependencies
 
@@ -27,9 +29,9 @@ should be similar
 
 ### Build the code
 
-Currently, we have only one project code `hyperQuadG` in `qg-had/src` directory. 
+Currently, we have only two project codes `hyperQuadG` and `hyperQG_GH` in `qg-had/src` directory. 
 In `src` directory, you can find two addtional directories : `amr` and `hyper`
-We hardly recommend that **DO NOT** modify this directory unless you understand
+We strongly recommend that **DO NOT** modify this directory unless you understand
 what you are doing.
 
 To complie this code, you need to export paths for lib/complier/flags.
@@ -39,13 +41,14 @@ To do that easily, we create `ENV` file in main directory
 Please check example `ENV` file [here](https://github.com/hlim88/quadGrav/blob/master/qg-nr-src/qg-had/.ENV_m7).
 You can generate your own enviroment file based on your system.
 
-Note that you also need export project folder name and bin file name. In this work,
-we have only one so you can simply add
+Note that you also need export project folder name and bin file name. For example,
+you can simply add below
 
 ```
 export EQS="hyperQuadG"
 export EXECNAME="hquadg"
 ```
+in your `ENV` file
 
 Also, you can add additional project code like above
 
@@ -61,8 +64,14 @@ you are done.
 ### Run several test
 
 Once you successfully build the code, you can find bin executable `hquadg`
-in `bin` directory. Parameter files are still tuning but you can try one of
-par file in `src/hyperQuadD/par`
+(or `hqggh`) in `bin` directory. Parameter files are still tuning but 
+you can try one of par file in `pars`.
+
+You can run the code simply type
+```
+./<bin executable> <par file>
+```
+As always, you can use `mpirun` or `mpiexec` for parallel run.
 
 ## Contact
 
