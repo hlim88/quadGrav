@@ -22,6 +22,9 @@ compatiable `OpenMPI`
 Please consult your computing resource people to check whether these dependencies
 are available or not.
 
+I also refer Matt's homepage for [HAD installation](http://relativity.phys.lsu.edu/postdocs/matt/software/had-docs/had/docs/index.html). This is quite old documentation but procedure
+should be similar
+
 ### Build the code
 
 Currently, we have only one project code `hyperQuadG` in `qg-had/src` directory. 
