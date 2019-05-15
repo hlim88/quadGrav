@@ -341,6 +341,29 @@ We can diagonalize the equations to a quasilinear system by introducing addition
 \end{align}
 the final well-posed form of the evolution equations.
 
+\subsection{Recast Equations into 3+1 Form}
+
+In this section, we reduce our systems of equations in 3+1 form. There are several reasons to use 3+1 form:
+
+1. We can have a system of equation in terms of first order in time and second order in space i.e. better form
+as a numerical aspects (Note that this is not always true but at least for me this is true)
+
+2. Easily adapt gauge choice for BH rather than using excision techniques i.e. do not need to solve elliptic problems.
+
+3. Constraints are treated as evolution vars so we can monitor is easily.
+
+We are following usual 3+1 variables such that
+\begin{align}
+\label{eqn:3p1}
+ds^2 = -\alpha^2 dt^2 + \gamma_{ij} (dx^i + \beta^i dt)(dx^j + \beta^j dt)
+\end{align}
+where $\alpha$ is lapse, $\beta^i$ is shift, $\gamma_{ij}$ is induced metric on spatial hypersurface.
+
+\TODO{Adding eqns}
+
+\subsubsection{Hyperbolicity of the System}
+\TODO{Characteristic analysis is required}
+
 \subsection{Gauge Choice and Full Evolution System}
 
 \section{Simple Model Problem : Spherical Symmetry}
