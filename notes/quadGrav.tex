@@ -297,9 +297,9 @@ Harmonic coordinates are defined by $F^{\mu} = 0$. This choice is advantagous be
 Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independent variables reduces the system to second order. Notice that Eq.~\eqref{eq:EOMforMetricInHarmonicCoords} and therefore all following equations only hold in harmonic coordinates. The second order set of equations reads
 \begin{align}
 	\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu} = &Q_{\mu\nu}(g,\partial g)-\widetilde{R}_{\mu\nu}
--\frac{1}{4}g_{\mu\nu}R\;,
+-\frac{1}{4}g_{\mu\nu}R\;, 	\label{eom:metric}
 	\\
-	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;, \label{eom:ricci_scalar}
 	\\
 	\alpha\,\square \tilde{R}_{\mu\nu} = &
 	(2\beta-\alpha) R_{,\mu\nu} - \kappa\,\widetilde{R}_{\mu\nu}
@@ -307,7 +307,7 @@ Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}
 	\notag\\
 	&+ (\alpha-2\beta)\left(g^{\alpha\beta}g^{\sigma\rho}g_{\sigma\rho,\alpha\beta}-2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
 	\notag\\
-	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;.
+	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;. 	\label{eom:ricci_tensor}
 \end{align}
 Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates). 
 \textbf{\aaron{[motivation not really clear to me]}}
@@ -367,9 +367,38 @@ where $n^a$ is the covariant normal to the spacelike hypersurface.
 Using these defintions, it is obvious to split Ricci tensor
 \begin{align}
 \label{ricci3p1}
-R_{ab} n^a n^b = (\partial_\bot K + D_i D^i \alpha)/\alpha
+R_{ab} n^a n^b &= (\partial_\bot K + D_i D^i \alpha)/\alpha - K_{ij} K^{ij} \\
+R_{ab} \gamma^a_i \gamma^b_j &= R_{ij} + K K_{ij} - 2 K_{ik} K^{k}_j - (\partial_\bot K_{ij})/\alpha
+-(D_i D_j \alpha)/\alpha \\
+R_{ab} \gamma^a_i n^b &= - D_j K^j_i + D_i K
 \end{align}
-Here, we define $\partial_\bot \equiv \partial_t - \pound_\beta$
+Here, we define $\partial_\bot \equiv \partial_t - \pounds_\beta$. For the Ricci scalar
+\begin{align}
+^{(4)}R = R + K_{ij} K^{ij} + K^2 - 2 (\partial_\bot K) /\alpha - 2 (D_i D^i) \alpha / \alpha
+\end{align}
+
+In previous section, we derived the EOM in second order forms 
+(Eqns.~\ref{eom:metric},~\ref{eom:ricci_scalar}, and~\ref{eom:ricci_tensor} ).
+
+From Eqn.~\ref{eom:metric}. we obtain (Note that this is usual equations from metric)
+\begin{align}
+\partial_\bot \gamma_{ij} &= - 2 \alpha K_{ij} \\
+\partial_\bot K_{ij} &= \alpha (R_{ij} - 2 K_{ik}K^{k}_j) - D_i D_j \alpha
+\end{align}
+There is a gauge freedom for lapse and shift. We will determine these variables later.
+Now consider Eqns.~\ref{eom:ricci_scalar} and~\ref{eom:ricci_tensor}.
+We first consider LHSs of these equations. 
+\begin{align}
+\Box R = g^{ab} \partial_a \partial_b R
+\end{align} 
+Similarly, for Eqn~\ref{eom:ricci_tensor} (now we deal with tensor not a scalar), we have
+\begin{align}
+\Box \tilde{R}_{ab} = g^{ab} \nabla_a \nabla_b \tilde{R}_{ab}
+\end{align}
+where $\nabla_a$ is covariant derivative
+\TODO{Add more}
+
+\subsubsection{BSSN formulation}
 
 
 \subsubsection{Hyperbolicity of the System}
