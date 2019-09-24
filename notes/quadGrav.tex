@@ -358,8 +358,19 @@ We are following usual 3+1 variables such that
 ds^2 = -\alpha^2 dt^2 + \gamma_{ij} (dx^i + \beta^i dt)(dx^j + \beta^j dt)
 \end{align}
 where $\alpha$ is lapse, $\beta^i$ is shift, $\gamma_{ij}$ is induced metric on spatial hypersurface.
+Thus, the metric can be expressed as
+\begin{align}
+g_{ab} = g_{ij}\gamma^i_a \gamma^j_b - n_a n_b
+\end{align}
+where $n^a$ is the covariant normal to the spacelike hypersurface.
 
-\TODO{Adding eqns}
+Using these defintions, it is obvious to split Ricci tensor
+\begin{align}
+\label{ricci3p1}
+R_{ab} n^a n^b = (\partial_\bot K + D_i D^i \alpha)/\alpha
+\end{align}
+Here, we define $\partial_\bot \equiv \partial_t - \pound_\beta$
+
 
 \subsubsection{Hyperbolicity of the System}
 \TODO{Characteristic analysis is required}
