@@ -302,12 +302,10 @@ Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}
 	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;, \label{eom:ricci_scalar}
 	\\
 	\alpha\,\square \tilde{R}_{\mu\nu} = &
-	(2\beta-\alpha) R_{,\mu\nu} - \kappa\,\widetilde{R}_{\mu\nu}
-	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu} R
-	\notag\\
-	&+ (\alpha-2\beta)\left(g^{\alpha\beta}g^{\sigma\rho}g_{\sigma\rho,\alpha\beta}-2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
-	\notag\\
-	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;. 	\label{eom:ricci_tensor}
+	(2 \beta - \alpha) \nabla_a \nabla_b R - \frac{1}{16 \pi} \tilde{R}_{ab} - \frac{2 \beta - \alpha}{128\pi(3\beta - 2 \alpha)} g_{ab} R \nonumber \\
+&+(\alpha - 2 \beta)\left[g^{cd}g^{mn} g_{mn,cd} - 2 Q(g,\partial g) \right]\tilde{R}_{ab} \nonumber \\
+&+\frac{\alpha}{4} g_{ab} \left[ g^{cd}g_{mn,cd} - 2 Q_{mn} (g,\partial g) \right] g^{om}g^{pn} \tilde{R}_{op} \nonumber \\
+&- \alpha \bigg[ g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb} +4 g_{mn} \Gamma\indices{^m_{c[b}} \Gamma\indices{^n_{d]a}} \bigg] \tilde{R}^{cd}. 	\label{eom:ricci_tensor}
 \end{align}
 Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates). 
 \textbf{\aaron{[motivation not really clear to me]}}
@@ -389,17 +387,84 @@ There is a gauge freedom for lapse and shift. We will determine these variables 
 Now consider Eqns.~\ref{eom:ricci_scalar} and~\ref{eom:ricci_tensor}.
 We first consider LHSs of these equations. 
 \begin{align}
-\Box R = g^{ab} \partial_a \partial_b R
+\Box R &= \nabla_a \nabla^a R 
+=g\indices{^b_a} \nabla_b(g^{ac} \nabla_c R) \nonumber \\
+&= (\gamma\indices{^b_a} - n_a n^b)\nabla_b [(\gamma^{ac} - n^a n^c) \nabla_c R]
 \end{align} 
-Similarly, for Eqn~\ref{eom:ricci_tensor} (now we deal with tensor not a scalar), we have
+where $\nabla_a$ is usual covariant derivative.
+Note that the derivatives of the physical field are being projected into and normal to the spacelike
+hypersurfaces. Using this, we will define a new variable $\hat{R} = - n^a \nabla_a R$.
+Without whole detailed derivations (If you want, I can type it up but basic ideas are pretty standard in 
+3+1 decomposition...), we can obtain
 \begin{align}
-\Box \tilde{R}_{ab} = g^{ab} \nabla_a \nabla_b \tilde{R}_{ab}
+\nabla_a \nabla^a R = n^a \nabla_a \hat{R} + \frac{1}{\alpha} D_a (\alpha D^a R) - K \hat{R}
 \end{align}
-where $\nabla_a$ is covariant derivative
-\TODO{Add more}
+where $D_a$ is 3D covariant derivative (or gradient) which lives on spacelike hypersurface.
+Combining above result with RHS of Eqn.~\ref{eom:ricci_scalar} provides two first order in time equations
+for $\hat{R}$ and R which are given by
+\begin{align}
+n^a \nabla_a R &= - \hat{R}  \\
+n^a \nabla_a \hat{R} &= -  \frac{1}{\alpha} D_a (\alpha D^a R) + K \hat{R} + \frac{1}{36 \pi (3\beta_c - 2 \alpha_c)} R
+\end{align}
+Note that here we invoke $\alpha_c$ and $\beta_c$ which are slightly different notations than previous sections
+to avoid conflict between lapse ($\alpha$) and shift ($\beta$).
+We can re-write above equations also (just for keeping consistency)
+\begin{align}
+\partial_\bot R &= - \alpha \hat{R}  \\
+\partial_\bot \hat{R} &= - D_a (\alpha D^a R) + \alpha K \hat{R} + \frac{\alpha \kappa}{2 (3\beta_c - 2 \alpha_c)} R
+\end{align}
+where we use the notation $n^a \nabla_a f = \frac{1}{\alpha} (\partial_t - \beta^i \partial_i)f$ for $f$ a scalar
+
+Similarly, for Eqn.~\ref{eom:ricci_tensor} (now we deal with tensor not a scalar), we have
+\begin{align}
+\Box \tilde{R}_{ab} &= \nabla_c \nabla^c \tilde{R}_{ab} \nonumber \\
+&= (\gamma\indices{^d_c} - n_c n^d) \nabla_d [(\gamma\indices{^{ce}} - n^c n^e)] \nabla_e \tilde{R}_{ab} \nonumber \\
+&= \gamma\indices{^d_c} \nabla_d (\gamma^{ce} \nabla_e \tilde{R}_{ab}) - n_c n^d \nabla_d (\gamma^{ce} \nabla_e \tilde{R}_{ab})
+- \gamma\indices{^d_c} \nabla_d (n^c n^e \nabla_e \tilde{R}_{ab}) + n_c n^d \nabla_d ( n^c n^e \nabla_e \tilde{R}_{ab}) \nonumber \\
+\end{align}
+We define $\tilde{V}_{ab} = - n^c \nabla_c \tilde{R}_{ab}$. We argue that this can be considered 
+also as the time derivative (or velocity) as traceless of Ricci tensor (or say tensor flow) like in previous
+Ricci scalar case. Thus, we will have
+\begin{align}
+\nabla_c \nabla^c \tilde{R}_{ab} = n^c \nabla_c \tilde{V}_{ab} + \frac{1}{\alpha} D_c (\alpha D^c \tilde{R}_{ab}) - K \tilde{V}_{ab}
+\end{align}
+Now consider RHS of Eqn.~\ref{eom:ricci_tensor}
+\begin{align}
+Y_{ab}= &(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \frac{1}{16 \pi} \tilde{R}_{ab} - \frac{2 \beta_c - \alpha_c}{128\pi(3\beta_c - 2 \alpha_c)} g_{ab} R \nonumber \\
+&+(\alpha_c - 2 \beta_c)\left[g^{cd}g^{mn} g_{mn,cd} - 2 Q(g,\partial g) \right]\tilde{R}_{ab} \nonumber \\
+&+\frac{\alpha_c}{4} g_{ab} \left[ g^{cd}g_{mn,cd} - 2 Q_{mn} (g,\partial g) \right] g^{om}g^{pn} \tilde{R}_{op} \nonumber \\
+&- \alpha_c \bigg[ g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb} +4 g_{mn} \Gamma\indices{^m_{c[b}} \Gamma\indices{^n_{d]a}} \bigg] \tilde{R}^{cd} .
+\end{align}
+where we use $Y_{ab}$ just for convenience purpose. In $Y_{ab}$ most of terms are okay (i.e. no involving second derivatives) 
+and most of terms are already decomposed like using Ricci tensors/scalar and metric. So, we split the $Y_{ab}$ into two pieces
+\begin{align}
+Y_{ab} = Y^{np}_{ab} + \Delta_c \big[(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \alpha_c (g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb}) \tilde{R}^{cd} \big]
+&= Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align}
+where $\Delta_c$ is coupling constant that occurs higher order derivatives and $Y^{np}_{ab}$ contains all remaining terms.
+Thus, we may choose small value of $\Delta_c$ to control how quadratic terms in the theory effects on dynamics of BH.
+We also use decompositions of Ricci tensors, Ricci scalar, and Christoffel symbols for $Y^{np}_{ab}$ \TODO{check this too}
+
+Using all of these, we obtain
+\begin{align}
+n^a \nabla_a \tilde{R}_{ab} &= - \tilde{V}_{ab}  \\
+n^a \nabla_a \tilde{V}_{ab} &= -  \frac{1}{\alpha} D_a (\alpha D^a \tilde{R}_{ab} ) + K \tilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align} 
+\TODO{Does it make sense?}
 
 \subsubsection{BSSN formulation}
+So far, we have
+\begin{align}
+n^a \nabla_a R &= - \hat{R}  \\
+n^a \nabla_a \hat{R} &= -  \frac{1}{\alpha} D_a (\alpha D^a R) + K \hat{R} + \frac{1}{36 \pi (3\beta_c - 2 \alpha_c)} R\\
+n^a \nabla_a \tilde{R}_{ab} &= - \tilde{V}_{ab}  \\
+n^a \nabla_a \tilde{V}_{ab} &= -  \frac{1}{\alpha} D_a (\alpha D^a \tilde{R}_{ab} ) + K \tilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align}
+(Note that I omit the equations from metric because it will be same as usual standard GR). 
+These are the usual 3+1 decomposition (or ADM decomposition) which has been shown to 
+be weakly hyperbolic. Here we recast again these sets of equation in terms of BSSN form.
 
+\TODO{Need to evaluate}
 
 \subsubsection{Hyperbolicity of the System}
 \TODO{Characteristic analysis is required}
