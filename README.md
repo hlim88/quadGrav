@@ -23,7 +23,7 @@ or `WolframOne` etc.
 `qg-nr-src` directory contains source code for the system. (Not complete)
 
 Several references explain about the project. You can find
-references from [here](https://github.com/hlim88/quadGrav/wiki/Journals)
+references from [here](https://github.com/hlim88/quadGrav/wiki/References)
 
 ## Contacts
 
