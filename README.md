@@ -13,7 +13,7 @@ simulations of this system would be performed by `Dendro`
 toolkit.
 
 The code and instruction for the code can be found 
-[here](https://github.com/paralab/Dendro-5.01)
+[here](https://github.com/hlim88/Dendro-5.01)
 
 `notes` directory contains theory/formulation for this project.
 Type `make` to complie the note
@@ -25,7 +25,7 @@ or `WolframOne` etc.
 
 `qg-nr-src` directory contains source code for the system with
 different infrasturcture but we would suggest to use [our 
-latest one](https://github.com/paralab/Dendro-5.01).
+latest one](https://github.com/hlim88/Dendro-5.01).
 
 Several references explain about the project. You can find
 references from [here](https://github.com/hlim88/quadGrav/wiki/References)
