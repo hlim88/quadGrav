@@ -12,8 +12,22 @@ apporoach to have linearized version of system. Numerical
 simulations of this system would be performed by `Dendro`
 toolkit.
 
-The code and instruction for the code can be found 
-[here](https://github.com/hlim88/Dendro-5.01)
+
+## Get this project with the code
+
+In this project, we are using `Dendro` framework. 
+To get all the code with other materials, you need to
+clone it via
+```{engine=sh}
+git clone --recursive https://github.com/hlim88/quadGrav.git
+```
+
+### Build the code 
+
+Detailed instruction to build our code is described in
+[here](https://github.com/hlim88/Dendro-5.01/blob/master/INSTALL_QG.md)
+
+## Directory description
 
 `notes` directory contains theory/formulation for this project.
 Type `make` to complie the note
@@ -22,10 +36,6 @@ Type `make` to complie the note
 decomposition of the equations. It is saved in `Wolfram Language`
 format. Users need a Wolfram compatible program such as`Mathematica`
 or `WolframOne` etc.
-
-`qg-nr-src` directory contains source code for the system with
-different infrasturcture but we would suggest to use [our 
-latest one](https://github.com/hlim88/Dendro-5.01).
 
 Several references explain about the project. You can find
 references from [here](https://github.com/hlim88/quadGrav/wiki/References)
