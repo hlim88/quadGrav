@@ -9,8 +9,11 @@ theory. We consider 3+1 decomposition to enable dynamical
 studies. Also, we analyze structure of the equations of
 motion from the theory and possible effective field theory
 apporoach to have linearized version of system. Numerical
-simulations of this system would be performed by `HAD`
-toolkit (Will be added).
+simulations of this system would be performed by `Dendro`
+toolkit.
+
+The code and instruction for the code can be found 
+[here](https://github.com/hlim88/Dendro-5.01)
 
 `notes` directory contains theory/formulation for this project.
 Type `make` to complie the note
@@ -20,10 +23,12 @@ decomposition of the equations. It is saved in `Wolfram Language`
 format. Users need a Wolfram compatible program such as`Mathematica`
 or `WolframOne` etc.
 
-`qg-nr-src` directory contains source code for the system. (Not complete)
+`qg-nr-src` directory contains source code for the system with
+different infrasturcture but we would suggest to use [our 
+latest one](https://github.com/hlim88/Dendro-5.01).
 
 Several references explain about the project. You can find
-references from [here](https://github.com/hlim88/quadGrav/wiki/Journals)
+references from [here](https://github.com/hlim88/quadGrav/wiki/References)
 
 ## Contacts
 

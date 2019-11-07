@@ -339,7 +339,7 @@ We can diagonalize the equations to a quasilinear system by introducing addition
 \end{align}
 the final well-posed form of the evolution equations.
 
-\subsection{Recast Equations into 3+1 Form}
+\section{Recast Evolution Equations into 3+1 Form}
 
 In this section, we reduce our systems of equations in 3+1 form. There are several reasons to use 3+1 form:
 
@@ -452,7 +452,7 @@ n^a \nabla_a \tilde{V}_{ab} &= -  \frac{1}{\alpha} D_a (\alpha D^a \tilde{R}_{ab
 \end{align} 
 \TODO{Does it make sense?}
 
-\subsubsection{BSSN formulation}
+\subsection{BSSN formulation}
 So far, we have
 \begin{align}
 n^a \nabla_a R &= - \hat{R}  \\
@@ -466,14 +466,16 @@ be weakly hyperbolic. Here we recast again these sets of equation in terms of BS
 
 \TODO{Need to evaluate}
 
-\subsubsection{Hyperbolicity of the System}
+\subsection{Hyperbolicity of the System}
 \TODO{Characteristic analysis is required}
 
 \subsection{Gauge Choice and Full Evolution System}
+\TODO{add discussions on $1+\log$ slicing and $\Gamma$-driver}
 
-\section{Simple Model Problem : Spherical Symmetry}
+\subsection{Simple Model Problem : Spherical Symmetry}
 As an example, we impose spherical symmetry in our system. In this section, we adopt $G_N = c = 1$ unit system.
-\subsection{Choice of Coordinate : Horizon Penetrating coordinate}
+We will use our 3+1 decomposed system first. 
+\subsubsection{Choice of Coordinate : Horizon Penetrating coordinate}
 We present a horizon penetrating coordinate for spherically symmetric metric. Consider usual Schwarzschild line element in Boyer-Lindquist coordinate 
 \begin{align}
 \label{eqn:schw_bl}
@@ -545,10 +547,6 @@ where $\alpha$, $a$, $b$, and $\beta$ are functions of $r$ and $t$, and $d\Omega
 R\indices{^r_r} &= -\frac{2}{arb} \partial_r \left(\frac{\partial_r (rb)}{a} \right) \\
 R\indices{^\theta_\theta} &= \frac{1}{ar^2b^2} \left[a-\partial_r \left(\frac{rb \partial_r (rb)}{a} \right) \right] \\
 \end{align}
-
-
-\subsection{Evolution System in Spherical Symmetry}
-\TODO{What is ADM form of quadratic gravity? We can impose above argument to make the evolution equation in SS}
 
 \section{Initial Data}
 Under usual 3+1 decomposition \NOTE{Still same for QG?}, the constraint equations are (in vacua)
