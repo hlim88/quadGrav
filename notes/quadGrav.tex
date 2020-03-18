@@ -493,19 +493,34 @@ n^a \nabla_a \tilde{V}_{ab} &= -  \frac{1}{\alpha} \partial_i \alpha \left(\part
 \subsection{Gauge Choice and Full Evolution System}
 \TODO{add discussions on $1+\log$ slicing and $\Gamma$-driver}
 
-\subsection{Simple Model Problem : Spherical Symmetry}
-As an example, we impose spherical symmetry in our system. In this section, we adopt $G_N = c = 1$ unit system.
-We will use our 3+1 decomposed system first. 
-\subsubsection{Choice of Coordinate : Horizon Penetrating coordinate}
-We present a horizon penetrating coordinate for spherically symmetric metric. Consider usual Schwarzschild line element in Boyer-Lindquist coordinate 
+
+\section{Initial Data}
+
+First, we use some exact solutions for Einstein's equations 
+that are relevant to our case. We are using this to check 
+the evolution system and the code that we have developed.
+
+Minkowski space in the Cartesian coordinates
 \begin{align}
-\label{eqn:schw_bl}
-ds^2 = - \left(1- \frac{2M}{r} \right) dt^2 + \left(1- \frac{2M}{r} \right)^{-1} dr^2 + r^2 d\Omega^2 
+\label{eqn:id:mink}
+\alpha = 1 \\
+\beta^i = 0 \\
+\gamma_{ij} = \delta_{ij} \\
+det(\gamma_{ij}) = 1  \\
+K_{ij} = 0 \\
+\bar{\gamma}_{ij} = \delta_{ij} \\
+\phi = 0 \\
+\bar{A}_{ij}
 \end{align}
-where $M$ is a mass. Compare this with usual 3+1 line element form $ds^2 = - \alpha^2 dt^2 + \gamma_{ij} ( dx^2 + \beta^i dt)(dx^j + \beta^j dt)$ we can identify the lapse $\alpha^2 = \left(1- \frac{2M}{r} \right)$. As we know, the line element(Eqn.~\ref{eqn:schw_bl}) is singular at the horizon ($r=2M$) and lapse collapse to zero. This can be problematic because equations of motion for the metric can be become exponentially unstable in the presence of a coordinate singularity without some regularization technique.
 
-One way to resolve this problem is to move to a horizon penetrating coordinate system where this singularity is not present. The Kerr-Schild coordinates are one such coordinate system. 
+\subsection{Elementary Black Hole Solution}
 
+In QG, we can still use element BHs to check 
+dynamical stability. 
+
+\subsubsection{Schwarzschild Black Hole}
+Schwarzschild solution satisfies the Einstein's equation $R_{ab}=0$ i.e. Schwarzschild solution should
+satisfy QG. We rewrite Schwarzschild solution in terms of BSSN variables such that
 For example, Schwarzschild solution in spherical type Kerr-Schild coordinates
 \begin{align}
 \alpha &= \sqrt{\frac{r}{r+2M}} \\
@@ -523,53 +538,16 @@ K_{ij} &= \-\frac{2M}{r^4} \sqrt{\frac{r}{r+2M}} \left[ \left( \frac{M}{r}+2 \ri
 \end{align}
 where $x^i = (x,y,z)$ which is usual spatial Cartesian coordinate. In both cases, we can see lapse is regular at the horizon.
 
-General spherical symmetric line element in polar-areal form
-\begin{align}
-\label{eqn:ss-met-pa}
-ds^2 = - \alpha(r)^2 dt^2 + a(r)^2 dr^2 + r^2 d \Omega^2
-\end{align}
-where $\alpha$ is referred as lapse function. Compare with above Schwarzschild solution, $\alpha = 1/a$. 
+\subsection{Black Holes in QG}
+Here we describe our BH initial data. \NOTE{more descriptions?}
 
-Now consider a transformation of the Schwarzschild time t coordinate to a new generic coordinate $\hat{t}$ according to
-\begin{align}
-d\hat{t} = dt + a^2 \sqrt{1-\frac{g}{a^2}} dr
-\end{align}
-where $g(r)$ is arbitrary function. Substitute this into $ds^2 = -\alpha^2 dt^2 + a^2 dr^2 + r^2 d\Omega^2$ gives
-\begin{align}
-ds^2 &= - \alpha^2 \left (d\hat{t} - a^2 \sqrt{1-\frac{g}{a^2}} dr\right)^2 + a^2 dr^2 + r^2 d\Omega^2 \nonumber \\
-&= - \alpha^2 d \hat{t}^2 + 2 \sqrt{1-\frac{g}{a^2}} d\hat{t} dr + g dr^2 + r^2 d \Omega^2
-\end{align}
-Compare this with usual 3+1 framework
-\begin{align}
-ds^2 = - \alpha^2 d \hat{t}^2 + \gamma_{ij} (dx^i + \beta^i d\hat{t}\,)(dx^j + \beta^j d\hat{t}\,)
-\end{align}
-and so into the lapse $\alpha = 1/\sqrt{g}$, the shift $\beta_i = (\sqrt{1-g/a^2},0,0)$ or $\beta^i = \gamma^{ij} \beta_j$ and the spatial metric of the constant $\hat{t}$ hypersurface $\gamma_{ij} = diag(g,r^2,r^2\sin^2 \theta)$. 
+\subsection{Binary Black Hole Initial Data}
 
-If we choose $\alpha = \sqrt{1-2M/r} = 1/a$ and $g = 1+2M/r$ like in previous (which we will use this), we get
-\begin{align}
-ds^2 = - \left(1 - \frac{2M}{r} \right) d \hat{t}^2 + \frac{4M}{r} d \hat{t} dr + \left(1+\frac{2M}{r} \right) dr^2 + r^2 d\Omega^2
-\end{align}
-which is Schwarzschild in Kerr-Schild coordinate (or Eddington-Finkelstein coordinate). And correspondingly, $\alpha = \sqrt{r/(r+2M)}$, $\beta_i = (2M/r,0,0)$, and $\gamma_{ij} = diag(1+2M/r,r^2,r^2\sin^2 \theta)$ which are same as above.
 
-As you can see here, the KS (or EF) form of the metric represents an analytic expansion of the Schwarzschild solution from the region $2M < r< \infty$ to  $0<r<\infty$. Thus, we apply this coordinate transformation for our equations.
+\subsubsection{Puncture Method}
 
-It is good to rewrite the metric into usual $3+1$ variable form i.e. keep it geometric variables (should be careful of confusion) with considering time dependent case. Here, we use $t$ for time coordinate that we used above.
-\begin{align}
-\label{eqn:gen-sph-met}
-ds^2 = (-\alpha^2 + a^2 \beta^2) dt^2 + 2a^2 \beta dt dr + a^2 dr^2 + r^2 b^2 d \Omega^2
-\end{align}
-where $\alpha$, $a$, $b$, and $\beta$ are functions of $r$ and $t$, and $d\Omega^2$ is the metric of unit sphere. From this, we can calculate non-vanishing components of connection coefficients and Ricci tensors for $i,j$, and $k$ (spatial indices)
-\begin{align}
-&\Gamma\indices{^r_{rr}} = \frac{\partial_r a}{a}, \,\,\,\,\,\,\,\, \Gamma\indices{^r_{\theta \theta}} = - \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\theta_{r \theta}} = \frac{\partial_r (rb)}{rb} \nonumber  \\
-&\Gamma\indices{^r_{\varphi \varphi}} = -\sin^2 \theta \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{r \varphi}} = \Gamma\indices{^\theta_{r \theta}} \nonumber \\
-&\Gamma\indices{^\theta_{\varphi \varphi}} = -\sin \theta \cos \theta, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{\varphi \theta}} = -\cot \theta \nonumber 
-\end{align}
-\begin{align}
-R\indices{^r_r} &= -\frac{2}{arb} \partial_r \left(\frac{\partial_r (rb)}{a} \right) \\
-R\indices{^\theta_\theta} &= \frac{1}{ar^2b^2} \left[a-\partial_r \left(\frac{rb \partial_r (rb)}{a} \right) \right] \\
-\end{align}
+\NOTE{Maybe solve elliptic equations or just find puncture like ID}
 
-\section{Initial Data}
 Under usual 3+1 decomposition \NOTE{Still same for QG?}, the constraint equations are (in vacua)
 \begin{align}
 D_j K\indices{^j_i} - D_i K &= 0 \\
@@ -580,19 +558,6 @@ satisfy the constraints. Thus, we have to specify $(\gamma_{ij}, K_{ij})$ on som
 spatial slice $\Sigma$ that are compatible with the constraint equations. These fields can 
 then be used as initial data for a dynamical evolution obtained by solving the evolution equation.
 
-\subsection{Elementary Black Hole Solution}
-
-\NOTE{Might use Brill-Lindquist for testing case. \\
-Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
-
-\subsection{Black Holes in QG}
-
-\NOTE{We may use some analytic solutions in literatures}
-
-\subsection{Binary Black Hole Initial Data}
-\subsubsection{Puncture Method}
-
-\NOTE{Maybe solve elliptic equations or just find puncture like ID}
 
 \section{Gravitational Wave Extractions for QG}
 Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. 
