@@ -50,7 +50,7 @@
 \numberwithin{equation}{section} %Denotes that equations should be numbered a section level
 
 
-\newcommand{\aaron}[1]{{\color{OliveGreen} #1}}
+\newcommand{\aaron}[1]{{\color{cyan} #1}}
 \newcommand{\TODO}[1]{{\color{red}[}{\color{red}TODO:} {\color{blue}#1}{\color{red}]}}
 \newcommand{\NOTE}[1]{{\color{blue}[#1]}}
 
@@ -265,7 +265,7 @@ QG propagates, besides the graviton, an additional massive scalar mode associate
 	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
 	\textbf{\aaron{[have to check the factor of 2]}}
 	\\
-	\alpha\,\square \tilde{R}_{\mu\nu} = &-\kappa\,\tilde{R}_{\mu\nu} -(2\beta-\alpha) \left(\frac{\kappa}{8(3\beta-2\alpha)}g_{\mu\nu} -\nabla_\mu\nabla_\nu\right) R 
+	\alpha\,\square \widetilde{R}_{\mu\nu} = &-\kappa\,\widetilde{R}_{\mu\nu} -(2\beta-\alpha) \left(\frac{\kappa}{8(3\beta-2\alpha)}g_{\mu\nu} -\nabla_\mu\nabla_\nu\right) R 
 	\notag\\
 	\label{eq:eomForTracelessRicci-1}
 	&- (\alpha-2\beta) R\widetilde{R}_{\mu\nu}
@@ -286,7 +286,7 @@ The Ricci tensor in a general coordinate system is given by
 	Q^{\mu\nu}(g,\partial g)&=g^{\alpha\beta}\left(\Gamma_{\alpha\gamma}^{\mu}\partial_{\beta} g^{\nu\gamma}+\Gamma_{\alpha\gamma}^{\nu}\partial_{\beta} g^{\mu\gamma}-2\Gamma_{\alpha\beta}^{\gamma}\partial_{\gamma} g^{\nu\mu}\right)\;,
 	\\[0.5em]\notag
 	\text{and }\quad
-	F^\alpha &= g^{\mu\nu}\Gamma_{\mu\nu}^\alpha = \frac{1}{\sqrt{-g}}\frac{\partial}{\partial x^\alpha}\bigg(\sqrt{-g}g^{\alpha\beta}\bigg)\;.
+	F^\alpha &= g^{\mu\nu}\Gamma_{\mu\nu}^\alpha = \frac{1}{\sqrt{-g}}\frac{\partial}{\partial x^\aaron{\beta}}\bigg(\sqrt{-g}g^{\aaron{\beta\alpha}}\bigg)\;.
 \end{align}
 Harmonic coordinates are defined by $F^{\mu} = 0$. This choice is advantagous because it allows to reduces the expression of the Ricci tensor in terms of the metric into a quasilinear form, that is the last term in Eq.~\eqref{eq:RicciTensorInTermsOfMetric} vanishes in harmonic coordinates. Hence, 
 \begin{align}
@@ -297,20 +297,22 @@ Harmonic coordinates are defined by $F^{\mu} = 0$. This choice is advantagous be
 Adding this to the equations of motion and treating $g_{\mu\nu}$, $\widetilde{R}_{\mu\nu}$, and $R$ as independent variables reduces the system to second order. Notice that Eq.~\eqref{eq:EOMforMetricInHarmonicCoords} and therefore all following equations only hold in harmonic coordinates. The second order set of equations reads
 \begin{align}
 	\frac{1}{2}g^{\alpha\beta}\partial_{\alpha}\partial_{\beta}g_{\mu\nu} = &Q_{\mu\nu}(g,\partial g)-\widetilde{R}_{\mu\nu}
--\frac{1}{4}g_{\mu\nu}R\;,
+-\frac{1}{4}g_{\mu\nu}R\;, 	\label{eom:metric}
 	\\
-	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;,
+	\square R = &\frac{\kappa}{2(3\beta-2\alpha)}R\;, \label{eom:ricci_scalar}
 	\\
-	\alpha\,\square \tilde{R}_{\mu\nu} = &
-	(2\beta-\alpha) R_{,\mu\nu} - \kappa\,\widetilde{R}_{\mu\nu}
-	-\frac{\kappa(2\beta-\alpha)}{8(3\beta-2\alpha)}g_{\mu\nu} R
-	\notag\\
-	&+ (\alpha-2\beta)\left(g^{\alpha\beta}g^{\sigma\rho}g_{\sigma\rho,\alpha\beta}-2Q(g,\partial g)\right)\widetilde{R}_{\mu\nu}
-	\notag\\
-	&+\frac{\alpha}{4} g_{\mu\nu}\left(g^{\alpha\beta}g_{\rho\sigma,\alpha\beta}-2Q_{\rho\sigma}(g,\partial g)\right)g^{\eta\rho}g^{\delta\sigma} \widetilde{R}_{\eta\delta}\;.
+	\alpha\,\square \widetilde{R}_{\mu\nu} = &
+	(2 \beta - \alpha) \nabla_\aaron{\mu} \nabla_\aaron{\nu} R 
+	- \aaron{\kappa} \widetilde{R}_\aaron{\mu\nu} 
+	- \frac{\aaron{\kappa}(2 \beta - \alpha)}{\aaron{8}(3\beta - 2 \alpha)} g_\aaron{\mu\nu} R
+	\nonumber \\
+	&+(\alpha - 2 \beta)\left[g^\aaron{\alpha\beta}g^\aaron{\rho\sigma} g_\aaron{\rho\sigma,\alpha\beta} - 2 Q(g,\partial g) \right]\widetilde{R}_\aaron{\mu\nu} 
+	\nonumber \\
+	&+\frac{\alpha}{4} g_\aaron{\mu\nu} \left[ g^\aaron{\alpha\beta}g_\aaron{\rho\sigma,\alpha\beta} - 2 Q_\aaron{\rho\sigma} (g,\partial g) \right] g^\aaron{\gamma\rho}g^\aaron{\delta\sigma} \widetilde{R}_\aaron{\gamma\delta} 
+	\nonumber \\
+	&- \alpha \bigg[ g_\aaron{\alpha\beta,\mu\nu} + g_\aaron{\mu\nu,\alpha\beta} - g_\aaron{\alpha\nu,\mu\beta} - g_\aaron{\mu\beta,\alpha\nu} +4 g_\aaron{\rho\sigma} \Gamma\aaron{\indices{^\rho_{\alpha[\nu}}} \Gamma\aaron{\indices{^\sigma_{\beta]\mu}}} \bigg] \widetilde{R}^\aaron{\alpha\beta}. 	\label{eom:ricci_tensor}
 \end{align}
-Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates). 
-\textbf{\aaron{[motivation not really clear to me]}}
+Here we have written $2\beta\,R$ and $R_{\mu\rho\nu\sigma} -\frac{1}{4} g_{\mu\nu}\, \widetilde{R}_{\rho\sigma}$ in Eq.~\eqref{eq:eomForTracelessRicci-1} in terms of the metric (using again harmonic coordinates).
 This set of equations is now only of second order, but the last equation is still not quasilinear.
 
 \subsection{Diagonalization to a quasilinear hyperbolic system}
@@ -341,7 +343,7 @@ We can diagonalize the equations to a quasilinear system by introducing addition
 \end{align}
 the final well-posed form of the evolution equations.
 
-\subsection{Recast Equations into 3+1 Form}
+\section{Recast Evolution Equations into 3+1 Form}
 
 In this section, we reduce our systems of equations in 3+1 form. There are several reasons to use 3+1 form:
 
@@ -358,26 +360,194 @@ We are following usual 3+1 variables such that
 ds^2 = -\alpha^2 dt^2 + \gamma_{ij} (dx^i + \beta^i dt)(dx^j + \beta^j dt)
 \end{align}
 where $\alpha$ is lapse, $\beta^i$ is shift, $\gamma_{ij}$ is induced metric on spatial hypersurface.
+Thus, the metric can be expressed as
+\begin{align}
+g_{ab} = g_{ij}\gamma^i_a \gamma^j_b - n_a n_b
+\end{align}
+where $n^a$ is the covariant normal to the spacelike hypersurface. \aaron{In the above and for the resto of this section, we use $a,b,c,d,\dots$ and $i,j,k,\dots$ for spacetime and purely spacial indices, respectively.}
 
-\TODO{Adding eqns}
+Using these defintions, it is obvious to split Ricci tensor
+\begin{align}
+\label{ricci3p1}
+R_{ab} n^a n^b &= (\partial_\bot K + D_i D^i \alpha)/\alpha - K_{ij} K^{ij} \\
+R_{ab} \gamma^a_i \gamma^b_j &= R_{ij} + K K_{ij} - 2 K_{ik} K^{k}_j - (\partial_\bot K_{ij})/\alpha
+-(D_i D_j \alpha)/\alpha \\
+R_{ab} \gamma^a_i n^b &= - D_j K^j_i + D_i K
+\end{align}
+Here, we define $\partial_\bot \equiv \partial_t - \pounds_\beta$. For the Ricci scalar
+\begin{align}
+^{(4)}R = R + K_{ij} K^{ij} + K^2 - 2 (\partial_\bot K) /\alpha - 2 (D_i D^i) \alpha / \alpha
+\end{align}
 
-\subsubsection{Hyperbolicity of the System}
+In previous section, we derived the EOM in second order forms 
+(Eqns.~\ref{eom:metric},~\ref{eom:ricci_scalar}, and~\ref{eom:ricci_tensor} ).
+
+From Eqn.~\ref{eom:metric}. we obtain (Note that this is usual equations from metric)
+\begin{align}
+\partial_\bot \gamma_{ij} &= - 2 \alpha K_{ij} \\
+\partial_\bot K_{ij} &= \alpha (R_{ij} - 2 K_{ik}K^{k}_j) - D_i D_j \alpha
+\end{align}
+There is a gauge freedom for lapse and shift. We will determine these variables later.
+Now consider Eqns.~\ref{eom:ricci_scalar} and~\ref{eom:ricci_tensor}.
+We first consider LHSs of these equations. 
+\begin{align}
+\Box R &= \nabla_a \nabla^a R 
+=g\indices{^b_a} \nabla_b(g^{ac} \nabla_c R) \nonumber \\
+&= (\gamma\indices{^b_a} - n_a n^b)\nabla_b [(\gamma^{ac} - n^a n^c) \nabla_c R]
+\end{align} 
+where $\nabla_a$ is usual covariant derivative.
+Note that the derivatives of the physical field are being projected into and normal to the spacelike
+hypersurfaces. Using this, we will define a new variable $\hat{R} = - n^a \nabla_a R$.
+Without whole detailed derivations (If you want, I can type it up but basic ideas are pretty standard in 
+3+1 decomposition...), we can obtain
+\begin{align}
+\nabla_a \nabla^a R = n^a \nabla_a \hat{R} + \frac{1}{\alpha} D_\aaron{i} (\alpha D^\aaron{i} R) - K \hat{R}
+\end{align}
+where $D_\aaron{i}$ is 3D covariant derivative (or gradient) which lives on spacelike hypersurface.
+Combining above result with RHS of Eqn.~\ref{eom:ricci_scalar} provides two first order in time equations
+for $\hat{R}$ and R which are given by
+\begin{align}
+n^a \nabla_a R &= - \hat{R}  \\
+n^a \nabla_a \hat{R} &= -  \frac{1}{\alpha} D_\aaron{i} (\alpha D^\aaron{i} R) + K \hat{R} + \frac{\aaron{\kappa}}{\aaron{2} (3\beta_c - 2 \alpha_c)} R
+\end{align}
+Note that here we invoke $\alpha_c$ and $\beta_c$ which are slightly different notations than previous sections
+to avoid conflict between lapse ($\alpha$) and shift ($\beta$).
+We can re-write above equations also (just for keeping consistency)
+\begin{align}
+\partial_\bot R &= - \alpha \hat{R}  \\
+\partial_\bot \hat{R} &= - D_\aaron{i} (\alpha D^\aaron{i} R) + \alpha K \hat{R} + \frac{\alpha \kappa}{2 (3\beta_c - 2 \alpha_c)} R
+\end{align}
+where we use the notation $n^a \nabla_a f = \frac{1}{\alpha} (\partial_t - \beta^i \partial_i)f$ for $f$ a scalar
+
+Similarly, for Eqn.~\ref{eom:ricci_tensor} (now we deal with tensor not a scalar), we have
+\begin{align}
+\Box \widetilde{R}_{ab} &= \nabla_c \nabla^c \widetilde{R}_{ab} \nonumber \\
+&= (\gamma\indices{^d_c} - n_c n^d) \nabla_d [(\gamma\indices{^{ce}} - n^c n^e)] \nabla_e \widetilde{R}_{ab} \nonumber \\
+&= \gamma\indices{^d_c} \nabla_d (\gamma^{ce} \nabla_e \widetilde{R}_{ab}) - n_c n^d \nabla_d (\gamma^{ce} \nabla_e \widetilde{R}_{ab})
+- \gamma\indices{^d_c} \nabla_d (n^c n^e \nabla_e \widetilde{R}_{ab}) + n_c n^d \nabla_d ( n^c n^e \nabla_e \widetilde{R}_{ab}) \nonumber \\
+\end{align}
+We define $\widetilde{V}_{ab} = - n^c \nabla_c \widetilde{R}_{ab}$. We argue that this can be considered 
+also as the time derivative (or velocity) as traceless of Ricci tensor (or say tensor flow) like in previous
+Ricci scalar case. Thus, we will have
+\begin{align}
+\nabla_c \nabla^c \widetilde{R}_{ab} = n^c \nabla_c \widetilde{V}_{ab} + \frac{1}{\alpha} D_\aaron{i} (\alpha D^\aaron{i} \widetilde{R}_{ab}) - K \widetilde{V}_{ab}
+\end{align}
+Now consider RHS of Eqn.~\ref{eom:ricci_tensor}
+\begin{align}
+Y_{ab}= &(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \aaron{\kappa} \widetilde{R}_{ab} - \frac{\aaron{\kappa}(2 \beta_c - \alpha_c)}{\aaron{8}(3\beta_c - 2 \alpha_c)} g_{ab} R \nonumber \\
+&+(\alpha_c - 2 \beta_c)\left[g^{cd}g^{mn} g_{mn,cd} - 2 Q(g,\partial g) \right]\widetilde{R}_{ab} \nonumber \\
+&+\frac{\alpha_c}{4} g_{ab} \left[ g^{cd}g_{mn,cd} - 2 Q_{mn} (g,\partial g) \right] g^{om}g^{pn} \widetilde{R}_{op} \nonumber \\
+&- \alpha_c \bigg[ g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb} +4 g_{mn} \Gamma\indices{^m_{c[b}} \Gamma\indices{^n_{d]a}} \bigg] \widetilde{R}^{cd} .
+\end{align}
+where we use $Y_{ab}$ just for convenience purpose. In $Y_{ab}$ most of terms are okay (i.e. no involving second derivatives) 
+and most of terms are already decomposed like using Ricci tensors/scalar and metric. So, we split the $Y_{ab}$ into two pieces
+\begin{align}
+Y_{ab} = Y^{np}_{ab} + \Delta_c \big[(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \alpha_c (g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb}) \widetilde{R}^{cd} \big]
+&= Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align}
+where $\Delta_c$ is coupling constant that occurs higher order derivatives and $Y^{np}_{ab}$ contains all remaining terms.
+Thus, we may choose small value of $\Delta_c$ to control how quadratic terms in the theory effects on dynamics of BH.
+We also use decompositions of Ricci tensors, Ricci scalar, and Christoffel symbols for $Y^{np}_{ab}$ \TODO{check this too}\aaron{[further terms belong in $Y^{np}_{ab}$ too]}
+
+Using all of these, we obtain
+\begin{align}
+n^a \nabla_a \widetilde{R}_{ab} &= - \widetilde{V}_{ab}  \\
+n^a \nabla_a \widetilde{V}_{ab} &= -  \frac{1}{\alpha} D_\aaron{i}(\alpha D^\aaron{i} \widetilde{R}_{ab} ) + K \widetilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align} 
+\TODO{Does it make sense?}\aaron{[yes, although I am not sure about the problematic terms ... they still contain second order time derivatives ... is that not a problem for BSSN evolution?]}
+
+\subsection{BSSN formulation}
+So far, we have
+\begin{align}
+n^a \nabla_a R &= - \hat{R}  \\
+n^a \nabla_a \hat{R} &= -  \frac{1}{\alpha} D_\aaron{i} (\alpha D^\aaron{i} R) + K \hat{R} + \frac{\aaron{\kappa}}{\aaron{2}(3\beta_c - 2 \alpha_c)} R\\
+n^\aaron{c} \nabla_\aaron{c} \widetilde{R}_{ab} &= - \widetilde{V}_{ab}  \\
+n^\aaron{c} \nabla_\aaron{c} \widetilde{V}_{ab} &= -  \frac{1}{\alpha} D_\aaron{i}(\alpha D^\aaron{i} \widetilde{R}_{ab} ) + K \widetilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align}
+(Note that I omit the equations from metric because it will be same as usual standard GR). 
+These are the usual 3+1 decomposition (or ADM decomposition) which has been shown to 
+be weakly hyperbolic. Here we recast again these sets of equation in terms of BSSN form.
+We will follow usual conventions for BSSN variable \TODO{Define vars.. but state here}.
+
+After some manipulation, we have
+\begin{align}
+\label{eqn:bssn:inter1}
+D_\aaron{i} ( \alpha D^\aaron{i} R) = \alpha \chi \left[\widetilde{\gamma}^{ij} \partial_i \partial_j R + \widetilde{\gamma}^{ij} (\partial_i  \ln \alpha) \partial_j R - \widetilde{\Gamma}^i \partial_i R - \frac{1}{2} \widetilde{\gamma}^{ij} \partial_i R \partial_j \ln \chi \right]
+\end{align}
+\aaron{[I have checked and agree with this]}
+\begin{align}
+\label{eqn:bssn:inter1}
+D_\aaron{i} ( \alpha D^\aaron{i} \widetilde{R}_{ab}) = \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}_{ab} \partial_\aaron{i} \chi \right) + \alpha (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab}
+\end{align}
+\aaron{[I have not managed to get to this form. I get to
+\begin{align*}
+	D_i( \alpha D^i \widetilde{R}_{ab}) = 
+	\chi\widetilde{\gamma}^{ij}(\partial_i\alpha) \left[
+		\partial_j \widetilde{R}_{ab}
+		- \frac{1}{2}\left(
+			\partial_j \overline{\gamma}_{la} + \partial_a \overline{\gamma}_{jl} - \partial_l \overline{\gamma}_{ja}
+		\right)\widetilde{R}_{kb}
+		- (a\leftrightarrow b)
+	\right]
+	+ \alpha (D^i D_i) \widetilde{R}_{ab}
+\end{align*}
+... could write this out transition from $\overline{\gamma}$ to $\widetilde{\gamma}$ but I do not see how that simplifies the expression significantly ... especially I have terms like $(\partial_a\alpha)(\partial^i\chi)\widetilde{R}_{ib}$ in the final expression]
+}
+
+Thus, we have
+\begin{align}
+n^a \nabla_a R &= - \hat{R}  \\
+n^a \nabla_a \hat{R} &= -
+%\alpha}
+\chi \left[\widetilde{\gamma}^{ij} \partial_i \partial_j R + \widetilde{\gamma}^{ij} (\partial_i  \ln \alpha) \partial_j R - \widetilde{\Gamma}^i \partial_i R - \frac{1}{2} \widetilde{\gamma}^{ij} \partial_i R \partial_j \ln \chi \right] \nonumber \\
+& + K \hat{R} + \frac{\aaron{\kappa}}{\aaron{2} (3\beta_c - 2 \alpha_c)} R\\
+n^\aaron{c} \nabla_\aaron{c} \widetilde{R}_{ab} &= - \widetilde{V}_{ab}  \\
+n^\aaron{c} \nabla_\aaron{c} \widetilde{V}_{ab} &= -  \frac{1}{\alpha} \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}_{ab} \partial_\aaron{i} \chi \right) - (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab} \nonumber \\
+& + K \widetilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\end{align}
+
+
+\subsection{Hyperbolicity of the System}
 \TODO{Characteristic analysis is required}
 
 \subsection{Gauge Choice and Full Evolution System}
+\TODO{add discussions on $1+\log$ slicing and $\Gamma$-driver}
 
-\section{Simple Model Problem : Spherical Symmetry}
-As an example, we impose spherical symmetry in our system. In this section, we adopt $G_N = c = 1$ unit system.
-\subsection{Choice of Coordinate : Horizon Penetrating coordinate}
-We present a horizon penetrating coordinate for spherically symmetric metric. Consider usual Schwarzschild line element in Boyer-Lindquist coordinate 
+
+\section{Initial Data}
+
+First, we use some exact solutions for Einstein's equations 
+that are relevant to our case. We are using this to check 
+the evolution system and the code that we have developed.
+
+Minkowski space in the Cartesian coordinates
 \begin{align}
-\label{eqn:schw_bl}
-ds^2 = - \left(1- \frac{2M}{r} \right) dt^2 + \left(1- \frac{2M}{r} \right)^{-1} dr^2 + r^2 d\Omega^2 
+\label{eqn:id:mink}
+\alpha = 1 \\
+\beta^i = 0 \\
+\gamma_{ij} = \delta_{ij} \\
+det(\gamma_{ij}) = 1  \\
+K_{ij} = 0 \\
+\bar{\gamma}_{ij} = \delta_{ij} \\
+\phi = 0 \\
+\bar{A}_{ij} = 0 \\
+K = 0 \\
+\bar{\Gamma} = 0
 \end{align}
-where $M$ is a mass. Compare this with usual 3+1 line element form $ds^2 = - \alpha^2 dt^2 + \gamma_{ij} ( dx^2 + \beta^i dt)(dx^j + \beta^j dt)$ we can identify the lapse $\alpha^2 = \left(1- \frac{2M}{r} \right)$. As we know, the line element(Eqn.~\ref{eqn:schw_bl}) is singular at the horizon ($r=2M$) and lapse collapse to zero. This can be problematic because equations of motion for the metric can be become exponentially unstable in the presence of a coordinate singularity without some regularization technique.
 
-One way to resolve this problem is to move to a horizon penetrating coordinate system where this singularity is not present. The Kerr-Schild coordinates are one such coordinate system. 
+We can rewrite this in spherical coordinate. Everything is same but now
+induced metric will be line element of sphere.
 
+\TODO{Possible simple solution?}
+
+\subsection{Elementary Black Hole Solution}
+
+In QG, we can still use element BHs to check 
+dynamical stability. 
+
+\subsubsection{Schwarzschild Black Hole}
+Schwarzschild solution satisfies the Einstein's equation $R_{ab}=0$ i.e. Schwarzschild solution should
+satisfy QG. We rewrite Schwarzschild solution in terms of BSSN variables such that
 For example, Schwarzschild solution in spherical type Kerr-Schild coordinates
 \begin{align}
 \alpha &= \sqrt{\frac{r}{r+2M}} \\
@@ -395,57 +565,20 @@ K_{ij} &= \-\frac{2M}{r^4} \sqrt{\frac{r}{r+2M}} \left[ \left( \frac{M}{r}+2 \ri
 \end{align}
 where $x^i = (x,y,z)$ which is usual spatial Cartesian coordinate. In both cases, we can see lapse is regular at the horizon.
 
-General spherical symmetric line element in polar-areal form
-\begin{align}
-\label{eqn:ss-met-pa}
-ds^2 = - \alpha(r)^2 dt^2 + a(r)^2 dr^2 + r^2 d \Omega^2
-\end{align}
-where $\alpha$ is referred as lapse function. Compare with above Schwarzschild solution, $\alpha = 1/a$. 
+\subsubsection{Kerr Black Hole}
 
-Now consider a transformation of the Schwarzschild time t coordinate to a new generic coordinate $\hat{t}$ according to
-\begin{align}
-d\hat{t} = dt + a^2 \sqrt{1-\frac{g}{a^2}} dr
-\end{align}
-where $g(r)$ is arbitrary function. Substitute this into $ds^2 = -\alpha^2 dt^2 + a^2 dr^2 + r^2 d\Omega^2$ gives
-\begin{align}
-ds^2 &= - \alpha^2 \left (d\hat{t} - a^2 \sqrt{1-\frac{g}{a^2}} dr\right)^2 + a^2 dr^2 + r^2 d\Omega^2 \nonumber \\
-&= - \alpha^2 d \hat{t}^2 + 2 \sqrt{1-\frac{g}{a^2}} d\hat{t} dr + g dr^2 + r^2 d \Omega^2
-\end{align}
-Compare this with usual 3+1 framework
-\begin{align}
-ds^2 = - \alpha^2 d \hat{t}^2 + \gamma_{ij} (dx^i + \beta^i d\hat{t}\,)(dx^j + \beta^j d\hat{t}\,)
-\end{align}
-and so into the lapse $\alpha = 1/\sqrt{g}$, the shift $\beta_i = (\sqrt{1-g/a^2},0,0)$ or $\beta^i = \gamma^{ij} \beta_j$ and the spatial metric of the constant $\hat{t}$ hypersurface $\gamma_{ij} = diag(g,r^2,r^2\sin^2 \theta)$. 
+Kerr solution is also solution for QG. 
 
-If we choose $\alpha = \sqrt{1-2M/r} = 1/a$ and $g = 1+2M/r$ like in previous (which we will use this), we get
-\begin{align}
-ds^2 = - \left(1 - \frac{2M}{r} \right) d \hat{t}^2 + \frac{4M}{r} d \hat{t} dr + \left(1+\frac{2M}{r} \right) dr^2 + r^2 d\Omega^2
-\end{align}
-which is Schwarzschild in Kerr-Schild coordinate (or Eddington-Finkelstein coordinate). And correspondingly, $\alpha = \sqrt{r/(r+2M)}$, $\beta_i = (2M/r,0,0)$, and $\gamma_{ij} = diag(1+2M/r,r^2,r^2\sin^2 \theta)$ which are same as above.
+\subsection{Black Holes in QG}
+Here we describe our BH initial data. \NOTE{more descriptions?}
 
-As you can see here, the KS (or EF) form of the metric represents an analytic expansion of the Schwarzschild solution from the region $2M < r< \infty$ to  $0<r<\infty$. Thus, we apply this coordinate transformation for our equations.
-
-It is good to rewrite the metric into usual $3+1$ variable form i.e. keep it geometric variables (should be careful of confusion) with considering time dependent case. Here, we use $t$ for time coordinate that we used above.
-\begin{align}
-\label{eqn:gen-sph-met}
-ds^2 = (-\alpha^2 + a^2 \beta^2) dt^2 + 2a^2 \beta dt dr + a^2 dr^2 + r^2 b^2 d \Omega^2
-\end{align}
-where $\alpha$, $a$, $b$, and $\beta$ are functions of $r$ and $t$, and $d\Omega^2$ is the metric of unit sphere. From this, we can calculate non-vanishing components of connection coefficients and Ricci tensors for $i,j$, and $k$ (spatial indices)
-\begin{align}
-&\Gamma\indices{^r_{rr}} = \frac{\partial_r a}{a}, \,\,\,\,\,\,\,\, \Gamma\indices{^r_{\theta \theta}} = - \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\theta_{r \theta}} = \frac{\partial_r (rb)}{rb} \nonumber  \\
-&\Gamma\indices{^r_{\varphi \varphi}} = -\sin^2 \theta \frac{rb \partial_r (rb)}{a^2}, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{r \varphi}} = \Gamma\indices{^\theta_{r \theta}} \nonumber \\
-&\Gamma\indices{^\theta_{\varphi \varphi}} = -\sin \theta \cos \theta, \,\,\,\,\,\,\,\, \Gamma\indices{^\varphi_{\varphi \theta}} = -\cot \theta \nonumber 
-\end{align}
-\begin{align}
-R\indices{^r_r} &= -\frac{2}{arb} \partial_r \left(\frac{\partial_r (rb)}{a} \right) \\
-R\indices{^\theta_\theta} &= \frac{1}{ar^2b^2} \left[a-\partial_r \left(\frac{rb \partial_r (rb)}{a} \right) \right] \\
-\end{align}
+\subsection{Binary Black Hole Initial Data}
 
 
-\subsection{Evolution System in Spherical Symmetry}
-\TODO{What is ADM form of quadratic gravity? We can impose above argument to make the evolution equation in SS}
+\subsubsection{Puncture Method}
 
-\section{Initial Data}
+\NOTE{Maybe solve elliptic equations or just find puncture like ID}
+
 Under usual 3+1 decomposition \NOTE{Still same for QG?}, the constraint equations are (in vacua)
 \begin{align}
 D_j K\indices{^j_i} - D_i K &= 0 \\
@@ -456,19 +589,6 @@ satisfy the constraints. Thus, we have to specify $(\gamma_{ij}, K_{ij})$ on som
 spatial slice $\Sigma$ that are compatible with the constraint equations. These fields can 
 then be used as initial data for a dynamical evolution obtained by solving the evolution equation.
 
-\subsection{Elementary Black Hole Solution}
-
-\NOTE{Might use Brill-Lindquist for testing case. \\
-Put formula for BSSN or GH like Schwarzschild in terms of correct coordinate}
-
-\subsection{Black Holes in QG}
-
-\NOTE{We may use some analytic solutions in literatures}
-
-\subsection{Binary Black Hole Initial Data}
-\subsubsection{Puncture Method}
-
-\NOTE{Maybe solve elliptic equations or just find puncture like ID}
 
 \section{Gravitational Wave Extractions for QG}
 Here, we calculate the $\Psi_4$ to extract the gravitational wave information. To do that, we first define tetrad. 
@@ -499,15 +619,15 @@ where we are defining the inner product and the norm as
 with these, we construct a null tetrad according to
 \begin{align}
 l^a &= \frac{1}{2} (n^a + \, ^{(1)}e^a) \\
-\tilde{n}^a &= \frac{1}{2} (n^a - \, ^{(1)}e^a) \\
+\widetilde{n}^a &= \frac{1}{2} (n^a - \, ^{(1)}e^a) \\
 m^a &= \frac{1}{2} (^{(2)}e^a + i \, ^{(3)}e^a) \\
 \bar{m}^a &=  \frac{1}{2} (^{(2)}e^a - i \, ^{(3)}e^a)
 \end{align}
 where, because we are running out of letters, the usual null vector $n^a$ has been written with a tilde to distinguish if from the normal 
 to the foliation. Then we can compute the relevant complex Penrose scalar $\Psi4$ such that
 \begin{align}
-\Psi_4 &= C_{abcd} \tilde{n}^a \bar{m}^b \tilde{n}^c \bar{m}^d \\
-           &= C_{abcd} \tilde{n}^a \tilde{n}^c \left[\frac{1}{2} \{ ^{(2)}e^b \, ^{(2)}e^d - ^{(3)}e^b \, ^{(3)}e^d  \} + i \, ^{(2)}e^b \, ^{(3)}e^d \right] 
+\Psi_4 &= C_{abcd} \widetilde{n}^a \bar{m}^b \widetilde{n}^c \bar{m}^d \\
+           &= C_{abcd} \widetilde{n}^a \widetilde{n}^c \left[\frac{1}{2} \{ ^{(2)}e^b \, ^{(2)}e^d - ^{(3)}e^b \, ^{(3)}e^d  \} + i \, ^{(2)}e^b \, ^{(3)}e^d \right] 
 \end{align}
 Now we must decompose this with respect to an assumed spacelike hypersurface. As usual, 
 we define the normal to the hypersurface as $n_a$, the metric on the hypersurface as $\gamma_{ij}$ 
