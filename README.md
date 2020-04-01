@@ -19,7 +19,7 @@ In this project, we are using `Dendro` framework.
 To get all the code with other materials, you need to
 clone it via
 ```{engine=sh}
-git clone --recursive https://github.com/hlim88/quadGrav.git
+git clone --recursive git@github.com:hlim88/quadGrav.git
 ```
 
 Note that the code exists in separate repo. I updated it
