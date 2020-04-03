@@ -318,6 +318,7 @@ This set of equations is now only of second order, but the last equation is stil
 \subsection{Diagonalization to a quasilinear hyperbolic system}
 We can diagonalize the equations to a quasilinear system by introducing additional variables $V_\mu = \partial_\mu R$ and $h_{\mu\nu\alpha} = g_{\mu\nu,\alpha}$ and adding derivatives of the first two (already quasilinear) equations to the system. We obtain
 \begin{align}
+\label{eq:MoralesForm}
 	-\frac{1}{2}g^{\eta\delta}g_{\mu\nu,\eta\delta}=
 	&-Q_{\mu\nu}(g,\partial g)+\widetilde{R}_{\mu\nu} + \frac{1}{4}g_{\mu\nu}R,
 	\\
@@ -439,22 +440,40 @@ Y_{ab}= &(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \aaron{\kappa} \widetilde{
 &+\frac{\alpha_c}{4} g_{ab} \left[ g^{cd}g_{mn,cd} - 2 Q_{mn} (g,\partial g) \right] g^{om}g^{pn} \widetilde{R}_{op} \nonumber \\
 &- \alpha_c \bigg[ g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb} +4 g_{mn} \Gamma\indices{^m_{c[b}} \Gamma\indices{^n_{d]a}} \bigg] \widetilde{R}^{cd} .
 \end{align}
-where we use $Y_{ab}$ just for convenience purpose. In $Y_{ab}$ most of terms are okay (i.e. no involving second derivatives) 
+where we use $Y_{ab}$ just for convenience purpose. In $Y_{ab}$ most of terms are okay (i.e. no involving second \aaron{time} derivatives) 
 and most of terms are already decomposed like using Ricci tensors/scalar and metric. So, we split the $Y_{ab}$ into two pieces
 \begin{align}
-Y_{ab} = Y^{np}_{ab} + \Delta_c \big[(2 \beta_c - \alpha_c) \nabla_a \nabla_b R - \alpha_c (g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb}) \widetilde{R}^{cd} \big]
-&= Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+Y_{ab} &= Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
+\\\notag
+Y^{p}_{ab} &= \Delta_c \bigg[
+	(2 \beta_c - \alpha_c) \nabla_a \nabla_b R
+	\aaron{
+	+ (\alpha_c - 2 \beta_c)g^{cd}g^{mn} g_{mn,cd}\,\widetilde{R}_{ab}
+	+\frac{\alpha_c}{4} g_{ab} g^{cd}g_{mn,cd} g^{om}g^{pn} \widetilde{R}_{op}
+	}
+	\\\notag
+	&\quad\quad\quad
+	- \alpha_c (g_{cd,ab} + g_{ab,cd} - g_{cb,ad} - g_{ad,cb}) \widetilde{R}^{cd} 
+	\bigg]
+\\\notag
+Y^{np}_{ab} &= 
+- \kappa \widetilde{R}_{ab} - \frac{\kappa(2 \beta_c - \alpha_c)}{8(3\beta_c - 2 \alpha_c)} g_{ab} R
+-2(\alpha_c - 2 \beta_c)Q(g,\partial g)\widetilde{R}_{ab}
+-\frac{\alpha_c}{2} g_{ab} Q_{mn} (g,\partial g) g^{om}g^{pn} \widetilde{R}_{op}
+\\\notag
+&- 4\alpha_c g_{mn} \Gamma\indices{^m_{c[b}} \Gamma\indices{^n_{d]a}} \widetilde{R}^{cd}
 \end{align}
 where $\Delta_c$ is coupling constant that occurs higher order derivatives and $Y^{np}_{ab}$ contains all remaining terms.
+\aaron{[I have put all terms with 2nd order time derivatives into $Y^{p}_{ab}$. I think removing them brings us to a similar form than in \cite{Morales:2018imi}. Terms like $g_{ab,cd}$ can be brought into 1st order form by introducing another fiducial variable like $h_{abc} \equiv g_{ab,c}$ as in Eq.~\eqref{eq:MoralesForm}. For double-derivative terms in $\nabla_a \nabla_b R$, we may also introduce a fiducial variable like $V_\mu = \partial_\mu R$, cf.~Eq.~\eqref{eq:MoralesForm}, either before or after (3+1) decomposition.]}
 Thus, we may choose small value of $\Delta_c$ to control how quadratic terms in the theory effects on dynamics of BH.
-We also use decompositions of Ricci tensors, Ricci scalar, and Christoffel symbols for $Y^{np}_{ab}$ \TODO{check this too}\aaron{[further terms belong in $Y^{np}_{ab}$ too]}
+We also use decompositions of Ricci tensors, Ricci scalar, and Christoffel symbols for $Y^{np}_{ab}$ %\TODO{check this too}\aaron{[further terms belong in $Y^{np}_{ab}$ too]}
 
 Using all of these, we obtain
 \begin{align}
 n^a \nabla_a \widetilde{R}_{ab} &= - \widetilde{V}_{ab}  \\
 n^a \nabla_a \widetilde{V}_{ab} &= -  \frac{1}{\alpha} D_\aaron{i}(\alpha D^\aaron{i} \widetilde{R}_{ab} ) + K \widetilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
 \end{align} 
-\TODO{Does it make sense?}\aaron{[yes, although I am not sure about the problematic terms ... they still contain second order time derivatives ... is that not a problem for BSSN evolution?]}
+%\TODO{Does it make sense?}\aaron{[yes, although I am not sure about the problematic terms ... they still contain second order time derivatives ... is that not a problem for BSSN evolution?]}
 
 \subsection{BSSN formulation}
 So far, we have
@@ -474,25 +493,19 @@ After some manipulation, we have
 \label{eqn:bssn:inter1}
 D_\aaron{i} ( \alpha D^\aaron{i} R) = \alpha \chi \left[\widetilde{\gamma}^{ij} \partial_i \partial_j R + \widetilde{\gamma}^{ij} (\partial_i  \ln \alpha) \partial_j R - \widetilde{\Gamma}^i \partial_i R - \frac{1}{2} \widetilde{\gamma}^{ij} \partial_i R \partial_j \ln \chi \right]
 \end{align}
-\aaron{[I have checked and agree with this]}
+%\aaron{[I have checked and agree with this]}
+%\begin{align}
+%\label{eqn:bssn:inter1}
+%D_\aaron{i} ( \alpha D^\aaron{i} \widetilde{R}_{ab}) = \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}_{ab} \partial_\aaron{i} \chi \right) + \alpha (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab}
+%\end{align}
+%\aaron{[I have not managed to get to this form. I get to
+\aaron{
 \begin{align}
-\label{eqn:bssn:inter1}
-D_\aaron{i} ( \alpha D^\aaron{i} \widetilde{R}_{ab}) = \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}_{ab} \partial_\aaron{i} \chi \right) + \alpha (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab}
-\end{align}
-\aaron{[I have not managed to get to this form. I get to
-\begin{align*}
 	D_i( \alpha D^i \widetilde{R}_{ab}) = 
-	\chi\widetilde{\gamma}^{ij}(\partial_i\alpha) \left[
-		\partial_j \widetilde{R}_{ab}
-		- \frac{1}{2}\left(
-			\partial_j \overline{\gamma}_{la} + \partial_a \overline{\gamma}_{jl} - \partial_l \overline{\gamma}_{ja}
-		\right)\widetilde{R}_{kb}
-		- (a\leftrightarrow b)
-	\right]
+	\chi\widetilde{\gamma}^{ij}(\partial_i\alpha) (D_j \widetilde{R}_{ab})
 	+ \alpha (D^i D_i) \widetilde{R}_{ab}
-\end{align*}
-... could write this out transition from $\overline{\gamma}$ to $\widetilde{\gamma}$ but I do not see how that simplifies the expression significantly ... especially I have terms like $(\partial_a\alpha)(\partial^i\chi)\widetilde{R}_{ib}$ in the final expression]
-}
+\end{align}
+[if $D$'s cannot be implemented directly, I can put expaned form into RHS scripts]}
 
 Thus, we have
 \begin{align}
@@ -502,9 +515,13 @@ n^a \nabla_a \hat{R} &= -
 \chi \left[\widetilde{\gamma}^{ij} \partial_i \partial_j R + \widetilde{\gamma}^{ij} (\partial_i  \ln \alpha) \partial_j R - \widetilde{\Gamma}^i \partial_i R - \frac{1}{2} \widetilde{\gamma}^{ij} \partial_i R \partial_j \ln \chi \right] \nonumber \\
 & + K \hat{R} + \frac{\aaron{\kappa}}{\aaron{2} (3\beta_c - 2 \alpha_c)} R\\
 n^\aaron{c} \nabla_\aaron{c} \widetilde{R}_{ab} &= - \widetilde{V}_{ab}  \\
-n^\aaron{c} \nabla_\aaron{c} \widetilde{V}_{ab} &= -  \frac{1}{\alpha} \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}_{ab} \partial_\aaron{i} \chi \right) - (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab} \nonumber \\
+n^\aaron{c} \nabla_\aaron{c} \widetilde{V}_{ab} &= 
+%-  \frac{1}{\alpha} \partial^i \alpha \left(\partial_i \widetilde{R}_{ab} - \frac{3}{2\chi} \widetilde{R}%_{ab} \partial_\aaron{i} \chi \right) 
+\aaron{- \chi\widetilde{\gamma}^{ij}(\partial_i\ln\alpha) (D_j \widetilde{R}_{ab})}
+- (D^\aaron{i} D_\aaron{i} )_{\textrm{BSSN}} \widetilde{R}_{ab} \nonumber \\
 & + K \widetilde{V}_{ab} + Y^{np}_{ab} + \Delta_c Y^{p}_{ab}
 \end{align}
+\aaron{[might have to diagonalize again after dealing with terms in $Y^{p}$]}
 
 
 \subsection{Hyperbolicity of the System}
