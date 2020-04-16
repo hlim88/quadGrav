@@ -344,6 +344,49 @@ We can diagonalize the equations to a quasilinear system by introducing addition
 \end{align}
 the final well-posed form of the evolution equations.
 
+\aaron{
+
+\section{Recast Evolution Equations into 3+1 Form -- 2nd attempt ;)}
+
+Before laying out how to proceed for the QG evolution equations, it is instructive to quickly review the (3+1) split in GR. In GR -- as in any other metric theory -- a foliation, i.e., $g_{ab} = \gamma_{ab} - n_an_b$, conveys the dynamic character of the evolution equations by singling out a time direction.  Beyond that, the standard (3+1) formulation casts the Einsteins equations into a quasi-linear system which is manifestly 1st order in time. To do so, one introduces a fiducial variable $K_{ij}\equiv\frac{1}{2}\pounds_\mathbf{n}\gamma_{ij} = \frac{1}{2}\partial_t\gamma_{ij}$ where the second equality only holds assuming a suitable coordinate choice. Thereby, the 6 2nd-order evolution equations for $\gamma_{ij}$ (the other 4 are constraints) become 12 1st-order evolution equations for $\gamma_{ij}$ and $K_{ij}$. This is a specific example of the general procedure of reducing higher-order systems by fiducial variables -- only that $K_{ij}$ also has geometric meaning as the extrinsic curvature of the foliation. Also note that this (3+1) split results in a syestem that is weakly but not strongly hyperbolic. It requires further recasting to be stable under numerical evolution. The following distinction will be of importance for QG:
+\begin{itemize}
+	\item
+	The Gauss-, Codazzi-, and Ricci equations are of purely geometric nature. They determine the foliation and are therefore independent of the dynamics, i.e., valid both in GR and QG. This also holds for the foliation split of the 4D Ricci tensor $^{(4)}R_{ab}$ and scalar $^{(4)}R$, i.e.,
+	\begin{align}
+	\label{eq:gaussCodazziRicci}
+	^{(4)}R_{ab} n^a n^b &= (\partial_\bot K + D_i D^i \alpha)/\alpha - K_{ij} K^{ij} \\
+	^{(4)}R_{ab} \gamma^a_i \gamma^b_j &= R_{ij} + K K_{ij} - 2 K_{ik} K^{k}_j - (\partial_\bot K_{ij})/\alpha
+	-(D_i D_j \alpha)/\alpha \\
+	^{(4)}R_{ab} \gamma^a_i n^b &= - D_j K^j_i + D_i K \\
+	^{(4)}R &= R + K_{ij} K^{ij} + K^2 - 2 (\partial_\bot K) /\alpha - 2 (D_i D^i) \alpha / \alpha
+	\end{align}
+	\item
+	The evolution equation for $\gamma_{ij}$, i.e.,
+	\begin{align}
+	\label{eq:evolGamma}
+		\partial_\bot \gamma_{ij}\equiv \pounds_t\gamma_{ij} - \pounds_\beta \gamma_{ij} = -2\alpha K_{ij}\;,
+	\end{align}		
+	is a definition and therefore independent of GR as well.
+	\item
+	On the contrary, the Hamiltonian and momentum constraint, as well as the evolution equation for $K_{ij}$, are tied to the dynamics. In GR they are obtained by applying spatial and temporal projections of the Einsteins equations and using the Gauss-, Codazzi-, and Ricci equations. For QG they have to be modified.
+\end{itemize}
+In the following, we will proceed to project the QG evolution equations in their 2nd order but not yet quasilinear form, i.e., Eqs~\eqref{eom:metric}-\eqref{eom:ricci_tensor}, onto spatial, temporal and mixed components. We expect the following structure:
+\begin{itemize}
+	\item 
+	The spatial projection of Eq.~\eqref{eom:metric} will be 2nd order in time derivatives of $\gamma_{ij}$ but by use of Eq.~\eqref{eq:evolGamma} it can be recast to a 1st order evolution equation for $K_{ij}$.
+	\item
+	The temporal and mixed projections of Eq.~\eqref{eom:metric} will contain 1st order time derivatives of $K$ (but not of $K_{ij}$) and (hopefully) can be expressed without time derivatives, i.e., become the QG equivalent of Hamiltonian and momentum constraints.
+	\item
+	Eq.~\eqref{eom:ricci_scalar} is a scalar equation and need not be projected. We expect that all time derivatives but those in $\Box R$ can be reduced to purely spatial derivatives by use of the above evolution equations for $\gamma_{ij}$ and $K_{ij}$. Hence, this defines a 2nd-order evolution equation equation for the spatial Ricci scalar which we will recast into 1st order form by introducing another fiducial variable $\hat{R}\sim\pounds_\mathbf{n}R$.
+	\item
+	The spatial projection of Eq.~\eqref{eom:ricci_tensor} will define the evolution of $R_{ij}$. Note that we expect there to be a redundancy with the evolution of $R$ which should allow us to reduce these to five trace-free equations for $\tilde{R}_{ij}$. These will also be 2nd order in time derivatives and require another five fiducial variables $\hat{\tilde{R}}_{ij}\sim\pounds_\mathbf{n}\tilde{R}_{ij}$.
+	\item
+	The temporal and mixed projections of Eq.~\eqref{eom:ricci_tensor} can presumably be reduced to constraints as well.
+\end{itemize} 
+
+}
+
+
 \section{Recast Evolution Equations into 3+1 Form}
 
 In this section, we reduce our systems of equations in 3+1 form. There are several reasons to use 3+1 form:
