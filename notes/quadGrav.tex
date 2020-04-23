@@ -384,6 +384,31 @@ In the following, we will proceed to project the QG evolution equations in their
 	The temporal and mixed projections of Eq.~\eqref{eom:ricci_tensor} can presumably be reduced to constraints as well.
 \end{itemize} 
 
+\subsection{Evolution equation for the extrinsic curvature}
+Projecting the LHS and RHS of Eq.~\eqref{eom:metric} onto spatial parts and making use of the Gauss-, Coddazi-, and Ricci-equations, we find
+\begin{align}
+	\frac{1}{2}\gamma_c^e\gamma_d^f\Big[ 
+		\gamma^{ab}\partial_a\partial_b\gamma_{ef}
+		+ n^an^b\partial_b\partial_a\gamma_{ef}
+	\Big] = \gamma_{ca}\gamma_{db}Q^{ab} - R_{dc} + K\,K_{dc} + \gamma_c^e\gamma_d^f n^a\nabla_a K_{ef}
+	+ \mathcal{N}_{cd}(\partial n)\;.
+\end{align}
+The spatial projection of $Q^{ab}$ does not contain (after using the definition of the extrinsic curvature) time derivatives of spatial quantities. Further, we have not written out further terms in $\mathcal{N}_{cd}$ which contain derivatives of the normal $n_a$. All such terms vanish for geodesic slicing. Otherwise, they have to be spelled out but none of them contains time derivatives of spatial metric quantities. Relating the partial and covariant derivatives of $\gamma$, requires to use the following relation between Lie, covariant, and partial derivatives
+\begin{align}
+	\pounds_n\gamma_{ab} &= n^c\nabla_c\gamma_{ab} + \gamma_{ca}\nabla_b n^c + \gamma_{cb}\nabla_a n^c
+	\notag\\
+	&=n^c\partial_c\gamma_{ab} + \gamma_{ca}\partial_b n^c + \gamma_{cb}\partial_a n^c\;.
+\end{align}
+For geometric slicing, this implies $n^an^b\partial_b\partial_a\gamma_{ef} = -2n^b\partial_bK_{cd}$ as well as $n^c\nabla_c\gamma_{ab} = n^c\partial_c\gamma_{ab}$. For more general slicings additional contributions to $\mathcal{N}_{cd}$ appear. Using these relations and reordering terms, we find
+\begin{align}
+	\gamma_c^e\gamma_d^f n^a \partial_a K_{ef} = 
+	\gamma_c^e\gamma_d^f \gamma^{ab}\partial_a\partial_b\gamma_{ef} 
+	- 2\Big[
+		\gamma_{ca}\gamma_{db}Q^{ab} - R_{dc} + K\,K_{dc}
+	\Big]
+	+ \mathcal{N}_{cd}(\partial n)\;.
+\end{align}
+Since the RHS is now free of any time derivatives of spatial metric quantities, this constitutes a 1st-order in time evolution equation for the extrinsic metric $K_{ab}$.
 }
 
 
