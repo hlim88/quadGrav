@@ -401,6 +401,7 @@ The spatial projection of $Q^{ab}$ does not contain (after using the definition 
 \end{align}
 For geometric slicing, this implies $n^an^b\partial_b\partial_a\gamma_{ef} = -2n^b\partial_bK_{cd}$ as well as $n^c\nabla_c\gamma_{ab} = n^c\partial_c\gamma_{ab}$. For more general slicings additional contributions to $\mathcal{N}_{cd}$ appear. Using these relations and reordering terms, we find
 \begin{align}
+	\label{eq:evolK}
 	\gamma_c^e\gamma_d^f n^a \partial_a K_{ef} = 
 	\gamma_c^e\gamma_d^f \gamma^{ab}\partial_a\partial_b\gamma_{ef} 
 	- 2\Big[
@@ -409,6 +410,28 @@ For geometric slicing, this implies $n^an^b\partial_b\partial_a\gamma_{ef} = -2n
 	+ \mathcal{N}_{cd}(\partial n)\;.
 \end{align}
 Since the RHS is now free of any time derivatives of spatial metric quantities, this constitutes a 1st-order in time evolution equation for the extrinsic metric $K_{ab}$.
+
+\subsection{Additional evolution equations}
+In the 2nd-order 4D formulation, the additional equations Eqs~\eqref{eom:ricci_scalar} and \eqref{eom:ricci_tensor} of QG give the evolution of the Ricci scalar $^{(4)}R$ and traceless Ricci tensor $^{(4)}\widetilde{R}_{ab}$ fiducially treated as independent variables. Equivalently, we expect that Eq.~\eqref{eom:ricci_scalar} and the spatial projection of Eq~\eqref{eom:ricci_tensor} can be rewritten to give 2nd-order evolution equations for the spatial Ricci scalar $R$ and tensor $R_{ij}$. For now, we neglect all but the first line in the RHS of Eq.~\eqref{eom:ricci_tensor}. These neglected terms will neither contain derivatives of $R$ nor of $R_{ij}$. After projecting, we can therefore explicitly write out all terms that contain $R_{ij}$ or $R$ and find
+\begin{align}
+	\Box R 
+	=& 
+	\frac{\kappa}{2(3\beta_c-2\alpha_c)} R
+	+ \dots(\nabla K,\,\nabla\gamma)\;,
+	\\[0.5em]
+	\gamma_a^c\gamma_b^d\Box
+	%\Big(R_{cd}-\frac{1}{4}\gamma_{cd}R\Big)
+	\widetilde{R}_{cd}
+	=& 
+	\frac{\kappa}{\alpha_c}
+	%\Big(R_{cd}-\frac{1}{4}\gamma_{cd}R\Big)
+	\widetilde{R}_{cd}
+	-\frac{\kappa(2\beta_c-\alpha_c)}{8(3\beta_c-2\alpha_c)}(\gamma_{cd}R)
+	+\frac{2\beta_c-\alpha_c}{\alpha_c}\,(\gamma_a^c\gamma_b^d\nabla_c\nabla_dR)
+	\notag\\	
+	&+ \widetilde{R}_{cd}\dots(\nabla K,\,\nabla\gamma) + \dots(\nabla K,\,\nabla\gamma)\;.
+\end{align}
+It is straightforward isolate $\widetilde{R}_{ab}$ and the spatial evolution equations resemble closely the 4D counterparts. The same holds for the spatial projection of $^{(4)}\widetilde{R}_{ab}$, for which also $^{(4)}\widetilde{R}_{ab} = \widetilde{R}_{ab} + \dots(\nabla K,\,\nabla\gamma)$. The terms $\dots(\nabla K,\,\nabla\gamma)$ contain up to 3rd-order mixed (including 3rd-order in time) derivatives of $K$ and $\gamma$. The remaining challenge is to reduce these by use of the respective evolution Eqs~\eqref{eq:evolGamma} and \eqref{eq:evolK}.
 }
 
 
